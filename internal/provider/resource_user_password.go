@@ -2,7 +2,6 @@ package provider
 
 import (
 	"context"
-	"crypto/rand"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -85,24 +84,7 @@ func resourceUserPasswordUpdate(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceUserPasswordDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*Client)
 	var diags diag.Diagnostics
-
-	userId := d.Id()
-
-	b := make([]byte, 32)
-	_, err := rand.Read(b)
-	if err != nil {
-		return nil
-	}
-
-	body := make(map[string]interface{}, 0)
-	body["password"] = fmt.Sprintf("%x", b)
-
-	_, err = c.request("PUT", fmt.Sprintf("/api/v1/users/%s/password", userId), body)
-	if err != nil {
-		return diag.FromErr(err)
-	}
 
 	d.SetId("")
 

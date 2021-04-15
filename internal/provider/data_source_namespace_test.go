@@ -20,7 +20,7 @@ func TestAccDataSourceNamespace(t *testing.T) {
 						"data.kestra_namespace.new", "namespace_id", regexp.MustCompile("io\\.kestra"),
 					),
 					resource.TestMatchResourceAttr(
-						"data.kestra_namespace.new", "name", regexp.MustCompile("My Kestra Namespace"),
+						"data.kestra_namespace.new", "name", regexp.MustCompile("My Kestra Namespace data"),
 					),
 				),
 			},

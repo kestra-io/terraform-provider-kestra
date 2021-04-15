@@ -14,10 +14,10 @@ func TestAccDataSourceUser(t *testing.T) {
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceUser("admin"),
+				Config: testAccDataSourceUser("john"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestMatchResourceAttr(
-						"data.kestra_user.new", "user_id", regexp.MustCompile("admin"),
+						"data.kestra_user.new", "user_id", regexp.MustCompile("john"),
 					),
 				),
 			},

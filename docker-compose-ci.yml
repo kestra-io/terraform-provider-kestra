@@ -8,18 +8,15 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka
-
     environment:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'
     links:
       - zookeeper
-    ports:
-      - 9092:9092
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.4.2
@@ -31,7 +28,43 @@ services:
         soft: -1
         hard: -1
     ports:
-      - 9200:9200
+      - 127.27.27.27:9200:9200
+
+  kestra:
+    image: ghcr.io/kestra-io/kestra-ee:develop
+    command: server standalone
+    environment:
+      KESTRA_CONFIGURATION: |
+        kestra:
+          kafka:
+            client:
+              properties:
+                bootstrap.servers: kafka:9092
+          elasticsearch:
+            client:
+              http-hosts: http://elasticsearch:9200
+          repository:
+            type: elasticsearch
+          storage:
+            type: local
+            local:
+              base-path: "/app/storage"
+          queue:
+            type: kafka
+          secret:
+            type: vault
+            vault:
+              address: "http://vault:8200"
+              password:
+                user: john
+                password: foo
+
+    ports:
+      - 127.27.27.27:8080:8080
+    links:
+      - kafka
+      - zookeeper
+      - vault
 
   vault:
     image: vault
@@ -42,7 +75,3 @@ services:
       VAULT_TOKEN: my-vault-root-token
       VAULT_LOG_LEVEL: DEBUG
       VAULT_DEV_ROOT_TOKEN_ID: my-vault-root-token
-    volumes:
-      - ./:/tmp/
-    ports:
-      - 8200:8200

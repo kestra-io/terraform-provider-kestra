@@ -1,6 +1,6 @@
 module github.com/kestra-io/terraform-provider-kestra
 
-go 1.15
+go 1.16
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.4.0

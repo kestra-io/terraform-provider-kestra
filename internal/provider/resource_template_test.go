@@ -8,13 +8,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccTemplateFlow(t *testing.T) {
+func TestAccTemplate(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccTemplateFlow(
+				Config: testAccResourceTemplate(
 					"io.kestra.terraform",
 					"simple",
 					concat(
@@ -23,16 +23,6 @@ func TestAccTemplateFlow(t *testing.T) {
 						"    type: io.kestra.core.tasks.debugs.Echo",
 						"    format: first {{task.id}}",
 						"    level: TRACE",
-						"taskDefaults:",
-						"  - type: io.kestra.core.tasks.debugs.Echo",
-						"    values:",
-						"      format: third {{flow.id}}",
-						"inputs:",
-						"  - name: my-value",
-						"    type: STRING",
-						"    required: true",
-						"variables:",
-						"  first: \"1\"",
 					),
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -48,7 +38,7 @@ func TestAccTemplateFlow(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccTemplateFlow(
+				Config: testAccResourceTemplate(
 					"io.kestra.terraform",
 					"simple",
 					concat(
@@ -57,16 +47,6 @@ func TestAccTemplateFlow(t *testing.T) {
 						"    type: io.kestra.core.tasks.debugs.Echo",
 						"    format: first {{task.id}}",
 						"    level: TRACE",
-						"taskDefaults:",
-						"  - type: io.kestra.core.tasks.debugs.Echo",
-						"    values:",
-						"      format: third {{flow.id}}",
-						"inputs:",
-						"  - name: my-value",
-						"    type: STRING",
-						"    required: true",
-						"variables:",
-						"  first: \"1\"",
 					),
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -84,7 +64,7 @@ func TestAccTemplateFlow(t *testing.T) {
 	})
 }
 
-func testAccTemplateFlow(id, name, content string) string {
+func testAccResourceTemplate(id, name, content string) string {
 	return fmt.Sprintf(
 		`
         resource "kestra_template" "new" {

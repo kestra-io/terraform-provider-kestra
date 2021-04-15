@@ -7,13 +7,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccRoleFlow(t *testing.T) {
+func TestAccRole(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccRoleFlow(
+				Config: testAccResourceRole(
 					"admin",
 					"My admin role",
 					concat(
@@ -46,7 +46,7 @@ func TestAccRoleFlow(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccRoleFlow(
+				Config: testAccResourceRole(
 					"admin 2",
 					"My admin role 2",
 					concat(
@@ -83,7 +83,7 @@ func TestAccRoleFlow(t *testing.T) {
 	})
 }
 
-func testAccRoleFlow(name, description, permissions string) string {
+func testAccResourceRole(name, description, permissions string) string {
 	return fmt.Sprintf(
 		`
         resource "kestra_role" "new" {

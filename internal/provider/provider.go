@@ -32,20 +32,20 @@ func New(version string) func() *schema.Provider {
 					Type:        schema.TypeString,
 					Optional:    true,
 					Description: "Kestra full endpoint url without trailing slash",
-					DefaultFunc: schema.EnvDefaultFunc("KESTRA_URL", "http://kestra:8080"),
+					DefaultFunc: schema.EnvDefaultFunc("KESTRA_URL", ""),
 				},
 				"username": &schema.Schema{
 					Type:        schema.TypeString,
 					Optional:    true,
 					Description: "Kestra BasicAuth username",
-					DefaultFunc: schema.EnvDefaultFunc("KESTRA_USERNAME", "john@doe.com"),
+					DefaultFunc: schema.EnvDefaultFunc("KESTRA_USERNAME", ""),
 				},
 				"password": &schema.Schema{
 					Type:        schema.TypeString,
 					Optional:    true,
 					Sensitive:   true,
 					Description: "Kestra BasicAuth password",
-					DefaultFunc: schema.EnvDefaultFunc("KESTRA_PASSWORD", "pass"),
+					DefaultFunc: schema.EnvDefaultFunc("KESTRA_PASSWORD", ""),
 				},
 			},
 			DataSourcesMap: map[string]*schema.Resource{

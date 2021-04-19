@@ -32,7 +32,7 @@ func resourceFlow() *schema.Resource {
 				Description:      "The flow full content in yaml string.",
 				Type:             schema.TypeString,
 				Required:         true,
-				DiffSuppressFunc: isYamlEquals,
+				DiffSuppressFunc: isYamlEqualsFlow,
 			},
 		},
 		Importer: &schema.ResourceImporter{

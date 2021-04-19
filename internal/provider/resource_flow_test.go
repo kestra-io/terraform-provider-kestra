@@ -18,6 +18,9 @@ func TestAccResourceFlow(t *testing.T) {
 					"io.kestra.terraform",
 					"simple",
 					concat(
+						"id: simple",
+						"namespace: io.kestra.terraform",
+						"revision: 13",
 						"tasks:",
 						"  - id: t1",
 						"    type: io.kestra.core.tasks.debugs.Echo",

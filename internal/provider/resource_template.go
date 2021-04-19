@@ -32,7 +32,7 @@ func resourceTemplate() *schema.Resource {
 				Description:      "The template full content in yaml string.",
 				Type:             schema.TypeString,
 				Required:         true,
-				DiffSuppressFunc: isYamlEquals,
+				DiffSuppressFunc: isYamlEqualsFlow,
 			},
 		},
 		Importer: &schema.ResourceImporter{

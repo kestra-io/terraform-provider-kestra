@@ -1,7 +1,5 @@
 TEST?=$$(go list ./... | grep -v 'vendor')
 
-HOSTNAME=hashicorp.com
-NAMESPACE=kestra-io
 NAME=kestra
 BINARY=terraform-provider-${NAME}
 VERSION=0.1
@@ -17,8 +15,8 @@ doc:
 	go generate
 
 install: build
-	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
-	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+	mkdir -p ~/.terraform.d/plugins/${OS_ARCH}
+	mv ${BINARY} ~/.terraform.d/plugins/${OS_ARCH}
 
 test:
 	go test -i $(TEST) || exit 1

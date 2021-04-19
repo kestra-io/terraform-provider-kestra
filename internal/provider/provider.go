@@ -98,6 +98,26 @@ func toYaml(source interface{}) (*string, error) {
 	return &yamlString, nil
 }
 
+func isYamlEqualsFlow(k, old, new string, d *schema.ResourceData) bool {
+	oldInterface := make(map[string]interface{}, 0)
+	yaml.Unmarshal([]byte(old), &oldInterface)
+
+	newInterface := make(map[string]interface{}, 0)
+	yaml.Unmarshal([]byte(new), &newInterface)
+
+	delete(oldInterface, "deleted")
+	delete(oldInterface, "id")
+	delete(oldInterface, "namespace")
+	delete(oldInterface, "revision")
+
+	delete(newInterface, "deleted")
+	delete(newInterface, "id")
+	delete(newInterface, "namespace")
+	delete(newInterface, "revision")
+
+	return yamlCompare(oldInterface, newInterface)
+}
+
 //goland:noinspection GoUnhandledErrorResult
 func isYamlEquals(k, old, new string, d *schema.ResourceData) bool {
 	var oldInterface interface{}
@@ -106,6 +126,11 @@ func isYamlEquals(k, old, new string, d *schema.ResourceData) bool {
 	var newInterface interface{}
 	yaml.Unmarshal([]byte(new), &newInterface)
 
+	return yamlCompare(oldInterface, newInterface)
+}
+
+//goland:noinspection GoUnhandledErrorResult
+func yamlCompare(oldInterface, newInterface interface{}) bool {
 	oldYaml, _ := yaml.Marshal(oldInterface)
 	newYaml, _ := yaml.Marshal(newInterface)
 

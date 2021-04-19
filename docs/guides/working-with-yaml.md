@@ -2,6 +2,8 @@
 page_title: "Working with Yaml"
 ---
 
+# Working with Yaml
+
 Most of kestra ressource need to be described as Yaml like [kestra_flow](../resources/flow.md) & [kestra_template](../resources/template.md). 
 
 We have chosen to use a full yaml in terraform definition since the structure is recursive and dynamic, so it can't be described using terraform internal schema. 
@@ -33,7 +35,7 @@ EOT
 ## External files 
 Better will be to use a [file function](https://www.terraform.io/docs/language/functions/file.html). Just create a file `.yml` near your terraform `.tf` and include the whole file in your resource: 
 
-```yml
+```yaml
 inputs:
   - name: my-value
     type: STRING

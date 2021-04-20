@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"path/filepath"
 	"regexp"
 	"testing"
 
@@ -14,6 +15,16 @@ func TestAccResourceFlow(t *testing.T) {
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
 			{
+				PreConfig: func() {
+					t1, _ := filepath.Abs("../resources/t1.yml")
+					copyResource(t1, "t1.yml")
+
+					flow, _ := filepath.Abs("../resources/flow.yml")
+					copyResource(flow, "flow.yml")
+
+					python, _ := filepath.Abs("../resources/flow.py")
+					copyResource(python, "flow.py")
+				},
 				Config: testAccResourceFlow(
 					"io.kestra.terraform",
 					"simple",
@@ -22,10 +33,7 @@ func TestAccResourceFlow(t *testing.T) {
 						"namespace: io.kestra.terraform",
 						"revision: 13",
 						"tasks:",
-						"  - id: t1",
-						"    type: io.kestra.core.tasks.debugs.Echo",
-						"    format: first {{task.id}}",
-						"    level: TRACE",
+						"  - ${indent(4, file(\"/tmp/unit-test/t1.yml\"))}",
 						"taskDefaults:",
 						"  - type: io.kestra.core.tasks.debugs.Echo",
 						"    values:",
@@ -82,6 +90,20 @@ func TestAccResourceFlow(t *testing.T) {
 				ResourceName:      "kestra_flow.new",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			{
+				Config: concat(
+					"resource \"kestra_flow\" \"template\" {",
+					"  namespace = \"io.kestra.terraform\"",
+					"  flow_id = \"template\"",
+					"  content = templatefile(\"/tmp/unit-test/flow.yml\", {})",
+					"}",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"kestra_flow.template", "id", "io.kestra.terraform_template",
+					),
+				),
 			},
 		},
 	})

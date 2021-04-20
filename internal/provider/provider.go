@@ -134,7 +134,10 @@ func yamlCompare(oldInterface, newInterface interface{}) bool {
 	oldYaml, _ := yaml.Marshal(oldInterface)
 	newYaml, _ := yaml.Marshal(newInterface)
 
-	if string(newYaml) == string(oldYaml) {
+	oldYamlStr := string([]byte(strings.ReplaceAll(string(oldYaml), "\r\n", "\n")))
+	newYamlStr := string([]byte(strings.ReplaceAll(string(newYaml), "\r\n", "\n")))
+
+	if oldYamlStr == newYamlStr {
 		return true
 	}
 

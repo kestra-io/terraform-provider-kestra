@@ -1,6 +1,8 @@
 package provider
 
 import (
+	"io"
+	"os"
 	"strings"
 	"testing"
 
@@ -30,4 +32,21 @@ func testAccPreCheck(t *testing.T) {
 
 func concat(s ...string) string {
 	return strings.Join(s, "\n")
+}
+
+//goland:noinspection GoUnhandledErrorResult
+func copyResource(src, dst string) {
+	tmpDir := os.TempDir() + "/unit-test/"
+
+	if _, err := os.Stat(tmpDir); os.IsNotExist(err) {
+		_ = os.Mkdir(os.TempDir()+"/unit-test/", 0777)
+	}
+
+	source, _ := os.Open(src)
+	defer source.Close()
+
+	destination, _ := os.Create(tmpDir + dst)
+	defer destination.Close()
+
+	io.Copy(destination, source)
 }

@@ -103,7 +103,7 @@ jobs:
         if: failure()
         with:
           status: ${{ job.status }}
-          job_name: Check & Publish
+          job_name: Build
           fields: repo,commit,action,ref,job,took
           username: Github Actions
           icon_emoji: ':octocat:'

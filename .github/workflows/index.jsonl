@@ -1,7 +1,7 @@
 { "index" : { "_index" : "kestra_roles", "_id" : "admin" } }
 {"id":"admin","name":"Admin","permissions":{"FLOW":["READ","CREATE","UPDATE","DELETE"],"TEMPLATE":["READ","CREATE","UPDATE","DELETE"],"EXECUTION":["READ","CREATE","UPDATE","DELETE"],"USER":["READ","CREATE","UPDATE","DELETE"],"NAMESPACE":["READ","CREATE","UPDATE","DELETE"],"GROUP":["READ","CREATE","UPDATE","DELETE"],"ROLE":["READ","CREATE","UPDATE","DELETE"],"AUDITLOG":["READ"],"SECRET":["READ","CREATE","UPDATE","DELETE"]},"deleted":false}
 { "index" : { "_index" : "kestra_groups", "_id" : "admin" } }
-{"id":"admin","name":"Group Admin","description":"Maman","namespaceRoles":{"org.kestra":"admin"},"globalRoles":["admin"],"deleted":false}
+{"id":"admin","name":"Group Admin","description":"My description","namespaceRoles":{"io.kestra":"admin"},"globalRoles":["admin"],"deleted":false}
 { "index" : { "_index" : "kestra_users", "_id" : "john" } }
 {"id":"john","username":"john@doe.com","auths":[{"type":"io.kestra.ee.models.auths.BasicAuth","salt":"0ghOqlkf41KpHl0D5Hf1Qhu77uiQ4ez3","password":"a74f765210a72aeb690824c1805bc364b71769362afbf7cfd9b1fb7b283902b41f630aee940e3b38058a43552c964293e802a9276e1d501455b39616802953b5","uid":"BasicAuth"}],"groups":["admin"],"deleted":false}
 { "index" : { "_index" : "kestra_flows", "_id" : "io.kestra.terraform.data_simple" } }

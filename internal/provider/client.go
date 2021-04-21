@@ -82,7 +82,10 @@ func (c *Client) request(method, url string, body map[string]interface{}) (inter
 
 	var jsonDecoded interface{}
 	if string(bodyResult) != "" {
-		err = json.NewDecoder(bytes.NewReader(bodyResult)).Decode(&jsonDecoded)
+		decoder := json.NewDecoder(bytes.NewReader(bodyResult))
+		decoder.UseNumber()
+
+		err = decoder.Decode(&jsonDecoded)
 		if err != nil {
 			return nil, err
 		}

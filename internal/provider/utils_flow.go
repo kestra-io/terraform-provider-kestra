@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -9,9 +10,9 @@ import (
 )
 
 func flowConvertId(id string) (string, string) {
-	splits := strings.Split(id, "_")
+	splits := strings.Split(id, "/")
 
-	return splits[0], strings.Join(splits[1:], "_")
+	return splits[0], strings.Join(splits[1:], "/")
 }
 
 func flowSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
@@ -34,20 +35,21 @@ func flowSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
 func flowApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	d.SetId(fmt.Sprintf("%s_%s", r["namespace"].(string), r["id"].(string)))
+	d.SetId(fmt.Sprintf("%s/%s", r["namespace"].(string), r["id"].(string)))
 
 	if err := d.Set("namespace", r["namespace"].(string)); err != nil {
 		return diag.FromErr(err)
 	}
-
 	if err := d.Set("flow_id", r["id"].(string)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("revision", r["revision"].(json.Number)); err != nil {
 		return diag.FromErr(err)
 	}
 
 	delete(r, "deleted")
 	delete(r, "id")
 	delete(r, "namespace")
-	delete(r, "revision")
 
 	toYaml, err := toYaml(r)
 	if err != nil {

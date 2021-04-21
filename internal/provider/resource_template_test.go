@@ -27,7 +27,7 @@ func TestAccTemplate(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"kestra_template.new", "id", "io.kestra.terraform_simple",
+						"kestra_template.new", "id", "io.kestra.terraform/simple",
 					),
 					resource.TestCheckResourceAttr(
 						"kestra_template.new", "namespace", "io.kestra.terraform",

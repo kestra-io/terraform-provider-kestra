@@ -28,11 +28,17 @@ func resourceFlow() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"revision": {
+				Description: "The flow revision.",
+				Type:        schema.TypeInt,
+				Computed:    true,
+			},
 			"content": {
 				Description:      "The flow full content in yaml string.",
 				Type:             schema.TypeString,
 				Required:         true,
 				DiffSuppressFunc: isYamlEqualsFlow,
+				StateFunc:        stateFn,
 			},
 		},
 		Importer: &schema.ResourceImporter{

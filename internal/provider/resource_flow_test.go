@@ -24,6 +24,9 @@ func TestAccResourceFlow(t *testing.T) {
 
 					python, _ := filepath.Abs("../resources/flow.py")
 					copyResource(python, "flow.py")
+
+					bigint, _ := filepath.Abs("../resources/bigint.yml")
+					copyResource(bigint, "bigint.yml")
 				},
 				Config: testAccResourceFlow(
 					"io.kestra.terraform",
@@ -48,7 +51,7 @@ func TestAccResourceFlow(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"kestra_flow.new", "id", "io.kestra.terraform_simple",
+						"kestra_flow.new", "id", "io.kestra.terraform/simple",
 					),
 					resource.TestCheckResourceAttr(
 						"kestra_flow.new", "namespace", "io.kestra.terraform",
@@ -101,7 +104,24 @@ func TestAccResourceFlow(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"kestra_flow.template", "id", "io.kestra.terraform_template",
+						"kestra_flow.template", "id", "io.kestra.terraform/template",
+					),
+				),
+			},
+			{
+				Config: concat(
+					"resource \"kestra_flow\" \"bigint\" {",
+					"  namespace = \"io.kestra.terraform\"",
+					"  flow_id = \"bigint\"",
+					"  content = templatefile(\"/tmp/unit-test/bigint.yml\", {})",
+					"}",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr(
+						"kestra_flow.bigint", "content", regexp.MustCompile("(?s).*3600000.*"),
+					),
+					resource.TestCheckResourceAttr(
+						"kestra_flow.bigint", "id", "io.kestra.terraform/bigint",
 					),
 				),
 			},

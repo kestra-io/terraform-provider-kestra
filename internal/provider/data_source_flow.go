@@ -24,6 +24,11 @@ func dataSourceFlow() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"revision": {
+				Description: "The flow revision.",
+				Type:        schema.TypeInt,
+				Computed:    true,
+			},
 			"content": {
 				Description: "The flow content as yaml.",
 				Type:        schema.TypeString,

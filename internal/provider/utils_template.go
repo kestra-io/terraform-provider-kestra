@@ -9,9 +9,9 @@ import (
 )
 
 func templateConvertId(id string) (string, string) {
-	splits := strings.Split(id, "_")
+	splits := strings.Split(id, "/")
 
-	return splits[0], strings.Join(splits[1:], "_")
+	return splits[0], strings.Join(splits[1:], "/")
 }
 
 func templateSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
@@ -34,7 +34,7 @@ func templateSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error)
 func templateApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	d.SetId(fmt.Sprintf("%s_%s", r["namespace"].(string), r["id"].(string)))
+	d.SetId(fmt.Sprintf("%s/%s", r["namespace"].(string), r["id"].(string)))
 
 	if err := d.Set("namespace", r["namespace"].(string)); err != nil {
 		return diag.FromErr(err)

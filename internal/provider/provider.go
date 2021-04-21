@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"gopkg.in/yaml.v2"
+	"reflect"
 	"strings"
 )
 
@@ -87,6 +88,15 @@ func New(version string) func() *schema.Provider {
 	}
 }
 
+func stateFn(i interface{}) string {
+	var asInterface interface{}
+	_ = yaml.Unmarshal([]byte(i.(string)), &asInterface)
+
+	newYaml, _ := yaml.Marshal(asInterface)
+
+	return cleanUpYaml(newYaml)
+}
+
 func toYaml(source interface{}) (*string, error) {
 	out, err := yaml.Marshal(source)
 	if err != nil {
@@ -100,10 +110,10 @@ func toYaml(source interface{}) (*string, error) {
 
 func isYamlEqualsFlow(k, old, new string, d *schema.ResourceData) bool {
 	oldInterface := make(map[string]interface{}, 0)
-	yaml.Unmarshal([]byte(old), &oldInterface)
+	_ = yaml.Unmarshal([]byte(old), &oldInterface)
 
 	newInterface := make(map[string]interface{}, 0)
-	yaml.Unmarshal([]byte(new), &newInterface)
+	_ = yaml.Unmarshal([]byte(new), &newInterface)
 
 	delete(oldInterface, "deleted")
 	delete(oldInterface, "id")
@@ -129,17 +139,13 @@ func isYamlEquals(k, old, new string, d *schema.ResourceData) bool {
 	return yamlCompare(oldInterface, newInterface)
 }
 
-//goland:noinspection GoUnhandledErrorResult
 func yamlCompare(oldInterface, newInterface interface{}) bool {
-	oldYaml, _ := yaml.Marshal(oldInterface)
-	newYaml, _ := yaml.Marshal(newInterface)
+	result := reflect.DeepEqual(oldInterface, newInterface)
 
-	oldYamlStr := string([]byte(strings.ReplaceAll(string(oldYaml), "\r\n", "\n")))
-	newYamlStr := string([]byte(strings.ReplaceAll(string(newYaml), "\r\n", "\n")))
+	return result
+}
 
-	if oldYamlStr == newYamlStr {
-		return true
-	}
-
-	return false
+func cleanUpYaml(ymlBytes []byte) string {
+	ymlStr := string(ymlBytes)
+	return strings.ReplaceAll(ymlStr, "\r\n", "\n")
 }

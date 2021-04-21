@@ -1,0 +1,21 @@
+id: bigint
+namespace: io.kestra.terraform
+
+tasks:
+  - id: t1
+    type: io.kestra.core.tasks.scripts.Bash
+    commands:
+      - 'echo "{{ task.id }}"'
+
+  - id: t2
+    type: io.kestra.core.tasks.debugs.Return
+    format: second {{ execution.id }}
+
+  - id: t3
+    type: io.kestra.core.tasks.debugs.Echo
+    format: third all optional args {{ outputs.t2.value }}
+    timeout: PT1H
+    retry:
+      maxAttempt: 3600000
+      type: constant
+      interval: PT15M

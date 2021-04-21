@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 
@@ -20,8 +21,6 @@ type Client struct {
 	Username   *string
 	Password   *string
 }
-
-// NewClient -
 
 func NewClient(url string, username *string, password *string) (*Client, error) {
 	c := Client{
@@ -49,6 +48,10 @@ func (c *Client) request(method, url string, body map[string]interface{}) (inter
 		}
 
 		jsonReader = bytes.NewReader(jsonBody)
+
+		log.Printf("[DEBUG] Starting request %s %s >> '%s'\n", method, c.Url+url, jsonBody)
+	} else {
+		log.Printf("[DEBUG] Starting request %s %s\n", method, c.Url+url)
 	}
 
 	req, err := http.NewRequest(method, fmt.Sprintf(c.Url+url), jsonReader)

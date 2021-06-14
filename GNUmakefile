@@ -10,6 +10,8 @@ default: install
 build:
 	go build -o ${BINARY}
 
+vendor:
+	go mod vendor
 
 doc:
 	go generate

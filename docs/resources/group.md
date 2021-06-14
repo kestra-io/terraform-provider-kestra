@@ -23,13 +23,13 @@ resource "kestra_group" "example" {
   ]
 
   namespace_roles {
-    name  = "io.kestra.n1"
-    roles = "UetX7LZLQBFlNHGHbhElO"
+    namespace = "io.kestra.n1"
+    roles     = "UetX7LZLQBFlNHGHbhElO"
   }
 
   namespace_roles {
-    name  = "io.kestra.n2"
-    roles = "UetX7LZLQBFlNHGHbhElO"
+    namespace = "io.kestra.n2"
+    roles     = "UetX7LZLQBFlNHGHbhElO"
   }
 }
 ```

@@ -48,6 +48,13 @@ func New(version string) func() *schema.Provider {
 					Description: "Kestra BasicAuth password",
 					DefaultFunc: schema.EnvDefaultFunc("KESTRA_PASSWORD", ""),
 				},
+				"jwt": &schema.Schema{
+					Type:        schema.TypeString,
+					Optional:    true,
+					Sensitive:   true,
+					Description: "Kestra JWT token",
+					DefaultFunc: schema.EnvDefaultFunc("KESTRA_JWT", ""),
+				},
 			},
 			DataSourcesMap: map[string]*schema.Resource{
 				"kestra_flow":      dataSourceFlow(),
@@ -73,10 +80,11 @@ func New(version string) func() *schema.Provider {
 			url := d.Get("url").(string)
 			username := d.Get("username").(string)
 			password := d.Get("password").(string)
+			jwt := d.Get("jwt").(string)
 
 			var diags diag.Diagnostics
 
-			c, err := NewClient(url, &username, &password)
+			c, err := NewClient(url, &username, &password, &jwt)
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}

@@ -1,14 +1,14 @@
 resource "kestra_role" "example" {
-  name = "Friendly name"
+  name        = "Friendly name"
   description = "Friendly description"
 
   permissions {
-    type = "FLOW"
+    type        = "FLOW"
     permissions = ["READ", "UPDATE"]
   }
 
   permissions {
-    type = "TEMPLATE"
+    type        = "TEMPLATE"
     permissions = ["READ", "UPDATE"]
   }
 }

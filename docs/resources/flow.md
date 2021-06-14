@@ -52,4 +52,8 @@ EOT
 
 - **id** (String) The ID of this resource.
 
+### Read-Only
+
+- **revision** (Number) The flow revision.
+
 

@@ -14,8 +14,8 @@ Use this data source to access information about an existing Kestra Flow
 
 ```terraform
 data "kestra_flow" "example" {
-  namespace_ = "io.kestra.mynamespace"
-  id         = "my-flow"
+  namespace = "io.kestra.mynamespace"
+  id        = "my-flow"
 }
 ```
 
@@ -34,5 +34,6 @@ data "kestra_flow" "example" {
 ### Read-Only
 
 - **content** (String) The flow content as yaml.
+- **revision** (Number) The flow revision.
 
 

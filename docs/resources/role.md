@@ -17,7 +17,6 @@ resource "kestra_role" "example" {
   name        = "Friendly name"
   description = "Friendly description"
 
-
   permissions {
     type        = "FLOW"
     permissions = ["READ", "UPDATE"]

@@ -20,9 +20,10 @@ type Client struct {
 	Url        string
 	Username   *string
 	Password   *string
+	Jwt        *string
 }
 
-func NewClient(url string, username *string, password *string) (*Client, error) {
+func NewClient(url string, username *string, password *string, jwt *string) (*Client, error) {
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		Url:        DefaultURL,
@@ -33,6 +34,10 @@ func NewClient(url string, username *string, password *string) (*Client, error) 
 	if (username != nil) && (password != nil) {
 		c.Username = username
 		c.Password = password
+	}
+
+	if jwt != nil {
+		c.Jwt = jwt
 	}
 
 	return &c, nil
@@ -66,6 +71,10 @@ func (c *Client) request(method, url string, body map[string]interface{}) (inter
 			*c.Username,
 			*c.Password,
 		)
+	}
+
+	if c.Jwt != nil {
+		req.AddCookie(&http.Cookie{Name: "JWT", Value: *c.Jwt})
 	}
 
 	res, err := c.HTTPClient.Do(req)

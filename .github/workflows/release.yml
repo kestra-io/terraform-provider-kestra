@@ -1,4 +1,4 @@
-name: release
+name: Release
 on:
   push:
     tags:
@@ -37,10 +37,10 @@ jobs:
       # Slack
       - name: Slack notification
         uses: 8398a7/action-slack@v3
-        if: always()
+        if: always() and github.event_name != 'pull_request'
         with:
           status: ${{ job.status }}
-          job_name: Check & Publish
+          job_name: Release
           fields: repo,commit,action,ref,job,took
           username: Github Actions
           icon_emoji: ':octocat:'

@@ -5,7 +5,6 @@ resource "kestra_flow" "example" {
 inputs:
   - name: my-value
     type: STRING
-    required: true
 
 variables:
   first: "1"

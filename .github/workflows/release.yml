@@ -37,7 +37,7 @@ jobs:
       # Slack
       - name: Slack notification
         uses: 8398a7/action-slack@v3
-        if: always() and github.event_name != 'pull_request'
+        if: always()
         with:
           status: ${{ job.status }}
           job_name: Release

@@ -41,10 +41,10 @@ jobs:
       fail-fast: false
       matrix:
         terraform:
-          - '0.12.30'
           - '0.13.6'
           - '0.14.10'
-          - '0.15.0'
+          - '0.15.5'
+          - '1.0.0'
 
     steps:
       - name: Check out code into the Go module directory

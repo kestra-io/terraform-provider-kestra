@@ -26,7 +26,7 @@ jobs:
           passphrase: ${{ secrets.SONATYPE_GPG_PASSWORD }}
 
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2.5.0
+        uses: goreleaser/goreleaser-action@v2.6.1
         with:
           version: latest
           args: release --rm-dist

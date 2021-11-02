@@ -17,11 +17,15 @@ services:
       KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'
     links:
       - zookeeper
+    depends_on:
+      - zookeeper
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.4.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
     environment:
       discovery.type: single-node
+      cluster.routing.allocation.disk.threshold_enabled: "false"
+      xpack.security.enabled: "false"
       ES_JAVA_OPTS: "-Xms256m -Xmx256m"
     ulimits:
       memlock:
@@ -62,6 +66,10 @@ services:
     ports:
       - 127.27.27.27:8080:8080
     links:
+      - kafka
+      - zookeeper
+      - vault
+    depends_on:
       - kafka
       - zookeeper
       - vault

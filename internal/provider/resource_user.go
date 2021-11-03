@@ -22,6 +22,11 @@ func resourceUser() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"namespace": {
+				Description: "The linked namespace.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"description": {
 				Description: "The user description.",
 				Type:        schema.TypeString,
@@ -107,7 +112,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	if d.HasChanges("username", "description", "first_name", "last_name", "email", "groups") {
+	if d.HasChanges("username", "namespace", "description", "first_name", "last_name", "email", "groups") {
 		body, err := userSchemaToApi(d)
 		if err != nil {
 			return diag.FromErr(err)

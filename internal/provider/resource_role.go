@@ -17,6 +17,11 @@ func resourceRole() *schema.Resource {
 		UpdateContext: resourceRoleUpdate,
 		DeleteContext: resourceRoleDelete,
 		Schema: map[string]*schema.Schema{
+			"namespace": {
+				Description: "The linked namespace.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"name": {
 				Description: "The role name.",
 				Type:        schema.TypeString,
@@ -106,7 +111,7 @@ func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	if d.HasChanges("name", "description", "permissions") {
+	if d.HasChanges("namespace", "name", "description", "permissions") {
 		body, err := roleSchemaToApi(d)
 		if err != nil {
 			return diag.FromErr(err)

@@ -19,6 +19,11 @@ func dataSourceGroup() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"namespace": {
+				Description: "The linked namespace.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"name": {
 				Description: "The group name.",
 				Type:        schema.TypeString,
@@ -28,32 +33,6 @@ func dataSourceGroup() *schema.Resource {
 				Description: "The group description.",
 				Type:        schema.TypeString,
 				Computed:    true,
-			},
-			"global_roles": {
-				Description: "The group global roles in yaml string.",
-				Type:        schema.TypeList,
-				Computed:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"namespace_roles": {
-				Description: "The group namespace roles in yaml string.",
-				Type:        schema.TypeSet,
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"namespace": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-
-						"roles": {
-							Type:     schema.TypeString,
-							Required: true,
-						},
-					},
-				},
 			},
 		},
 	}

@@ -67,12 +67,10 @@ func testAccResourceUser(name, description, groups string) string {
 
         resource "kestra_group" "group1" {
             name = "group 1"
-            global_roles = [ kestra_role.new.id ]
         }
 
         resource "kestra_group" "group2" {
             name = "group 2"
-            global_roles = [ kestra_role.new.id ]
         }
 
         resource "kestra_user" "new" {

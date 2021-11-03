@@ -23,8 +23,8 @@ func resourceNamespace() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"name": {
-				Description: "The namespace friendly name.",
+			"description": {
+				Description: "The namespace friendly description.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
@@ -97,7 +97,7 @@ func resourceNamespaceUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	if d.HasChanges("name", "variables", "task_defaults") {
+	if d.HasChanges("description", "variables", "task_defaults") {
 		body, err := namespaceSchemaToApi(d)
 		if err != nil {
 			return diag.FromErr(err)

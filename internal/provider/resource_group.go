@@ -22,38 +22,15 @@ func resourceGroup() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"namespace": {
+				Description: "The linked namespace.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"description": {
 				Description: "The group description.",
 				Type:        schema.TypeString,
 				Optional:    true,
-			},
-			"global_roles": {
-				Description: "The group global roles ids.",
-				Type:        schema.TypeList,
-				Optional:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
-			"namespace_roles": {
-				Description: "The namespace roles for this group.",
-				Type:        schema.TypeSet,
-				Optional:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"namespace": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The namespace.",
-						},
-
-						"roles": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The roles id this namespace.",
-						},
-					},
-				},
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -112,7 +89,7 @@ func resourceGroupUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	if d.HasChanges("name", "description", "global_roles", "namespace_roles") {
+	if d.HasChanges("namespace", "name", "description") {
 		body, err := groupSchemaToApi(d)
 		if err != nil {
 			return diag.FromErr(err)

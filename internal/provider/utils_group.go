@@ -12,18 +12,9 @@ func groupSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
 		body["id"] = d.Id()
 	}
 
+	body["namespaceId"] = d.Get("namespace").(string)
 	body["name"] = d.Get("name").(string)
 	body["description"] = d.Get("description").(string)
-
-	namespaceRoles := make(map[string]interface{}, 0)
-	stateNamespaceRoles := d.Get("namespace_roles").(*schema.Set)
-	for _, value := range stateNamespaceRoles.List() {
-		stateNamespaceRole := value.(map[string]interface{})
-		namespaceRoles[stateNamespaceRole["namespace"].(string)] = stateNamespaceRole["roles"]
-	}
-	body["namespaceRoles"] = namespaceRoles
-
-	body["globalRoles"] = d.Get("global_roles").([]interface{})
 
 	return body, nil
 }
@@ -37,29 +28,14 @@ func groupApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Dia
 		return diag.FromErr(err)
 	}
 
+	if _, ok := r["namespaceId"]; ok {
+		if err := d.Set("namespace", r["namespaceId"].(string)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if _, ok := r["description"]; ok {
 		if err := d.Set("description", r["description"].(string)); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if _, ok := r["namespaceRoles"]; ok {
-		apiNamespaceRoles := r["namespaceRoles"].(map[string]interface{})
-		var stateNamespaceRoles []map[string]interface{}
-		for namespace, value := range apiNamespaceRoles {
-			stateNamespaceRoles = append(stateNamespaceRoles, map[string]interface{}{
-				"namespace": namespace,
-				"roles":     value,
-			})
-		}
-
-		if err := d.Set("namespace_roles", stateNamespaceRoles); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if _, ok := r["globalRoles"]; ok {
-		if err := d.Set("global_roles", r["globalRoles"].([]interface{})); err != nil {
 			return diag.FromErr(err)
 		}
 	}

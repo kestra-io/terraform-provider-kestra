@@ -10,7 +10,7 @@ import (
 func namespaceSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
 	body := make(map[string]interface{}, 0)
 	body["id"] = d.Get("namespace_id").(string)
-	body["name"] = d.Get("name").(string)
+	body["description"] = d.Get("description").(string)
 
 	variables := make(map[string]interface{}, 0)
 	err := yaml.Unmarshal([]byte(d.Get("variables").(string)), &variables)
@@ -38,8 +38,8 @@ func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag
 		return diag.FromErr(err)
 	}
 
-	if _, ok := r["name"]; ok {
-		if err := d.Set("name", r["name"].(string)); err != nil {
+	if _, ok := r["description"]; ok {
+		if err := d.Set("description", r["description"].(string)); err != nil {
 			return diag.FromErr(err)
 		}
 	}

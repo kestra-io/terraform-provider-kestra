@@ -36,7 +36,7 @@ func TestAccResourceNamespace(t *testing.T) {
 						"kestra_namespace.new", "namespace_id", "io.kestra.terraform",
 					),
 					resource.TestCheckResourceAttr(
-						"kestra_namespace.new", "name", "My Kestra Namespace",
+						"kestra_namespace.new", "description", "My Kestra Namespace",
 					),
 				),
 			},
@@ -63,7 +63,7 @@ func TestAccResourceNamespace(t *testing.T) {
 						"kestra_namespace.new", "namespace_id", "io.kestra.terraform",
 					),
 					resource.TestCheckResourceAttr(
-						"kestra_namespace.new", "name", "My Kestra Namespace 2",
+						"kestra_namespace.new", "description", "My Kestra Namespace 2",
 					),
 					resource.TestMatchResourceAttr(
 						"kestra_namespace.new", "task_defaults", regexp.MustCompile(".*format: second.*"),
@@ -79,12 +79,12 @@ func TestAccResourceNamespace(t *testing.T) {
 	})
 }
 
-func testAccResourceNamespace(id, name, variables, taskDefaults string) string {
+func testAccResourceNamespace(id, description, variables, taskDefaults string) string {
 	return fmt.Sprintf(
 		`
         resource "kestra_namespace" "new" {
             namespace_id = "%s"
-            name = "%s"
+            description = "%s"
             variables = <<EOT
 %s
 EOT
@@ -93,7 +93,7 @@ EOT
 EOT
         }`,
 		id,
-		name,
+		description,
 		variables,
 		taskDefaults,
 	)

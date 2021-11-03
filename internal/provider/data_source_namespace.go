@@ -19,8 +19,8 @@ func dataSourceNamespace() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"name": {
-				Description: "The namespace friendly name.",
+			"description": {
+				Description: "The namespace friendly description.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},

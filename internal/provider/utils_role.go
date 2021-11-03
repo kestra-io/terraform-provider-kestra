@@ -12,6 +12,7 @@ func roleSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
 		body["id"] = d.Id()
 	}
 
+	body["namespaceId"] = d.Get("namespace").(string)
 	body["name"] = d.Get("name").(string)
 	body["description"] = d.Get("description").(string)
 
@@ -35,6 +36,12 @@ func roleApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Diag
 		return diag.FromErr(err)
 	}
 
+	if _, ok := r["namespaceId"]; ok {
+		if err := d.Set("namespace", r["namespaceId"].(string)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if _, ok := r["description"]; ok {
 		if err := d.Set("description", r["description"].(string)); err != nil {
 			return diag.FromErr(err)
@@ -43,15 +50,15 @@ func roleApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Diag
 
 	if _, ok := r["permissions"]; ok {
 		apiPermissions := r["permissions"].(map[string]interface{})
-		var stateNamespaceRoles []map[string]interface{}
+		var permissions []map[string]interface{}
 		for typeApi, value := range apiPermissions {
-			stateNamespaceRoles = append(stateNamespaceRoles, map[string]interface{}{
+			permissions = append(permissions, map[string]interface{}{
 				"type":        typeApi,
 				"permissions": value,
 			})
 		}
 
-		if err := d.Set("permissions", stateNamespaceRoles); err != nil {
+		if err := d.Set("permissions", permissions); err != nil {
 			return diag.FromErr(err)
 		}
 	}

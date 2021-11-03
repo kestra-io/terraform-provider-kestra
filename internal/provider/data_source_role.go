@@ -19,6 +19,11 @@ func dataSourceRole() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"namespace": {
+				Description: "The linked namespace.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"name": {
 				Description: "The role name.",
 				Type:        schema.TypeString,

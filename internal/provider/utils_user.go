@@ -13,6 +13,7 @@ func userSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
 	}
 
 	body["username"] = d.Get("username").(string)
+	body["namespaceId"] = d.Get("namespace").(string)
 	body["description"] = d.Get("description").(string)
 	body["firstName"] = d.Get("first_name").(string)
 	body["lastName"] = d.Get("last_name").(string)
@@ -29,6 +30,12 @@ func userApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Diag
 
 	if err := d.Set("username", r["username"].(string)); err != nil {
 		return diag.FromErr(err)
+	}
+
+	if _, ok := r["namespace"]; ok {
+		if err := d.Set("namespace", r["namespaceId"].(string)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if _, ok := r["description"]; ok {

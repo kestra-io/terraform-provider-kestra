@@ -19,6 +19,11 @@ func dataSourceUser() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"namespace": {
+				Description: "The linked namespace.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"username": {
 				Description: "The user name.",
 				Type:        schema.TypeString,

@@ -24,6 +24,12 @@ func templateSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error)
 	if err != nil {
 		return nil, err
 	}
+
+	content, err = controlContent(body, content)
+	if err != nil {
+		return nil, err
+	}
+
 	for key, value := range content {
 		body[key] = value
 	}

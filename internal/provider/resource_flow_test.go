@@ -127,6 +127,30 @@ func TestAccResourceFlow(t *testing.T) {
 	})
 }
 
+func TestAccIncohrenceResourceFlow(t *testing.T) {
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccResourceFlow(
+					"io.kestra.terraform",
+					"simple",
+					concat(
+						"id: \"wrong-id\"",
+						"tasks:",
+						"  - id: t2",
+						"    type: io.kestra.core.tasks.debugs.Echo",
+						"    format: first {{task.id}}",
+						"    level: TRACE",
+					),
+				),
+				ExpectError: regexp.MustCompile(".*incoherent resource id: simple.*"),
+			},
+		},
+	})
+}
+
 func testAccResourceFlow(id, name, content string) string {
 	return fmt.Sprintf(
 		`

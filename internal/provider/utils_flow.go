@@ -25,11 +25,36 @@ func flowSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	content, err = controlContent(body, content)
+	if err != nil {
+		return nil, err
+	}
+
 	for key, value := range content {
 		body[key] = value
 	}
 
 	return body, nil
+}
+
+func controlContent(body map[string]interface{}, content map[string]interface{}) (map[string]interface{}, error) {
+	if val, ok := content["id"]; ok {
+		if val != body["id"] {
+			return nil, fmt.Errorf("incoherent resource id: %s, yaml content id: %s. You should remove id from yaml content", body["id"], val)
+		}
+	}
+
+	if val, ok := content["namespace"]; ok {
+		if val != body["namespace"] {
+			return nil, fmt.Errorf("incoherent resource namespace: %s, yaml content namespace: %s. You should remove namespace from yaml content", body["id"], val)
+		}
+	}
+
+	delete(content, "id")
+	delete(content, "namespace")
+
+	return content, nil
 }
 
 func flowApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Diagnostics {

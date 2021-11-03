@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"net/http"
 )
 
 func resourceFlow() *schema.Resource {
@@ -56,9 +57,9 @@ func resourceFlowCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		return diag.FromErr(err)
 	}
 
-	r, err := c.request("POST", "/api/v1/flows", body)
-	if err != nil {
-		return diag.FromErr(err)
+	r, reqErr := c.request("POST", "/api/v1/flows", body)
+	if reqErr != nil {
+		return diag.FromErr(reqErr.Err)
 	}
 
 	errs := flowApiToSchema(r.(map[string]interface{}), d)
@@ -75,9 +76,14 @@ func resourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interfac
 
 	namespaceId, flowId := flowConvertId(d.Id())
 
-	r, err := c.request("GET", fmt.Sprintf("/api/v1/flows/%s/%s", namespaceId, flowId), nil)
-	if err != nil {
-		return diag.FromErr(err)
+	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/flows/%s/%s", namespaceId, flowId), nil)
+	if reqErr != nil {
+		if reqErr.StatusCode == http.StatusNotFound {
+			d.SetId("")
+			return diags
+		}
+
+		return diag.FromErr(reqErr.Err)
 	}
 
 	errs := flowApiToSchema(r.(map[string]interface{}), d)
@@ -100,9 +106,9 @@ func resourceFlowUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 
 		namespaceId, flowId := flowConvertId(d.Id())
 
-		r, err := c.request("PUT", fmt.Sprintf("/api/v1/flows/%s/%s", namespaceId, flowId), body)
-		if err != nil {
-			return diag.FromErr(err)
+		r, reqErr := c.request("PUT", fmt.Sprintf("/api/v1/flows/%s/%s", namespaceId, flowId), body)
+		if reqErr != nil {
+			return diag.FromErr(reqErr.Err)
 		}
 
 		errs := flowApiToSchema(r.(map[string]interface{}), d)
@@ -122,9 +128,9 @@ func resourceFlowDelete(ctx context.Context, d *schema.ResourceData, meta interf
 
 	namespaceId, flowId := flowConvertId(d.Id())
 
-	_, err := c.request("DELETE", fmt.Sprintf("/api/v1/flows/%s/%s", namespaceId, flowId), nil)
-	if err != nil {
-		return diag.FromErr(err)
+	_, reqErr := c.request("DELETE", fmt.Sprintf("/api/v1/flows/%s/%s", namespaceId, flowId), nil)
+	if reqErr != nil {
+		return diag.FromErr(reqErr.Err)
 	}
 
 	d.SetId("")

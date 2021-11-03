@@ -59,9 +59,9 @@ func dataSourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 	roleId := d.Get("role_id").(string)
 
-	r, err := c.request("GET", fmt.Sprintf("/api/v1/roles/%s", roleId), nil)
-	if err != nil {
-		return diag.FromErr(err)
+	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/roles/%s", roleId), nil)
+	if reqErr != nil {
+		return diag.FromErr(reqErr.Err)
 	}
 
 	errs := roleApiToSchema(r.(map[string]interface{}), d)

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"net/http"
 )
 
 func resourceGroup() *schema.Resource {
@@ -70,9 +71,9 @@ func resourceGroupCreate(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.FromErr(err)
 	}
 
-	r, err := c.request("POST", "/api/v1/groups", body)
-	if err != nil {
-		return diag.FromErr(err)
+	r, reqErr := c.request("POST", "/api/v1/groups", body)
+	if reqErr != nil {
+		return diag.FromErr(reqErr.Err)
 	}
 
 	errs := groupApiToSchema(r.(map[string]interface{}), d)
@@ -89,9 +90,14 @@ func resourceGroupRead(ctx context.Context, d *schema.ResourceData, meta interfa
 
 	groupId := d.Id()
 
-	r, err := c.request("GET", fmt.Sprintf("/api/v1/groups/%s", groupId), nil)
-	if err != nil {
-		return diag.FromErr(err)
+	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/groups/%s", groupId), nil)
+	if reqErr != nil {
+		if reqErr.StatusCode == http.StatusNotFound {
+			d.SetId("")
+			return diags
+		}
+
+		return diag.FromErr(reqErr.Err)
 	}
 
 	errs := groupApiToSchema(r.(map[string]interface{}), d)
@@ -114,9 +120,9 @@ func resourceGroupUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 
 		groupId := d.Id()
 
-		r, err := c.request("PUT", fmt.Sprintf("/api/v1/groups/%s", groupId), body)
-		if err != nil {
-			return diag.FromErr(err)
+		r, reqErr := c.request("PUT", fmt.Sprintf("/api/v1/groups/%s", groupId), body)
+		if reqErr != nil {
+			return diag.FromErr(reqErr.Err)
 		}
 
 		errs := groupApiToSchema(r.(map[string]interface{}), d)
@@ -136,9 +142,9 @@ func resourceGroupDelete(ctx context.Context, d *schema.ResourceData, meta inter
 
 	groupId := d.Id()
 
-	_, err := c.request("DELETE", fmt.Sprintf("/api/v1/groups/%s", groupId), nil)
-	if err != nil {
-		return diag.FromErr(err)
+	_, reqErr := c.request("DELETE", fmt.Sprintf("/api/v1/groups/%s", groupId), nil)
+	if reqErr != nil {
+		return diag.FromErr(reqErr.Err)
 	}
 
 	d.SetId("")

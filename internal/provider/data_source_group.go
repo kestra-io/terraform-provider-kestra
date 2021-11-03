@@ -65,9 +65,9 @@ func dataSourceGroupRead(ctx context.Context, d *schema.ResourceData, meta inter
 
 	groupId := d.Get("group_id").(string)
 
-	r, err := c.request("GET", fmt.Sprintf("/api/v1/groups/%s", groupId), nil)
-	if err != nil {
-		return diag.FromErr(err)
+	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/groups/%s", groupId), nil)
+	if reqErr != nil {
+		return diag.FromErr(reqErr.Err)
 	}
 
 	errs := groupApiToSchema(r.(map[string]interface{}), d)

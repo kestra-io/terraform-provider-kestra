@@ -62,9 +62,9 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 	userId := d.Get("user_id").(string)
 
-	r, err := c.request("GET", fmt.Sprintf("/api/v1/users/%s", userId), nil)
-	if err != nil {
-		return diag.FromErr(err)
+	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/users/%s", userId), nil)
+	if reqErr != nil {
+		return diag.FromErr(reqErr.Err)
 	}
 
 	errs := userApiToSchema(r.(map[string]interface{}), d)

@@ -44,9 +44,9 @@ func dataSourceNamespaceRead(ctx context.Context, d *schema.ResourceData, meta i
 
 	namespaceId := d.Get("namespace_id").(string)
 
-	r, err := c.request("GET", fmt.Sprintf("/api/v1/namespaces/%s", namespaceId), nil)
-	if err != nil {
-		return diag.FromErr(err)
+	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/namespaces/%s", namespaceId), nil)
+	if reqErr != nil {
+		return diag.FromErr(reqErr.Err)
 	}
 
 	errs := namespaceApiToSchema(r.(map[string]interface{}), d)

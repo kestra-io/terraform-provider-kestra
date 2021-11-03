@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"net/http"
 )
 
 func resourceNamespace() *schema.Resource {
@@ -55,9 +56,9 @@ func resourceNamespaceCreate(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	r, err := c.request("POST", "/api/v1/namespaces", body)
-	if err != nil {
-		return diag.FromErr(err)
+	r, reqErr := c.request("POST", "/api/v1/namespaces", body)
+	if reqErr != nil {
+		return diag.FromErr(reqErr.Err)
 	}
 
 	errs := namespaceApiToSchema(r.(map[string]interface{}), d)
@@ -74,9 +75,14 @@ func resourceNamespaceRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	namespaceId := d.Id()
 
-	r, err := c.request("GET", fmt.Sprintf("/api/v1/namespaces/%s", namespaceId), nil)
-	if err != nil {
-		return diag.FromErr(err)
+	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/namespaces/%s", namespaceId), nil)
+	if reqErr != nil {
+		if reqErr.StatusCode == http.StatusNotFound {
+			d.SetId("")
+			return diags
+		}
+
+		return diag.FromErr(reqErr.Err)
 	}
 
 	errs := namespaceApiToSchema(r.(map[string]interface{}), d)
@@ -99,9 +105,9 @@ func resourceNamespaceUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 		namespaceId := d.Id()
 
-		r, err := c.request("PUT", fmt.Sprintf("/api/v1/namespaces/%s", namespaceId), body)
-		if err != nil {
-			return diag.FromErr(err)
+		r, reqErr := c.request("PUT", fmt.Sprintf("/api/v1/namespaces/%s", namespaceId), body)
+		if reqErr != nil {
+			return diag.FromErr(reqErr.Err)
 		}
 
 		errs := namespaceApiToSchema(r.(map[string]interface{}), d)
@@ -122,9 +128,9 @@ func resourceNamespaceDelete(ctx context.Context, d *schema.ResourceData, meta i
 
 	namespaceId := d.Id()
 
-	_, err := c.request("DELETE", fmt.Sprintf("/api/v1/namespaces/%s", namespaceId), nil)
-	if err != nil {
-		return diag.FromErr(err)
+	_, reqErr := c.request("DELETE", fmt.Sprintf("/api/v1/namespaces/%s", namespaceId), nil)
+	if reqErr != nil {
+		return diag.FromErr(reqErr.Err)
 	}
 
 	d.SetId("")

@@ -23,6 +23,11 @@ type Client struct {
 	Jwt        *string
 }
 
+type RequestError struct {
+	StatusCode int
+	Err        error
+}
+
 func NewClient(url string, username *string, password *string, jwt *string) (*Client, error) {
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
@@ -43,13 +48,16 @@ func NewClient(url string, username *string, password *string, jwt *string) (*Cl
 	return &c, nil
 }
 
-func (c *Client) request(method, url string, body map[string]interface{}) (interface{}, error) {
+func (c *Client) request(method, url string, body map[string]interface{}) (interface{}, *RequestError) {
 	var jsonReader io.Reader
 
 	if body != nil {
 		jsonBody, err := jsoniter.Marshal(body)
 		if err != nil {
-			return nil, err
+			return nil, &RequestError{
+				StatusCode: 0,
+				Err:        err,
+			}
 		}
 
 		jsonReader = bytes.NewReader(jsonBody)
@@ -61,7 +69,10 @@ func (c *Client) request(method, url string, body map[string]interface{}) (inter
 
 	req, err := http.NewRequest(method, fmt.Sprintf(c.Url+url), jsonReader)
 	if err != nil {
-		return nil, err
+		return nil, &RequestError{
+			StatusCode: 0,
+			Err:        err,
+		}
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -78,18 +89,33 @@ func (c *Client) request(method, url string, body map[string]interface{}) (inter
 	}
 
 	res, err := c.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
+	if (err != nil) && (res != nil) {
+		return nil, &RequestError{
+			StatusCode: res.StatusCode,
+			Err:        err,
+		}
+	} else if err != nil {
+		return nil, &RequestError{
+			StatusCode: 0,
+			Err:        err,
+		}
 	}
+
 	defer res.Body.Close()
 
 	bodyResult, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return nil, &RequestError{
+			StatusCode: res.StatusCode,
+			Err:        err,
+		}
 	}
 
 	if (res.StatusCode != http.StatusOK) && (res.StatusCode != http.StatusNoContent) {
-		return nil, fmt.Errorf("status: %d, method: %s, body: %s", res.StatusCode, method, bodyResult)
+		return nil, &RequestError{
+			StatusCode: res.StatusCode,
+			Err:        fmt.Errorf("status: %d, method: %s, body: %s", res.StatusCode, method, bodyResult),
+		}
 	}
 
 	var jsonDecoded interface{}
@@ -99,7 +125,10 @@ func (c *Client) request(method, url string, body map[string]interface{}) (inter
 
 		err = decoder.Decode(&jsonDecoded)
 		if err != nil {
-			return nil, err
+			return nil, &RequestError{
+				StatusCode: res.StatusCode,
+				Err:        err,
+			}
 		}
 	}
 

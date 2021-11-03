@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"net/http"
 )
 
 func resourceUserPassword() *schema.Resource {
@@ -48,9 +49,14 @@ func resourceUserPasswordCreate(ctx context.Context, d *schema.ResourceData, met
 
 	userId := d.Get("user_id").(string)
 
-	r, err := c.request("PUT", fmt.Sprintf("/api/v1/users/%s/password", userId), body)
-	if err != nil {
-		return diag.FromErr(err)
+	r, reqErr := c.request("PUT", fmt.Sprintf("/api/v1/users/%s/password", userId), body)
+	if reqErr != nil {
+		if reqErr.StatusCode == http.StatusNotFound {
+			d.SetId("")
+			return diags
+		}
+
+		return diag.FromErr(reqErr.Err)
 	}
 
 	d.SetId(r.(map[string]interface{})["id"].(string))
@@ -70,9 +76,9 @@ func resourceUserPasswordUpdate(ctx context.Context, d *schema.ResourceData, met
 
 		userId := d.Id()
 
-		r, err := c.request("PUT", fmt.Sprintf("/api/v1/users/%s/password", userId), body)
-		if err != nil {
-			return diag.FromErr(err)
+		r, reqErr := c.request("PUT", fmt.Sprintf("/api/v1/users/%s/password", userId), body)
+		if reqErr != nil {
+			return diag.FromErr(reqErr.Err)
 		}
 
 		d.SetId(r.(map[string]interface{})["id"].(string))

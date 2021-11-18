@@ -57,6 +57,7 @@ func New(version string) func() *schema.Provider {
 				},
 			},
 			DataSourcesMap: map[string]*schema.Resource{
+				"kestra_binding":   dataSourceBinding(),
 				"kestra_flow":      dataSourceFlow(),
 				"kestra_group":     dataSourceGroup(),
 				"kestra_namespace": dataSourceNamespace(),
@@ -65,6 +66,7 @@ func New(version string) func() *schema.Provider {
 				"kestra_user":      dataSourceUser(),
 			},
 			ResourcesMap: map[string]*schema.Resource{
+				"kestra_binding":          resourceBinding(),
 				"kestra_flow":             resourceFlow(),
 				"kestra_group":            resourceGroup(),
 				"kestra_namespace":        resourceNamespace(),

@@ -14,23 +14,9 @@ Manages a Kestra Group.
 
 ```terraform
 resource "kestra_group" "example" {
+  namespace   = "io.kestra.mynamespace"
   name        = "Friendly name"
   description = "Friendly description"
-
-  global_roles = [
-    "4by6NvSLcPXFhCj8nwbZOM",
-    "UetX7LZLQBFlNHGHbhElO",
-  ]
-
-  namespace_roles {
-    namespace = "io.kestra.n1"
-    roles     = "UetX7LZLQBFlNHGHbhElO"
-  }
-
-  namespace_roles {
-    namespace = "io.kestra.n2"
-    roles     = "UetX7LZLQBFlNHGHbhElO"
-  }
 }
 ```
 
@@ -44,16 +30,7 @@ resource "kestra_group" "example" {
 ### Optional
 
 - **description** (String) The group description.
-- **global_roles** (List of String) The group global roles ids.
 - **id** (String) The ID of this resource.
-- **namespace_roles** (Block Set) The namespace roles for this group. (see [below for nested schema](#nestedblock--namespace_roles))
-
-<a id="nestedblock--namespace_roles"></a>
-### Nested Schema for `namespace_roles`
-
-Required:
-
-- **namespace** (String) The namespace.
-- **roles** (String) The roles id this namespace.
+- **namespace** (String) The linked namespace.
 
 

@@ -28,20 +28,11 @@ data "kestra_group" "example" {
 ### Optional
 
 - **id** (String) The ID of this resource.
+- **namespace** (String) The linked namespace.
 
 ### Read-Only
 
 - **description** (String) The group description.
-- **global_roles** (List of String) The group global roles in yaml string.
 - **name** (String) The group name.
-- **namespace_roles** (Set of Object) The group namespace roles in yaml string. (see [below for nested schema](#nestedatt--namespace_roles))
-
-<a id="nestedatt--namespace_roles"></a>
-### Nested Schema for `namespace_roles`
-
-Read-Only:
-
-- **namespace** (String)
-- **roles** (String)
 
 

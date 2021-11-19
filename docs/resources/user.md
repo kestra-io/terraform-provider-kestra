@@ -15,6 +15,7 @@ Manages a Kestra User.
 ```terraform
 resource "kestra_user" "example" {
   username    = "my-username"
+  namespace   = "io.kestra.mynamespace"
   description = "Friendly description"
   first_name  = "John"
   last_name   = "Doe"
@@ -38,5 +39,6 @@ resource "kestra_user" "example" {
 - **groups** (List of String) The user groups id.
 - **id** (String) The ID of this resource.
 - **last_name** (String) The user last name.
+- **namespace** (String) The linked namespace.
 
 

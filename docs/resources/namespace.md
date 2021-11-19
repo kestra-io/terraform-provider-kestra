@@ -15,7 +15,7 @@ Manages a Kestra Namespace.
 ```terraform
 resource "kestra_namespace" "example" {
   namespace_id  = "io.kestra.mynamespace"
-  name          = "Friendly name"
+  description   = "Friendly description"
   variables     = <<EOT
 k1: 1
 k2:
@@ -41,8 +41,8 @@ EOT
 
 ### Optional
 
+- **description** (String) The namespace friendly description.
 - **id** (String) The ID of this resource.
-- **name** (String) The namespace friendly name.
 - **task_defaults** (String) The namespace task defaults in yaml string.
 - **variables** (String) The namespace variables in yaml string.
 

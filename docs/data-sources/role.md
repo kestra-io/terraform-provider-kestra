@@ -14,7 +14,7 @@ Use this data source to access information about an existing Kestra Role.
 
 ```terraform
 data "kestra_role" "example" {
-  role_id = "68xAawPfiJPkTkZJIPX6jQ"
+  role_id = "3kcvnr27ZcdHXD2AUvIe7z"
 }
 ```
 
@@ -28,6 +28,7 @@ data "kestra_role" "example" {
 ### Optional
 
 - **id** (String) The ID of this resource.
+- **namespace** (String) The linked namespace.
 
 ### Read-Only
 

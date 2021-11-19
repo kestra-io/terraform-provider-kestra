@@ -14,6 +14,7 @@ Manages a Kestra Role.
 
 ```terraform
 resource "kestra_role" "example" {
+  namespace   = "io.kestra.mynamespace"
   name        = "Friendly name"
   description = "Friendly description"
 
@@ -40,6 +41,7 @@ resource "kestra_role" "example" {
 
 - **description** (String) The role description.
 - **id** (String) The ID of this resource.
+- **namespace** (String) The linked namespace.
 - **permissions** (Block Set) The role permissions. (see [below for nested schema](#nestedblock--permissions))
 
 <a id="nestedblock--permissions"></a>

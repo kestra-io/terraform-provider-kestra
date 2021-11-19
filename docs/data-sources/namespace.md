@@ -31,7 +31,7 @@ data "kestra_namespace" "example" {
 
 ### Read-Only
 
-- **name** (String) The namespace friendly name.
+- **description** (String) The namespace friendly description.
 - **task_defaults** (String) The namespace task defaults.
 - **variables** (String) The namespace variables.
 

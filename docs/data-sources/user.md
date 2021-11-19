@@ -28,6 +28,7 @@ data "kestra_user" "example" {
 ### Optional
 
 - **id** (String) The ID of this resource.
+- **namespace** (String) The linked namespace.
 
 ### Read-Only
 

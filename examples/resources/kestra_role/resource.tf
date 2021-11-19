@@ -1,5 +1,5 @@
 resource "kestra_role" "example" {
-  namespace = "io.kestra.mynamespace"
+  namespace   = "io.kestra.mynamespace"
   name        = "Friendly name"
   description = "Friendly description"
 

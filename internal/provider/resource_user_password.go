@@ -21,6 +21,7 @@ func resourceUserPassword() *schema.Resource {
 				Description: "The user id.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"password": {
 				Description: "The user password.",

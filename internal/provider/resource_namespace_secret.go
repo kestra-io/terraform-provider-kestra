@@ -20,11 +20,13 @@ func resourceNamespaceSecret() *schema.Resource {
 				Description: "The namespace.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"secret_key": {
 				Description: "The namespace secrey key.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"secret_value": {
 				Description: "The namespace secrey value.",

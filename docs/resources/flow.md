@@ -55,4 +55,10 @@ EOT
 
 - **revision** (Number) The flow revision.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import kestra_flow.example {{namespace}}/{{flow_id}}
+```

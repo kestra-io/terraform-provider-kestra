@@ -39,4 +39,10 @@ EOT
 
 - **id** (String) The ID of this resource.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import kestra_template.example {{namespace}}/{{template_id}}
+```

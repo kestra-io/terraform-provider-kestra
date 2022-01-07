@@ -1,0 +1,1 @@
+terraform import kestra_binding.example {{binding_id}}

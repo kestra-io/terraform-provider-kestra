@@ -41,4 +41,10 @@ resource "kestra_user" "example" {
 - **last_name** (String) The user last name.
 - **namespace** (String) The linked namespace.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import kestra_user.example {{user_id}}
+```

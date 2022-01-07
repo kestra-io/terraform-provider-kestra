@@ -31,10 +31,4 @@ resource "kestra_user_password" "example" {
 
 - **id** (String) The ID of this resource.
 
-## Import
 
-Import is supported using the following syntax:
-
-```shell
-terraform import kestra_user_password.example password_id
-```

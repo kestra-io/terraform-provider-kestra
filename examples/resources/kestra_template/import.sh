@@ -1,1 +1,1 @@
-terraform import kestra_template.example template_id
+terraform import kestra_template.example {{namespace}}/{{template_id}}

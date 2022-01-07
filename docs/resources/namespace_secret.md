@@ -33,10 +33,4 @@ resource "kestra_namespace_secret" "example" {
 
 - **id** (String) The ID of this resource.
 
-## Import
 
-Import is supported using the following syntax:
-
-```shell
-terraform import kestra_namespace_secret.example secret_id
-```

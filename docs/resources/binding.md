@@ -40,5 +40,5 @@ resource "kestra_binding" "example" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import kestra_binding.example binding_id
+terraform import kestra_binding.example {{binding_id}}
 ```

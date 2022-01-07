@@ -1,1 +1,1 @@
-terraform import kestra_binding.example binding_id
+terraform import kestra_binding.example {{binding_id}}

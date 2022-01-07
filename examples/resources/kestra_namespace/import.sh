@@ -1,1 +1,1 @@
-terraform import kestra_namespace.example namespace
+terraform import kestra_namespace.example {{namespace}}

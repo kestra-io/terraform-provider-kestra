@@ -1,1 +1,1 @@
-terraform import kestra_group.example group_id
+terraform import kestra_group.example {{group_id}}

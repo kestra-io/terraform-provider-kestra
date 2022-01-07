@@ -38,5 +38,5 @@ resource "kestra_group" "example" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import kestra_group.example group_id
+terraform import kestra_group.example {{group_id}}
 ```

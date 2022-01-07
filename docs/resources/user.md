@@ -46,5 +46,5 @@ resource "kestra_user" "example" {
 Import is supported using the following syntax:
 
 ```shell
-terraform import kestra_user.example user_id
+terraform import kestra_user.example {{user_id}}
 ```

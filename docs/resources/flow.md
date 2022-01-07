@@ -60,5 +60,5 @@ EOT
 Import is supported using the following syntax:
 
 ```shell
-terraform import kestra_flow.example flow_id
+terraform import kestra_flow.example {{namespace}}/{{flow_id}}
 ```

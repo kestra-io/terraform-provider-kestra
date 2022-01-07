@@ -51,5 +51,5 @@ EOT
 Import is supported using the following syntax:
 
 ```shell
-terraform import kestra_namespace.example namespace
+terraform import kestra_namespace.example {{namespace}}
 ```

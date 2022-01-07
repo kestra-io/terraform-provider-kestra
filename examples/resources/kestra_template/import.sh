@@ -1,0 +1,1 @@
+terraform import kestra_template.example template_id

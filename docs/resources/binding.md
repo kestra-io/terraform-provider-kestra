@@ -35,4 +35,10 @@ resource "kestra_binding" "example" {
 - **id** (String) The ID of this resource.
 - **namespace** (String) The linked namespace.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import kestra_binding.example binding_id
+```

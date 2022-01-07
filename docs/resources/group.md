@@ -33,4 +33,10 @@ resource "kestra_group" "example" {
 - **id** (String) The ID of this resource.
 - **namespace** (String) The linked namespace.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import kestra_group.example group_id
+```

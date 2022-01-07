@@ -52,4 +52,10 @@ Required:
 - **permissions** (List of String) The permissions for this type.
 - **type** (String) The type of permission.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import kestra_role.example role_id
+```

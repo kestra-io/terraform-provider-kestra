@@ -1,0 +1,1 @@
+terraform import kestra_namespace_secret.example secret_id

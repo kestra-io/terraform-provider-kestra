@@ -46,4 +46,10 @@ EOT
 - **task_defaults** (String) The namespace task defaults in yaml string.
 - **variables** (String) The namespace variables in yaml string.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import kestra_namespace.example namespace
+```

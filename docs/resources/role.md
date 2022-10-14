@@ -35,22 +35,25 @@ resource "kestra_role" "example" {
 
 ### Required
 
-- **name** (String) The role name.
+- `name` (String) The role name.
 
 ### Optional
 
-- **description** (String) The role description.
-- **id** (String) The ID of this resource.
-- **namespace** (String) The linked namespace.
-- **permissions** (Block Set) The role permissions. (see [below for nested schema](#nestedblock--permissions))
+- `description` (String) The role description.
+- `namespace` (String) The linked namespace.
+- `permissions` (Block Set) The role permissions. (see [below for nested schema](#nestedblock--permissions))
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 <a id="nestedblock--permissions"></a>
 ### Nested Schema for `permissions`
 
 Required:
 
-- **permissions** (List of String) The permissions for this type.
-- **type** (String) The type of permission.
+- `permissions` (List of String) The permissions for this type.
+- `type` (String) The type of permission.
 
 ## Import
 

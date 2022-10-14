@@ -24,16 +24,13 @@ data "kestra_flow" "example" {
 
 ### Required
 
-- **flow_id** (String) The flow id.
-- **namespace** (String) The namespace.
-
-### Optional
-
-- **id** (String) The ID of this resource.
+- `flow_id` (String) The flow id.
+- `namespace` (String) The namespace.
 
 ### Read-Only
 
-- **content** (String) The flow content as yaml.
-- **revision** (Number) The flow revision.
+- `content` (String) The flow content as yaml.
+- `id` (String) The ID of this resource.
+- `revision` (Number) The flow revision.
 
 

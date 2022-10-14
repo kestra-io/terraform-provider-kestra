@@ -23,16 +23,16 @@ data "kestra_group" "example" {
 
 ### Required
 
-- **group_id** (String) The group.
+- `group_id` (String) The group.
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **namespace** (String) The linked namespace.
+- `namespace` (String) The linked namespace.
 
 ### Read-Only
 
-- **description** (String) The group description.
-- **name** (String) The group name.
+- `description` (String) The group description.
+- `id` (String) The ID of this resource.
+- `name` (String) The group name.
 
 

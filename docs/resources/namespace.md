@@ -37,14 +37,17 @@ EOT
 
 ### Required
 
-- **namespace_id** (String) The namespace.
+- `namespace_id` (String) The namespace.
 
 ### Optional
 
-- **description** (String) The namespace friendly description.
-- **id** (String) The ID of this resource.
-- **task_defaults** (String) The namespace task defaults in yaml string.
-- **variables** (String) The namespace variables in yaml string.
+- `description` (String) The namespace friendly description.
+- `task_defaults` (String) The namespace task defaults in yaml string.
+- `variables` (String) The namespace variables in yaml string.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 ## Import
 

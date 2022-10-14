@@ -29,17 +29,20 @@ resource "kestra_user" "example" {
 
 ### Required
 
-- **username** (String) The user name.
+- `username` (String) The user name.
 
 ### Optional
 
-- **description** (String) The user description.
-- **email** (String) The user email.
-- **first_name** (String) The user first name.
-- **groups** (List of String) The user groups id.
-- **id** (String) The ID of this resource.
-- **last_name** (String) The user last name.
-- **namespace** (String) The linked namespace.
+- `description` (String) The user description.
+- `email` (String) The user email.
+- `first_name` (String) The user first name.
+- `groups` (List of String) The user groups id.
+- `last_name` (String) The user last name.
+- `namespace` (String) The linked namespace.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 ## Import
 

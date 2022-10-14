@@ -111,6 +111,8 @@ func (c *Client) request(method, url string, body map[string]interface{}) (inter
 		}
 	}
 
+	log.Printf("[DEBUG] Response from %s %s: %s\n", method, c.Url+url, bodyResult)
+
 	if (res.StatusCode != http.StatusOK) && (res.StatusCode != http.StatusNoContent) {
 		return nil, &RequestError{
 			StatusCode: res.StatusCode,

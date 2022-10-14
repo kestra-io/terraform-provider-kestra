@@ -33,7 +33,7 @@ provider "kestra" {
 
 ### Optional
 
-- **jwt** (String, Sensitive) Kestra JWT token
-- **password** (String, Sensitive) Kestra BasicAuth password
-- **url** (String) Kestra full endpoint url without trailing slash
-- **username** (String) Kestra BasicAuth username
+- `jwt` (String, Sensitive) Kestra JWT token
+- `password` (String, Sensitive) Kestra BasicAuth password
+- `url` (String) Kestra full endpoint url without trailing slash
+- `username` (String) Kestra BasicAuth username

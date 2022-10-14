@@ -23,20 +23,20 @@ data "kestra_user" "example" {
 
 ### Required
 
-- **user_id** (String) The user.
+- `user_id` (String) The user.
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **namespace** (String) The linked namespace.
+- `namespace` (String) The linked namespace.
 
 ### Read-Only
 
-- **description** (String) The user description.
-- **email** (String) The user email.
-- **first_name** (String) The user first name.
-- **groups** (List of String) The user global roles in yaml string.
-- **last_name** (String) The user last name.
-- **username** (String) The user name.
+- `description` (String) The user description.
+- `email` (String) The user email.
+- `first_name` (String) The user first name.
+- `groups` (List of String) The user global roles in yaml string.
+- `id` (String) The ID of this resource.
+- `last_name` (String) The user last name.
+- `username` (String) The user name.
 
 

@@ -50,8 +50,10 @@ func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag
 			return diag.FromErr(err)
 		}
 
-		if err := d.Set("variables", toYaml); err != nil {
-			return diag.FromErr(err)
+		if pointerToString(toYaml) != "{}\n" {
+			if err := d.Set("variables", toYaml); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 

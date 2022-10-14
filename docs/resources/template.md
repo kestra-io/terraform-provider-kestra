@@ -31,13 +31,13 @@ EOT
 
 ### Required
 
-- **content** (String) The template full content in yaml string.
-- **namespace** (String) The template namespace.
-- **template_id** (String) The template id.
+- `content` (String) The template full content in yaml string.
+- `namespace` (String) The template namespace.
+- `template_id` (String) The template id.
 
-### Optional
+### Read-Only
 
-- **id** (String) The ID of this resource.
+- `id` (String) The ID of this resource.
 
 ## Import
 

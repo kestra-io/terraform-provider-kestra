@@ -24,15 +24,12 @@ data "kestra_template" "example" {
 
 ### Required
 
-- **namespace** (String) The namespace.
-- **template_id** (String) The template id.
-
-### Optional
-
-- **id** (String) The ID of this resource.
+- `namespace` (String) The namespace.
+- `template_id` (String) The template id.
 
 ### Read-Only
 
-- **content** (String) The template content as yaml.
+- `content` (String) The template content as yaml.
+- `id` (String) The ID of this resource.
 
 

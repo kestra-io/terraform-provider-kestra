@@ -159,3 +159,14 @@ func cleanUpYaml(ymlBytes []byte) string {
 	ymlStr := string(ymlBytes)
 	return strings.ReplaceAll(ymlStr, "\r\n", "\n")
 }
+
+func stringToPointer(s string) *string {
+	return &s
+}
+
+func pointerToString(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}

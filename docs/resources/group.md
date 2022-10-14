@@ -25,13 +25,16 @@ resource "kestra_group" "example" {
 
 ### Required
 
-- **name** (String) The group name.
+- `name` (String) The group name.
 
 ### Optional
 
-- **description** (String) The group description.
-- **id** (String) The ID of this resource.
-- **namespace** (String) The linked namespace.
+- `description` (String) The group description.
+- `namespace` (String) The linked namespace.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 ## Import
 

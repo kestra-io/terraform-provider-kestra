@@ -25,12 +25,12 @@ resource "kestra_namespace_secret" "example" {
 
 ### Required
 
-- **namespace** (String) The namespace.
-- **secret_key** (String) The namespace secrey key.
-- **secret_value** (String, Sensitive) The namespace secrey value.
+- `namespace` (String) The namespace.
+- `secret_key` (String) The namespace secrey key.
+- `secret_value` (String, Sensitive) The namespace secrey value.
 
-### Optional
+### Read-Only
 
-- **id** (String) The ID of this resource.
+- `id` (String) The ID of this resource.
 
 

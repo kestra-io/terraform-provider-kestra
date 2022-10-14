@@ -23,17 +23,14 @@ data "kestra_binding" "example" {
 
 ### Required
 
-- **binding_id** (String) The binding id.
-
-### Optional
-
-- **id** (String) The ID of this resource.
+- `binding_id` (String) The binding id.
 
 ### Read-Only
 
-- **external_id** (String) The binding external id.
-- **namespace** (String) The linked namespace.
-- **role_id** (String) The role id.
-- **type** (String) The binding type.
+- `external_id` (String) The binding external id.
+- `id` (String) The ID of this resource.
+- `namespace` (String) The linked namespace.
+- `role_id` (String) The role id.
+- `type` (String) The binding type.
 
 

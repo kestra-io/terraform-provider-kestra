@@ -23,25 +23,25 @@ data "kestra_role" "example" {
 
 ### Required
 
-- **role_id** (String) The role.
+- `role_id` (String) The role.
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **namespace** (String) The linked namespace.
+- `namespace` (String) The linked namespace.
 
 ### Read-Only
 
-- **description** (String) The role description.
-- **name** (String) The role name.
-- **permissions** (Set of Object) The role permissions. (see [below for nested schema](#nestedatt--permissions))
+- `description` (String) The role description.
+- `id` (String) The ID of this resource.
+- `name` (String) The role name.
+- `permissions` (Set of Object) The role permissions. (see [below for nested schema](#nestedatt--permissions))
 
 <a id="nestedatt--permissions"></a>
 ### Nested Schema for `permissions`
 
 Read-Only:
 
-- **permissions** (List of String)
-- **type** (String)
+- `permissions` (List of String)
+- `type` (String)
 
 

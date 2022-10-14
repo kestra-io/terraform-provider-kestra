@@ -14,7 +14,6 @@ func userSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
 
 	body["username"] = d.Get("username").(string)
 	body["namespaceId"] = d.Get("namespace").(string)
-	body["description"] = d.Get("description").(string)
 	body["firstName"] = d.Get("first_name").(string)
 	body["lastName"] = d.Get("last_name").(string)
 	body["email"] = d.Get("email").(string)
@@ -32,33 +31,35 @@ func userApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Diag
 		return diag.FromErr(err)
 	}
 
-	if _, ok := r["namespace"]; ok {
-		if err := d.Set("namespace", r["namespaceId"].(string)); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if _, ok := r["description"]; ok {
-		if err := d.Set("description", r["description"].(string)); err != nil {
-			return diag.FromErr(err)
+	if _, ok := r["namespaceId"]; ok {
+		if r["namespaceId"].(string) != "" {
+			if err := d.Set("namespace", r["namespaceId"].(string)); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
 	if _, ok := r["firstName"]; ok {
-		if err := d.Set("first_name", r["firstName"].(string)); err != nil {
-			return diag.FromErr(err)
+		if r["firstName"].(string) != "" {
+			if err := d.Set("first_name", r["firstName"].(string)); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
 	if _, ok := r["lastName"]; ok {
-		if err := d.Set("last_name", r["lastName"].(string)); err != nil {
-			return diag.FromErr(err)
+		if r["lastName"].(string) != "" {
+			if err := d.Set("last_name", r["lastName"].(string)); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 
 	if _, ok := r["email"]; ok {
-		if err := d.Set("email", r["email"].(string)); err != nil {
-			return diag.FromErr(err)
+		if r["email"].(string) != "" {
+			if err := d.Set("email", r["email"].(string)); err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	}
 

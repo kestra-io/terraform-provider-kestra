@@ -15,19 +15,19 @@ jobs:
         run: git fetch --prune --unshallow
 
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.16
+          go-version: 1.18
 
       - name: Import GPG
-        uses: crazy-max/ghaction-import-gpg@v4
+        uses: crazy-max/ghaction-import-gpg@v5
         id: import_gpg
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_ARMOR }}
           passphrase: ${{ secrets.SONATYPE_GPG_PASSWORD }}
 
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2
+        uses: goreleaser/goreleaser-action@v3
         with:
           version: latest
           args: release --rm-dist

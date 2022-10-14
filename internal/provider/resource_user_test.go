@@ -16,7 +16,7 @@ func TestAccUser(t *testing.T) {
 			{
 				Config: testAccResourceUser(
 					"admin",
-					"My admin user",
+					"admin@john.doe",
 					"[kestra_group.group1.id]",
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -24,7 +24,7 @@ func TestAccUser(t *testing.T) {
 						"kestra_user.new", "username", "admin",
 					),
 					resource.TestCheckResourceAttr(
-						"kestra_user.new", "description", "My admin user",
+						"kestra_user.new", "email", "admin@john.doe",
 					),
 					resource.TestMatchResourceAttr(
 						"kestra_user.new", "groups.1", regexp.MustCompile(".*"),
@@ -34,7 +34,7 @@ func TestAccUser(t *testing.T) {
 			{
 				Config: testAccResourceUser(
 					"admin 2",
-					"My admin user 2",
+					"admin2@john.doe",
 					"[]",
 				),
 				Check: resource.ComposeTestCheckFunc(
@@ -42,7 +42,7 @@ func TestAccUser(t *testing.T) {
 						"kestra_user.new", "username", "admin 2",
 					),
 					resource.TestCheckResourceAttr(
-						"kestra_user.new", "description", "My admin user 2",
+						"kestra_user.new", "email", "admin2@john.doe",
 					),
 					resource.TestCheckNoResourceAttr(
 						"kestra_role.new", "groups.1",
@@ -58,7 +58,7 @@ func TestAccUser(t *testing.T) {
 	})
 }
 
-func testAccResourceUser(name, description, groups string) string {
+func testAccResourceUser(name, email, groups string) string {
 	return fmt.Sprintf(
 		`
         resource "kestra_role" "new" {
@@ -75,11 +75,11 @@ func testAccResourceUser(name, description, groups string) string {
 
         resource "kestra_user" "new" {
             username = "%s"
-            description = "%s"
+            email = "%s"
             groups = %s
         }`,
 		name,
-		description,
+		email,
 		groups,
 	)
 

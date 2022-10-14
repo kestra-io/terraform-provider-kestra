@@ -24,11 +24,11 @@ resource "kestra_user_password" "example" {
 
 ### Required
 
-- **password** (String, Sensitive) The user password.
-- **user_id** (String) The user id.
+- `password` (String, Sensitive) The user password.
+- `user_id` (String) The user id.
 
-### Optional
+### Read-Only
 
-- **id** (String) The ID of this resource.
+- `id` (String) The ID of this resource.
 
 

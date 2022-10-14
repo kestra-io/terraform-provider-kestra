@@ -43,17 +43,14 @@ EOT
 
 ### Required
 
-- **content** (String) The flow full content in yaml string.
-- **flow_id** (String) The flow id.
-- **namespace** (String) The flow namespace.
-
-### Optional
-
-- **id** (String) The ID of this resource.
+- `content` (String) The flow full content in yaml string.
+- `flow_id` (String) The flow id.
+- `namespace` (String) The flow namespace.
 
 ### Read-Only
 
-- **revision** (Number) The flow revision.
+- `id` (String) The ID of this resource.
+- `revision` (Number) The flow revision.
 
 ## Import
 

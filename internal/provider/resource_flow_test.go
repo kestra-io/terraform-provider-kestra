@@ -27,6 +27,12 @@ func TestAccResourceFlow(t *testing.T) {
 
 					bigint, _ := filepath.Abs("../resources/bigint.yml")
 					copyResource(bigint, "bigint.yml")
+
+					sourceyaml, _ := filepath.Abs("../resources/source_yaml.yml")
+					copyResource(sourceyaml, "source_yaml.yml")
+
+					sourceyaml2, _ := filepath.Abs("../resources/source_yaml_2.yml")
+					copyResource(sourceyaml2, "source_yaml_2.yml")
 				},
 				Config: testAccResourceFlow(
 					"io.kestra.terraform",
@@ -120,6 +126,42 @@ func TestAccResourceFlow(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						"kestra_flow.bigint", "id", "io.kestra.terraform/bigint",
+					),
+				),
+			},
+			{
+				Config: concat(
+					"resource \"kestra_flow\" \"yaml_source\" {",
+					"  namespace = \"io.kestra.terraform\"",
+					"  flow_id = \"yaml_source\"",
+					"  content = templatefile(\"/tmp/unit-test/source_yaml.yml\", {})",
+					"  keep_original_source = true",
+					"}",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr(
+						"kestra_flow.yaml_source", "content", regexp.MustCompile("# yaml source code must be kept"),
+					),
+					resource.TestMatchResourceAttr(
+						"kestra_flow.yaml_source", "content", regexp.MustCompile("# even inside task"),
+					),
+				),
+			},
+			{
+				Config: concat(
+					"resource \"kestra_flow\" \"yaml_source\" {",
+					"  namespace = \"io.kestra.terraform\"",
+					"  flow_id = \"yaml_source\"",
+					"  content = templatefile(\"/tmp/unit-test/source_yaml_2.yml\", {})",
+					"  keep_original_source = true",
+					"}",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr(
+						"kestra_flow.yaml_source", "content", regexp.MustCompile("# yaml source code must be kept"),
+					),
+					resource.TestMatchResourceAttr(
+						"kestra_flow.yaml_source", "content", regexp.MustCompile("# only comment"),
 					),
 				),
 			},

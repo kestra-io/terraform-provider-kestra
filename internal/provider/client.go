@@ -50,6 +50,7 @@ func NewClient(url string, username *string, password *string, jwt *string) (*Cl
 
 func (c *Client) request(method, url string, body map[string]interface{}) (interface{}, *RequestError) {
 	var jsonReader io.Reader
+	var jsonBody string
 
 	if body != nil {
 		jsonBody, err := jsoniter.Marshal(body)
@@ -61,10 +62,6 @@ func (c *Client) request(method, url string, body map[string]interface{}) (inter
 		}
 
 		jsonReader = bytes.NewReader(jsonBody)
-
-		log.Printf("[DEBUG] Starting request %s %s >> '%s'\n", method, c.Url+url, jsonBody)
-	} else {
-		log.Printf("[DEBUG] Starting request %s %s\n", method, c.Url+url)
 	}
 
 	req, err := http.NewRequest(method, fmt.Sprintf(c.Url+url), jsonReader)
@@ -77,6 +74,34 @@ func (c *Client) request(method, url string, body map[string]interface{}) (inter
 
 	req.Header.Set("Content-Type", "application/json")
 
+	log.Printf("[DEBUG] Starting request %s %s >> '%s'\n", method, c.Url+url, jsonBody)
+
+	return c.rawRequest(method, url, req)
+}
+
+func (c *Client) yamlRequest(method, url string, body *string) (interface{}, *RequestError) {
+	var reader io.Reader
+
+	if body != nil {
+		reader = bytes.NewReader([]byte(pointerToString(body)))
+	}
+
+	req, err := http.NewRequest(method, fmt.Sprintf(c.Url+url), reader)
+	if err != nil {
+		return nil, &RequestError{
+			StatusCode: 0,
+			Err:        err,
+		}
+	}
+
+	req.Header.Set("Content-Type", "application/x-yaml")
+
+	log.Printf("[DEBUG] Starting request %s %s >> '%s'\n", method, c.Url+url, pointerToString(body))
+
+	return c.rawRequest(method, url, req)
+}
+
+func (c *Client) rawRequest(method, url string, req *http.Request) (interface{}, *RequestError) {
 	if (c.Username != nil) && (c.Password != nil) {
 		req.SetBasicAuth(
 			*c.Username,

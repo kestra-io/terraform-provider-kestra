@@ -1,0 +1,10 @@
+id: yaml_source
+namespace: io.kestra.terraform
+# yaml source code must be kept
+
+tasks:
+  - id: first
+    # even inside task
+    type: io.kestra.core.tasks.debugs.Return
+    format: first {{ execution.id }}
+

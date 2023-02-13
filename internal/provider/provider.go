@@ -119,6 +119,13 @@ func toYaml(source interface{}) (*string, error) {
 }
 
 func isYamlEqualsFlow(k, old, new string, d *schema.ResourceData) bool {
+	if _, ok := d.Get("keep_original_source").(bool); ok {
+		if d.Get("keep_original_source").(bool) == true {
+			// seems that new is the json one and not the yaml one, so using the state directly
+			return old == d.Get("content").(string)
+		}
+	}
+
 	oldInterface := make(map[string]interface{}, 0)
 	_ = yaml.Unmarshal([]byte(old), &oldInterface)
 

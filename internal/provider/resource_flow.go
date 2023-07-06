@@ -38,7 +38,7 @@ func resourceFlow() *schema.Resource {
 				Description: "Use the content as source code, keeping comment and indentation.",
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     false,
+				Default:     true,
 			},
 			"content": {
 				Description:      "The flow full content in yaml string.",

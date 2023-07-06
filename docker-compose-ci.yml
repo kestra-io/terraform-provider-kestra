@@ -21,7 +21,7 @@ services:
       - zookeeper
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.15.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.2.3
     environment:
       discovery.type: single-node
       cluster.routing.allocation.disk.threshold_enabled: "false"
@@ -37,31 +37,11 @@ services:
   kestra:
     image: ghcr.io/kestra-io/kestra-ee:develop
     command: server standalone
+    volumes:
+      - ./.github/docker/application.yml:/app/confs/application.yml:ro
+      - ./.github/docker/application-secrets.yml:/app/secrets/application-secrets.yml:ro
     environment:
-      KESTRA_CONFIGURATION: |
-        kestra:
-          kafka:
-            client:
-              properties:
-                bootstrap.servers: kafka:9092
-          elasticsearch:
-            client:
-              http-hosts: http://elasticsearch:9200
-          repository:
-            type: elasticsearch
-          storage:
-            type: local
-            local:
-              base-path: "/app/storage"
-          queue:
-            type: kafka
-          secret:
-            type: vault
-            vault:
-              address: "http://vault:8200"
-              password:
-                user: john
-                password: foo
+      MICRONAUT_CONFIG_FILES: /app/confs/application.yml,/app/secrets/application-secrets.yml
 
     ports:
       - 127.27.27.27:8080:8080
@@ -75,7 +55,7 @@ services:
       - vault
 
   vault:
-    image: vault
+    image: hashicorp/vault
     cap_add:
       - IPC_LOCK
     environment:

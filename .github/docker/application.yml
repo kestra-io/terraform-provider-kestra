@@ -1,0 +1,23 @@
+kestra:
+  kafka:
+    client:
+      properties:
+        bootstrap.servers: kafka:9092
+  elasticsearch:
+    client:
+      http-hosts: http://elasticsearch:9200
+  repository:
+    type: elasticsearch
+  storage:
+    type: local
+    local:
+      base-path: "/app/storage"
+  queue:
+    type: kafka
+  secret:
+    type: vault
+    vault:
+      address: "http://vault:8200"
+      password:
+        user: john
+        password: foo

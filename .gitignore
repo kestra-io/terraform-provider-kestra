@@ -28,6 +28,7 @@ website/node_modules
 website/vendor
 vendor/
 test/
+.github/docker/application-secrets.yml
 
 # Test exclusions
 !command/test-fixtures/**/*.tfstate

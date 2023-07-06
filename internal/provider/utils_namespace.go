@@ -4,7 +4,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"gopkg.in/yaml.v2"
-	"strings"
 )
 
 func namespaceSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
@@ -69,12 +68,6 @@ func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag
 	}
 
 	return diags
-}
-
-func namespaceConvertSecretId(id string) (string, string) {
-	splits := strings.Split(id, "_")
-
-	return splits[0], strings.Join(splits[1:], "_")
 }
 
 func namespaceSecretSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {

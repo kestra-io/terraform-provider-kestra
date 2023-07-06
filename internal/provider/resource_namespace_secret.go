@@ -77,7 +77,7 @@ func resourceNamespaceSecretUpdate(ctx context.Context, d *schema.ResourceData, 
 			return diag.FromErr(err)
 		}
 
-		namespaceId, _ := namespaceConvertSecretId(d.Id())
+		namespaceId := d.Get("namespace").(string)
 
 		var reqErr *RequestError
 		_, reqErr = c.request("PUT", fmt.Sprintf("/api/v1/namespaces/%s/secrets", namespaceId), body)
@@ -96,7 +96,8 @@ func resourceNamespaceSecretDelete(ctx context.Context, d *schema.ResourceData, 
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	namespaceId, secretKey := namespaceConvertSecretId(d.Id())
+	namespaceId := d.Get("namespace").(string)
+	secretKey := d.Get("secret_key").(string)
 
 	_, reqErr := c.request("DELETE", fmt.Sprintf("/api/v1/namespaces/%s/secrets/%s", namespaceId, secretKey), nil)
 	if reqErr != nil {

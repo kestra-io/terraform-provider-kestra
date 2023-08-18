@@ -3,12 +3,10 @@ namespace: io.kestra.terraform
 tasks:
   - id: project-iam-extract
     description: Extract all iam at the project level
-    type: io.kestra.core.tasks.scripts.Python
-    inputFiles:
+    type: io.kestra.core.tasks.storages.LocalFiles
+    inputs:
       main.py: |
         ${indent(8, file("/tmp/unit-test/flow.py"))}
-    requirements:
-      - request
 
 triggers:
   - id: schedule

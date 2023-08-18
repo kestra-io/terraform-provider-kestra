@@ -3,9 +3,8 @@ namespace: io.kestra.terraform
 
 tasks:
   - id: t1
-    type: io.kestra.core.tasks.scripts.Bash
-    commands:
-      - 'echo "{{ task.id }}"'
+    type: io.kestra.core.tasks.log.Log
+    message: "{{ task.id }}"
 
   - id: t2
     type: io.kestra.core.tasks.debugs.Return

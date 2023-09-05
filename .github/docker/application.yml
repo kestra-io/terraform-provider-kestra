@@ -15,9 +15,8 @@ kestra:
   queue:
     type: kafka
   secret:
-    type: vault
-    vault:
-      address: "http://vault:8200"
-      password:
-        user: john
-        password: foo
+    type: jdbc
+    jdbc:
+      secret: not_really_a_secret_only_for_unit_test
+  templates:
+    enabled: true

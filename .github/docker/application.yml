@@ -21,3 +21,5 @@ kestra:
       password:
         user: john
         password: foo
+  templates:
+    enabled: true

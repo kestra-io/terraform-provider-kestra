@@ -29,7 +29,7 @@ data "kestra_flow" "example" {
 
 ### Optional
 
-- `keep_original_source` (Boolean) Use the content as source code, keeping comment and indentation. Defaults to `false`.
+- `keep_original_source` (Boolean) Use the content as source code, keeping comment and indentation. Defaults to `true`.
 
 ### Read-Only
 

@@ -8,11 +8,11 @@
 
 ![Kestra orchestrator](https://kestra.io/ui.gif)
 
-
 ## Documentation
+
 * The official Kestra documentation can be found under: [kestra.io](https://kestra.io)
 * This Terraform provider documentation can be found [here](https://kestra.io/docs/terraform/)
 
 ## License
-Apache 2.0 © [Kestra Technologies](https://kestra.io)
 
+Apache 2.0 © [Kestra Technologies](https://kestra.io)

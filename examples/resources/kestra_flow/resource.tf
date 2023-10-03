@@ -11,13 +11,13 @@ variables:
 
 tasks:
   - id: t2
-    type: io.kestra.core.tasks.debugs.Echo
-    format: first {{task.id}}
+    type: io.kestra.core.tasks.log.Log
+    message: first {{task.id}}
     level: TRACE
 
 taskDefaults:
-  - type: io.kestra.core.tasks.debugs.Echo
+  - type: io.kestra.core.tasks.log.Log
     values:
-      format: third {{flow.id}}
+      message: third {{flow.id}}
 EOT
 }

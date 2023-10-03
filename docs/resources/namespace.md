@@ -22,9 +22,9 @@ k2:
     v1: 1
 EOT
   task_defaults = <<EOT
-- type: io.kestra.core.tasks.debugs.Echo
+- type: io.kestra.core.tasks.log.Log
   values:
-    format: first {{flow.id}}
+    message: first {{flow.id}}
 - type: io.kestra.core.tasks.debugs.Return
   values:
     format: first {{flow.id}}

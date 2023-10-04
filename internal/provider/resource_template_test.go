@@ -20,8 +20,8 @@ func TestAccTemplate(t *testing.T) {
 					concat(
 						"tasks:",
 						"  - id: t1",
-						"    type: io.kestra.core.tasks.debugs.Echo",
-						"    format: first {{task.id}}",
+						"    type: io.kestra.core.tasks.log.Log",
+						"    message: first {{task.id}}",
 						"    level: TRACE",
 					),
 				),
@@ -44,8 +44,8 @@ func TestAccTemplate(t *testing.T) {
 					concat(
 						"tasks:",
 						"  - id: t2",
-						"    type: io.kestra.core.tasks.debugs.Echo",
-						"    format: first {{task.id}}",
+						"    type: io.kestra.core.tasks.log.Log",
+						"    message: first {{task.id}}",
 						"    level: TRACE",
 					),
 				),

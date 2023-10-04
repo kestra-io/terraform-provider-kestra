@@ -23,9 +23,9 @@ func TestAccResourceNamespace(t *testing.T) {
 						"    v1: 1",
 					),
 					concat(
-						"- type: io.kestra.core.tasks.debugs.Echo",
+						"- type: io.kestra.core.tasks.log.Log",
 						"  values:",
-						"    format: first {{flow.id}}",
+						"    message: first {{flow.id}}",
 						"- type: io.kestra.core.tasks.debugs.Return",
 						"  values:",
 						"    format: first {{flow.id}}",
@@ -50,9 +50,9 @@ func TestAccResourceNamespace(t *testing.T) {
 						"k1: 1",
 					),
 					concat(
-						"- type: io.kestra.core.tasks.debugs.Echo",
+						"- type: io.kestra.core.tasks.log.Log",
 						"  values:",
-						"    format: first {{flow.id}}",
+						"    message: first {{flow.id}}",
 						"- type: io.kestra.core.tasks.debugs.Return",
 						"  values:",
 						"    format: second {{flow.id}}",

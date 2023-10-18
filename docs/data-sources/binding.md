@@ -25,6 +25,10 @@ data "kestra_binding" "example" {
 
 - `binding_id` (String) The binding id.
 
+### Optional
+
+- `tenant_id` (String) The tenant id.
+
 ### Read-Only
 
 - `external_id` (String) The binding external id.
@@ -32,5 +36,3 @@ data "kestra_binding" "example" {
 - `namespace` (String) The linked namespace.
 - `role_id` (String) The role id.
 - `type` (String) The binding type.
-
-

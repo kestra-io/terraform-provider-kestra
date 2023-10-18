@@ -166,6 +166,25 @@ func TestAccResourceFlow(t *testing.T) {
 					),
 				),
 			},
+			{
+				Config: concat(
+					"resource \"kestra_flow\" \"yaml_source\" {",
+					"  tenant_id = \"unit_test\"",
+					"  namespace = \"io.kestra.terraform\"",
+					"  flow_id = \"yaml_source\"",
+					"  content = templatefile(\"/tmp/unit-test/source_yaml_2.yml\", {})",
+					"  keep_original_source = true",
+					"}",
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestMatchResourceAttr(
+						"kestra_flow.yaml_source", "content", regexp.MustCompile("# yaml source code must be kept"),
+					),
+					resource.TestMatchResourceAttr(
+						"kestra_flow.yaml_source", "content", regexp.MustCompile("# only comment"),
+					),
+				),
+			},
 		},
 	})
 }

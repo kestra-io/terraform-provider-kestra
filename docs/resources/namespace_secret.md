@@ -29,8 +29,10 @@ resource "kestra_namespace_secret" "example" {
 - `secret_key` (String) The namespace secrey key.
 - `secret_value` (String, Sensitive) The namespace secrey value.
 
+### Optional
+
+- `tenant_id` (String) The tenant id.
+
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-
-

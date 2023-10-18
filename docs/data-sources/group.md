@@ -28,11 +28,10 @@ data "kestra_group" "example" {
 ### Optional
 
 - `namespace` (String) The linked namespace.
+- `tenant_id` (String) The tenant id.
 
 ### Read-Only
 
 - `description` (String) The group description.
 - `id` (String) The ID of this resource.
 - `name` (String) The group name.
-
-

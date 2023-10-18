@@ -71,7 +71,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		return diag.FromErr(err)
 	}
 
-	r, reqErr := c.request("POST", "/api/v1/users", body)
+	r, reqErr := c.request("POST", fmt.Sprintf("%s/users", apiRoot("")), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
@@ -90,7 +90,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interfac
 
 	userId := d.Id()
 
-	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/users/%s", userId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/users/%s", apiRoot(""), userId), nil)
 	if reqErr != nil {
 		if reqErr.StatusCode == http.StatusNotFound {
 			d.SetId("")
@@ -120,7 +120,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 
 		userId := d.Id()
 
-		r, reqErr := c.request("PUT", fmt.Sprintf("/api/v1/users/%s", userId), body)
+		r, reqErr := c.request("PUT", fmt.Sprintf("%s/users/%s", apiRoot(""), userId), body)
 		if reqErr != nil {
 			return diag.FromErr(reqErr.Err)
 		}
@@ -142,7 +142,7 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta interf
 
 	userId := d.Id()
 
-	_, reqErr := c.request("DELETE", fmt.Sprintf("/api/v1/users/%s", userId), nil)
+	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/users/%s", apiRoot(""), userId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

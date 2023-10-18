@@ -14,6 +14,11 @@ func dataSourceNamespace() *schema.Resource {
 
 		ReadContext: dataSourceNamespaceRead,
 		Schema: map[string]*schema.Schema{
+			"tenant_id": {
+				Description: "The tenant id.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"namespace_id": {
 				Description: "The namespace.",
 				Type:        schema.TypeString,
@@ -43,8 +48,9 @@ func dataSourceNamespaceRead(ctx context.Context, d *schema.ResourceData, meta i
 	var diags diag.Diagnostics
 
 	namespaceId := d.Get("namespace_id").(string)
+	tenantId := d.Get("tenant_id").(string)
 
-	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/namespaces/%s", namespaceId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/namespaces/%s", apiRoot(tenantId), namespaceId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

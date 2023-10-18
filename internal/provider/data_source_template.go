@@ -14,6 +14,11 @@ func dataSourceTemplate() *schema.Resource {
 
 		ReadContext: dataSourceTemplateRead,
 		Schema: map[string]*schema.Schema{
+			"tenant_id": {
+				Description: "The tenant id.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"namespace": {
 				Description: "The namespace.",
 				Type:        schema.TypeString,
@@ -37,10 +42,11 @@ func dataSourceTemplateRead(ctx context.Context, d *schema.ResourceData, meta in
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	namespaceId := d.Get("namespace")
-	templateId := d.Get("template_id")
+	namespaceId := d.Get("namespace").(string)
+	templateId := d.Get("template_id").(string)
+	tenantId := d.Get("tenant_id").(string)
 
-	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/templates/%s/%s", namespaceId, templateId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/templates/%s/%s", apiRoot(tenantId), namespaceId, templateId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

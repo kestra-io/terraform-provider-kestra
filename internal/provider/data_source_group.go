@@ -14,6 +14,11 @@ func dataSourceGroup() *schema.Resource {
 
 		ReadContext: dataSourceGroupRead,
 		Schema: map[string]*schema.Schema{
+			"tenant_id": {
+				Description: "The tenant id.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"group_id": {
 				Description: "The group.",
 				Type:        schema.TypeString,
@@ -43,8 +48,9 @@ func dataSourceGroupRead(ctx context.Context, d *schema.ResourceData, meta inter
 	var diags diag.Diagnostics
 
 	groupId := d.Get("group_id").(string)
+	tenantId := d.Get("tenant_id").(string)
 
-	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/groups/%s", groupId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/groups/%s", apiRoot(tenantId), groupId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

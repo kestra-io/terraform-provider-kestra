@@ -14,6 +14,11 @@ func dataSourceRole() *schema.Resource {
 
 		ReadContext: dataSourceRoleRead,
 		Schema: map[string]*schema.Schema{
+			"tenant_id": {
+				Description: "The tenant id.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"role_id": {
 				Description: "The role.",
 				Type:        schema.TypeString,
@@ -63,8 +68,9 @@ func dataSourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interf
 	var diags diag.Diagnostics
 
 	roleId := d.Get("role_id").(string)
+	tenantId := d.Get("tenant_id").(string)
 
-	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/roles/%s", roleId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/roles/%s", apiRoot(tenantId), roleId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

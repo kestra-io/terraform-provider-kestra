@@ -177,3 +177,11 @@ func pointerToString(s *string) string {
 	}
 	return *s
 }
+
+func apiRoot(tenantId string) string {
+	if tenantId == "" {
+		return "/api/v1"
+	}
+
+	return fmt.Sprintf("/api/v1/%s", tenantId)
+}

@@ -16,6 +16,12 @@ func resourceBinding() *schema.Resource {
 		ReadContext:   resourceBindingRead,
 		DeleteContext: resourceBindingDelete,
 		Schema: map[string]*schema.Schema{
+			"tenant_id": {
+				Description: "The tenant id.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+			},
 			"type": {
 				Description: "The binding type.",
 				Type:        schema.TypeString,
@@ -56,7 +62,9 @@ func resourceBindingCreate(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(err)
 	}
 
-	r, reqErr := c.request("POST", "/api/v1/bindings", body)
+	tenantId := d.Get("tenant_id").(string)
+
+	r, reqErr := c.request("POST", fmt.Sprintf("%s/bindings", apiRoot(tenantId)), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
@@ -74,8 +82,9 @@ func resourceBindingRead(ctx context.Context, d *schema.ResourceData, meta inter
 	var diags diag.Diagnostics
 
 	bindingId := d.Id()
+	tenantId := d.Get("tenant_id").(string)
 
-	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/bindings/%s", bindingId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/bindings/%s", apiRoot(tenantId), bindingId), nil)
 	if reqErr != nil {
 		if reqErr.StatusCode == http.StatusNotFound {
 			d.SetId("")
@@ -98,8 +107,9 @@ func resourceBindingDelete(ctx context.Context, d *schema.ResourceData, meta int
 	var diags diag.Diagnostics
 
 	bindingId := d.Id()
+	tenantId := d.Get("tenant_id").(string)
 
-	_, reqErr := c.request("DELETE", fmt.Sprintf("/api/v1/bindings/%s", bindingId), nil)
+	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/bindings/%s", apiRoot(tenantId), bindingId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

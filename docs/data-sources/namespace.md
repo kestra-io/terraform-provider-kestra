@@ -25,11 +25,13 @@ data "kestra_namespace" "example" {
 
 - `namespace_id` (String) The namespace.
 
+### Optional
+
+- `tenant_id` (String) The tenant id.
+
 ### Read-Only
 
 - `description` (String) The namespace friendly description.
 - `id` (String) The ID of this resource.
 - `task_defaults` (String) The namespace task defaults.
 - `variables` (String) The namespace variables.
-
-

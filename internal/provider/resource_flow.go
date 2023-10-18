@@ -17,6 +17,12 @@ func resourceFlow() *schema.Resource {
 		UpdateContext: resourceFlowUpdate,
 		DeleteContext: resourceFlowDelete,
 		Schema: map[string]*schema.Schema{
+			"tenant_id": {
+				Description: "The tenant id.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+			},
 			"namespace": {
 				Description: "The flow namespace.",
 				Type:        schema.TypeString,
@@ -59,9 +65,10 @@ func resourceFlowCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	var diags diag.Diagnostics
 
 	yamlSourceCode := d.Get("keep_original_source").(bool)
+	tenantId := d.Get("tenant_id").(string)
 
 	if yamlSourceCode == true {
-		r, reqErr := c.yamlRequest("POST", "/api/v1/flows", stringToPointer(d.Get("content").(string)))
+		r, reqErr := c.yamlRequest("POST", fmt.Sprintf("%s/flows", apiRoot(tenantId)), stringToPointer(d.Get("content").(string)))
 		if reqErr != nil {
 			return diag.FromErr(reqErr.Err)
 		}
@@ -78,7 +85,7 @@ func resourceFlowCreate(ctx context.Context, d *schema.ResourceData, meta interf
 			return diag.FromErr(err)
 		}
 
-		r, reqErr := c.request("POST", "/api/v1/flows", body)
+		r, reqErr := c.request("POST", fmt.Sprintf("%s/flows", apiRoot(tenantId)), body)
 		if reqErr != nil {
 			return diag.FromErr(reqErr.Err)
 		}
@@ -98,9 +105,10 @@ func resourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interfac
 
 	namespaceId, flowId := flowConvertId(d.Id())
 	yamlSourceCode := d.Get("keep_original_source").(bool)
+	tenantId := d.Get("tenant_id").(string)
 
 	if yamlSourceCode == true {
-		r, reqErr := c.yamlRequest("GET", fmt.Sprintf("/api/v1/flows/%s/%s?source=true", namespaceId, flowId), nil)
+		r, reqErr := c.yamlRequest("GET", fmt.Sprintf("%s/flows/%s/%s?source=true", apiRoot(tenantId), namespaceId, flowId), nil)
 		if reqErr != nil {
 			if reqErr.StatusCode == http.StatusNotFound {
 				d.SetId("")
@@ -117,7 +125,7 @@ func resourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interfac
 
 		return diags
 	} else {
-		r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/flows/%s/%s", namespaceId, flowId), nil)
+		r, reqErr := c.request("GET", fmt.Sprintf("%s/flows/%s/%s", apiRoot(tenantId), namespaceId, flowId), nil)
 		if reqErr != nil {
 			if reqErr.StatusCode == http.StatusNotFound {
 				d.SetId("")
@@ -142,11 +150,14 @@ func resourceFlowUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 
 	if d.HasChanges("content") {
 		yamlSourceCode := d.Get("keep_original_source").(bool)
+		tenantId := d.Get("tenant_id").(string)
+
 		if yamlSourceCode == true {
 			r, reqErr := c.yamlRequest(
 				"PUT",
 				fmt.Sprintf(
-					"/api/v1/flows/%s/%s",
+					"%s/flows/%s/%s",
+					apiRoot(tenantId),
 					d.Get("namespace").(string),
 					d.Get("flow_id").(string),
 				),
@@ -170,7 +181,7 @@ func resourceFlowUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 
 			namespaceId, flowId := flowConvertId(d.Id())
 
-			r, reqErr := c.request("PUT", fmt.Sprintf("/api/v1/flows/%s/%s", namespaceId, flowId), body)
+			r, reqErr := c.request("PUT", fmt.Sprintf("%s/flows/%s/%s", apiRoot(tenantId), namespaceId, flowId), body)
 			if reqErr != nil {
 				return diag.FromErr(reqErr.Err)
 			}
@@ -192,8 +203,9 @@ func resourceFlowDelete(ctx context.Context, d *schema.ResourceData, meta interf
 	var diags diag.Diagnostics
 
 	namespaceId, flowId := flowConvertId(d.Id())
+	tenantId := d.Get("tenant_id").(string)
 
-	_, reqErr := c.request("DELETE", fmt.Sprintf("/api/v1/flows/%s/%s", namespaceId, flowId), nil)
+	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/flows/%s/%s", apiRoot(tenantId), namespaceId, flowId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

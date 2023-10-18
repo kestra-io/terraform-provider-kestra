@@ -17,6 +17,12 @@ func resourceGroup() *schema.Resource {
 		UpdateContext: resourceGroupUpdate,
 		DeleteContext: resourceGroupDelete,
 		Schema: map[string]*schema.Schema{
+			"tenant_id": {
+				Description: "The tenant id.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+			},
 			"name": {
 				Description: "The group name.",
 				Type:        schema.TypeString,
@@ -48,7 +54,9 @@ func resourceGroupCreate(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.FromErr(err)
 	}
 
-	r, reqErr := c.request("POST", "/api/v1/groups", body)
+	tenantId := d.Get("tenant_id").(string)
+
+	r, reqErr := c.request("POST", fmt.Sprintf("%s/groups", apiRoot(tenantId)), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
@@ -66,8 +74,9 @@ func resourceGroupRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	var diags diag.Diagnostics
 
 	groupId := d.Id()
+	tenantId := d.Get("tenant_id").(string)
 
-	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/groups/%s", groupId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/groups/%s", apiRoot(tenantId), groupId), nil)
 	if reqErr != nil {
 		if reqErr.StatusCode == http.StatusNotFound {
 			d.SetId("")
@@ -91,13 +100,15 @@ func resourceGroupUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 
 	if d.HasChanges("namespace", "name", "description") {
 		body, err := groupSchemaToApi(d)
+
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		groupId := d.Id()
+		tenantId := d.Get("tenant_id").(string)
 
-		r, reqErr := c.request("PUT", fmt.Sprintf("/api/v1/groups/%s", groupId), body)
+		r, reqErr := c.request("PUT", fmt.Sprintf("%s/groups/%s", apiRoot(tenantId), groupId), body)
 		if reqErr != nil {
 			return diag.FromErr(reqErr.Err)
 		}
@@ -118,8 +129,9 @@ func resourceGroupDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	var diags diag.Diagnostics
 
 	groupId := d.Id()
+	tenantId := d.Get("tenant_id").(string)
 
-	_, reqErr := c.request("DELETE", fmt.Sprintf("/api/v1/groups/%s", groupId), nil)
+	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/groups/%s", apiRoot(tenantId), groupId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

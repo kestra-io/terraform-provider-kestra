@@ -27,9 +27,11 @@ data "kestra_template" "example" {
 - `namespace` (String) The namespace.
 - `template_id` (String) The template id.
 
+### Optional
+
+- `tenant_id` (String) The tenant id.
+
 ### Read-Only
 
 - `content` (String) The template content as yaml.
 - `id` (String) The ID of this resource.
-
-

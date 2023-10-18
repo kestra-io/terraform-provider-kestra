@@ -17,6 +17,12 @@ func resourceTemplate() *schema.Resource {
 		UpdateContext: resourceTemplateUpdate,
 		DeleteContext: resourceTemplateDelete,
 		Schema: map[string]*schema.Schema{
+			"tenant_id": {
+				Description: "The tenant id.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+			},
 			"namespace": {
 				Description: "The template namespace.",
 				Type:        schema.TypeString,
@@ -51,7 +57,9 @@ func resourceTemplateCreate(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
-	r, reqErr := c.request("POST", "/api/v1/templates", body)
+	tenantId := d.Get("tenant_id").(string)
+
+	r, reqErr := c.request("POST", fmt.Sprintf("%s/templates", apiRoot(tenantId)), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
@@ -69,8 +77,9 @@ func resourceTemplateRead(ctx context.Context, d *schema.ResourceData, meta inte
 	var diags diag.Diagnostics
 
 	namespaceId, templateId := templateConvertId(d.Id())
+	tenantId := d.Get("tenant_id").(string)
 
-	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/templates/%s/%s", namespaceId, templateId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/templates/%s/%s", apiRoot(tenantId), namespaceId, templateId), nil)
 	if reqErr != nil {
 		if reqErr.StatusCode == http.StatusNotFound {
 			d.SetId("")
@@ -99,8 +108,9 @@ func resourceTemplateUpdate(ctx context.Context, d *schema.ResourceData, meta in
 		}
 
 		namespaceId, templateId := templateConvertId(d.Id())
+		tenantId := d.Get("tenant_id").(string)
 
-		r, reqErr := c.request("PUT", fmt.Sprintf("/api/v1/templates/%s/%s", namespaceId, templateId), body)
+		r, reqErr := c.request("PUT", fmt.Sprintf("%s/templates/%s/%s", apiRoot(tenantId), namespaceId, templateId), body)
 		if reqErr != nil {
 			return diag.FromErr(reqErr.Err)
 		}
@@ -121,8 +131,9 @@ func resourceTemplateDelete(ctx context.Context, d *schema.ResourceData, meta in
 	var diags diag.Diagnostics
 
 	namespaceId, templateId := templateConvertId(d.Id())
+	tenantId := d.Get("tenant_id").(string)
 
-	_, reqErr := c.request("DELETE", fmt.Sprintf("/api/v1/templates/%s/%s", namespaceId, templateId), nil)
+	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/templates/%s/%s", apiRoot(tenantId), namespaceId, templateId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

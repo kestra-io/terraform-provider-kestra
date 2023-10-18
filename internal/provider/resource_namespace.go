@@ -17,6 +17,12 @@ func resourceNamespace() *schema.Resource {
 		UpdateContext: resourceNamespaceUpdate,
 		DeleteContext: resourceNamespaceDelete,
 		Schema: map[string]*schema.Schema{
+			"tenant_id": {
+				Description: "The tenant id.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+			},
 			"namespace_id": {
 				Description: "The namespace.",
 				Type:        schema.TypeString,
@@ -56,7 +62,9 @@ func resourceNamespaceCreate(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	r, reqErr := c.request("POST", "/api/v1/namespaces", body)
+	tenantId := d.Get("tenant_id").(string)
+
+	r, reqErr := c.request("POST", fmt.Sprintf("%s/namespaces", apiRoot(tenantId)), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
@@ -74,8 +82,9 @@ func resourceNamespaceRead(ctx context.Context, d *schema.ResourceData, meta int
 	var diags diag.Diagnostics
 
 	namespaceId := d.Id()
+	tenantId := d.Get("tenant_id").(string)
 
-	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/namespaces/%s", namespaceId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/namespaces/%s", apiRoot(tenantId), namespaceId), nil)
 	if reqErr != nil {
 		if reqErr.StatusCode == http.StatusNotFound {
 			d.SetId("")
@@ -104,8 +113,9 @@ func resourceNamespaceUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		}
 
 		namespaceId := d.Id()
+		tenantId := d.Get("tenant_id").(string)
 
-		r, reqErr := c.request("PUT", fmt.Sprintf("/api/v1/namespaces/%s", namespaceId), body)
+		r, reqErr := c.request("PUT", fmt.Sprintf("%s/namespaces/%s", apiRoot(tenantId), namespaceId), body)
 		if reqErr != nil {
 			return diag.FromErr(reqErr.Err)
 		}
@@ -127,8 +137,9 @@ func resourceNamespaceDelete(ctx context.Context, d *schema.ResourceData, meta i
 	var diags diag.Diagnostics
 
 	namespaceId := d.Id()
+	tenantId := d.Get("tenant_id").(string)
 
-	_, reqErr := c.request("DELETE", fmt.Sprintf("/api/v1/namespaces/%s", namespaceId), nil)
+	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/namespaces/%s", apiRoot(tenantId), namespaceId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

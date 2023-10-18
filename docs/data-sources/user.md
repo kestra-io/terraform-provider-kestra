@@ -38,5 +38,3 @@ data "kestra_user" "example" {
 - `id` (String) The ID of this resource.
 - `last_name` (String) The user last name.
 - `username` (String) The user name.
-
-

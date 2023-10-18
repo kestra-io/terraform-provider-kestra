@@ -17,8 +17,6 @@ resource "kestra_flow" "example" {
   namespace = "io.kestra.mynamespace"
   flow_id   = "my-flow"
   content   = <<EOT
-id: "my-flow"
-namespace: "io.kestra.mynamespace"
 inputs:
   - name: my-value
     type: STRING
@@ -52,6 +50,7 @@ EOT
 ### Optional
 
 - `keep_original_source` (Boolean) Use the content as source code, keeping comment and indentation. Defaults to `true`.
+- `tenant_id` (String) The tenant id.
 
 ### Read-Only
 

@@ -28,6 +28,7 @@ data "kestra_role" "example" {
 ### Optional
 
 - `namespace` (String) The linked namespace.
+- `tenant_id` (String) The tenant id.
 
 ### Read-Only
 
@@ -43,5 +44,3 @@ Read-Only:
 
 - `permissions` (List of String)
 - `type` (String)
-
-

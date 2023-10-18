@@ -14,6 +14,11 @@ func dataSourceBinding() *schema.Resource {
 
 		ReadContext: dataSourceBindingRead,
 		Schema: map[string]*schema.Schema{
+			"tenant_id": {
+				Description: "The tenant id.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"binding_id": {
 				Description: "The binding id.",
 				Type:        schema.TypeString,
@@ -48,8 +53,9 @@ func dataSourceBindingRead(ctx context.Context, d *schema.ResourceData, meta int
 	var diags diag.Diagnostics
 
 	bindingId := d.Get("binding_id").(string)
+	tenantId := d.Get("tenant_id").(string)
 
-	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/bindings/%s", bindingId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/bindings/%s", apiRoot(tenantId), bindingId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

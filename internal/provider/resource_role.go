@@ -17,6 +17,11 @@ func resourceRole() *schema.Resource {
 		UpdateContext: resourceRoleUpdate,
 		DeleteContext: resourceRoleDelete,
 		Schema: map[string]*schema.Schema{
+			"tenant_id": {
+				Description: "The tenant id.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"namespace": {
 				Description: "The linked namespace.",
 				Type:        schema.TypeString,
@@ -65,12 +70,14 @@ func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
+	tenantId := d.Get("tenant_id").(string)
+
 	body, err := roleSchemaToApi(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	r, reqErr := c.request("POST", "/api/v1/roles", body)
+	r, reqErr := c.request("POST", fmt.Sprintf("%s/roles", apiRoot(tenantId)), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
@@ -88,8 +95,9 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	var diags diag.Diagnostics
 
 	roleId := d.Id()
+	tenantId := d.Get("tenant_id").(string)
 
-	r, reqErr := c.request("GET", fmt.Sprintf("/api/v1/roles/%s", roleId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/roles/%s", apiRoot(tenantId), roleId), nil)
 	if reqErr != nil {
 		if reqErr.StatusCode == http.StatusNotFound {
 			d.SetId("")
@@ -118,8 +126,9 @@ func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 		}
 
 		roleId := d.Id()
+		tenantId := d.Get("tenant_id").(string)
 
-		r, reqErr := c.request("PUT", fmt.Sprintf("/api/v1/roles/%s", roleId), body)
+		r, reqErr := c.request("PUT", fmt.Sprintf("%s/roles/%s", apiRoot(tenantId), roleId), body)
 		if err != nil {
 			return diag.FromErr(reqErr.Err)
 		}
@@ -140,8 +149,9 @@ func resourceRoleDelete(ctx context.Context, d *schema.ResourceData, meta interf
 	var diags diag.Diagnostics
 
 	roleId := d.Id()
+	tenantId := d.Get("tenant_id").(string)
 
-	_, reqErr := c.request("DELETE", fmt.Sprintf("/api/v1/roles/%s", roleId), nil)
+	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/roles/%s", apiRoot(tenantId), roleId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

@@ -64,6 +64,7 @@ func New(version string) func() *schema.Provider {
 				"kestra_role":      dataSourceRole(),
 				"kestra_template":  dataSourceTemplate(),
 				"kestra_user":      dataSourceUser(),
+				"kestra_tenant":    dataSourceTenant(),
 			},
 			ResourcesMap: map[string]*schema.Resource{
 				"kestra_binding":          resourceBinding(),
@@ -75,6 +76,7 @@ func New(version string) func() *schema.Provider {
 				"kestra_template":         resourceTemplate(),
 				"kestra_user":             resourceUser(),
 				"kestra_user_password":    resourceUserPassword(),
+				"kestra_tenant":           resourceTenant(),
 			},
 		}
 

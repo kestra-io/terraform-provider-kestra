@@ -1,5 +1,7 @@
 { "index" : { "_index" : "kestra_roles", "_id" : "admin" } }
-{"id":"admin","name":"Admin","permissions":{"FLOW":["READ","CREATE","UPDATE","DELETE"],"TEMPLATE":["READ","CREATE","UPDATE","DELETE"],"EXECUTION":["READ","CREATE","UPDATE","DELETE"],"USER":["READ","CREATE","UPDATE","DELETE"],"NAMESPACE":["READ","CREATE","UPDATE","DELETE"],"GROUP":["READ","CREATE","UPDATE","DELETE"],"ROLE":["READ","CREATE","UPDATE","DELETE"],"AUDITLOG":["READ"],"SECRET":["READ","CREATE","UPDATE","DELETE"],"BINDING":["READ","CREATE","UPDATE","DELETE"]},"deleted":false}
+{"id":"admin","name":"Admin","permissions":{"FLOW":["READ","CREATE","UPDATE","DELETE"],"TEMPLATE":["READ","CREATE","UPDATE","DELETE"],"EXECUTION":["READ","CREATE","UPDATE","DELETE"],"USER":["READ","CREATE","UPDATE","DELETE"],"NAMESPACE":["READ","CREATE","UPDATE","DELETE"],"GROUP":["READ","CREATE","UPDATE","DELETE"],"ROLE":["READ","CREATE","UPDATE","DELETE"],"AUDITLOG":["READ"],"SECRET":["READ","CREATE","UPDATE","DELETE"],"BINDING":["READ","CREATE","UPDATE","DELETE"],"TENANT":["READ","CREATE","UPDATE","DELETE"]},"deleted":false}
+{ "index" : { "_index" : "kestra_roles", "_id" : "admin2" } }
+{"id":"admin2","name":"Admin","tenantId":"unit_test","permissions":{"FLOW":["READ","CREATE","UPDATE","DELETE"],"TEMPLATE":["READ","CREATE","UPDATE","DELETE"],"EXECUTION":["READ","CREATE","UPDATE","DELETE"],"USER":["READ","CREATE","UPDATE","DELETE"],"NAMESPACE":["READ","CREATE","UPDATE","DELETE"],"GROUP":["READ","CREATE","UPDATE","DELETE"],"ROLE":["READ","CREATE","UPDATE","DELETE"],"AUDITLOG":["READ"],"SECRET":["READ","CREATE","UPDATE","DELETE"],"BINDING":["READ","CREATE","UPDATE","DELETE"],"TENANT":["READ","CREATE","UPDATE","DELETE"]},"deleted":false}
 { "index" : { "_index" : "kestra_groups", "_id" : "admin" } }
 {"id":"admin","name":"Group Admin","description":"My description","deleted":false}
 { "index" : { "_index" : "kestra_users", "_id" : "john" } }
@@ -12,3 +14,9 @@
 {"id":"simple","namespace":"io.kestra.terraform.data","tasks":[{"id":"t1","type":"io.kestra.core.tasks.log.Log","message":"first {{task.id}}","level":"TRACE"},{"id":"t2","type":"io.kestra.core.tasks.log.Log","disabled":true,"message":"second {{task.type}}","level":"WARN"},{"id":"t3","type":"io.kestra.core.tasks.log.Log","message":"third {{flow.id}}","level":"ERROR"}],"deleted":false}
 { "index" : { "_index" : "kestra_bindings", "_id" : "john" } }
 {"id":"john","type":"USER","externalId":"john","roleId":"admin","deleted":false}
+{ "index" : { "_index" : "kestra_bindings", "_id" : "john2" } }
+{"id":"john2","type":"USER","externalId":"john","roleId":"admin","tenantId":"unit_test","deleted":false}
+{ "index" : { "_index" : "kestra_tenants", "_id" : "admin" } }
+{"id":"admin","name":"My admin tenants","deleted":false}
+{ "index" : { "_index" : "kestra_tenants", "_id" : "unit_test" } }
+{"id":"unit_test","name":"My admin tenants","deleted":false}

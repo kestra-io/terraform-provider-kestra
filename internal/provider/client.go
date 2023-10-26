@@ -113,6 +113,31 @@ func (c *Client) yamlRequest(method, url string, body *string) (interface{}, *Re
 }
 
 func (c *Client) rawRequest(method, url string, req *http.Request) (interface{}, *RequestError) {
+	statusCode, bodyResult, reqErr := c.rawResponseRequest(method, req)
+	if reqErr != nil {
+		return nil, reqErr
+	}
+
+	log.Printf("[DEBUG] Response from %s %s: %s\n", method, c.Url+url, bodyResult)
+
+	var jsonDecoded interface{}
+	if string(bodyResult) != "" {
+		decoder := json.NewDecoder(bytes.NewReader(bodyResult))
+		decoder.UseNumber()
+
+		err := decoder.Decode(&jsonDecoded)
+		if err != nil {
+			return nil, &RequestError{
+				StatusCode: statusCode,
+				Err:        err,
+			}
+		}
+	}
+
+	return jsonDecoded, nil
+}
+
+func (c *Client) rawResponseRequest(method string, req *http.Request) (int, []byte, *RequestError) {
 	if (c.Username != nil) && (c.Password != nil) {
 		req.SetBasicAuth(
 			*c.Username,
@@ -133,49 +158,32 @@ func (c *Client) rawRequest(method, url string, req *http.Request) (interface{},
 
 	res, err := c.HTTPClient.Do(req)
 	if (err != nil) && (res != nil) {
-		return nil, &RequestError{
+		return 0, nil, &RequestError{
 			StatusCode: res.StatusCode,
 			Err:        err,
 		}
 	} else if err != nil {
-		return nil, &RequestError{
+		return 0, nil, &RequestError{
 			StatusCode: 0,
 			Err:        err,
 		}
 	}
 
 	defer res.Body.Close()
-
 	bodyResult, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, &RequestError{
+		return 0, nil, &RequestError{
 			StatusCode: res.StatusCode,
 			Err:        err,
 		}
 	}
 
-	log.Printf("[DEBUG] Response from %s %s: %s\n", method, c.Url+url, bodyResult)
-
 	if (res.StatusCode != http.StatusOK) && (res.StatusCode != http.StatusNoContent) {
-		return nil, &RequestError{
+		return 0, nil, &RequestError{
 			StatusCode: res.StatusCode,
 			Err:        fmt.Errorf("status: %d, method: %s, body: %s", res.StatusCode, method, bodyResult),
 		}
 	}
 
-	var jsonDecoded interface{}
-	if string(bodyResult) != "" {
-		decoder := json.NewDecoder(bytes.NewReader(bodyResult))
-		decoder.UseNumber()
-
-		err = decoder.Decode(&jsonDecoded)
-		if err != nil {
-			return nil, &RequestError{
-				StatusCode: res.StatusCode,
-				Err:        err,
-			}
-		}
-	}
-
-	return jsonDecoded, nil
+	return res.StatusCode, bodyResult, nil
 }

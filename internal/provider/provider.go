@@ -68,14 +68,15 @@ func New(version string, tenant *string) func() *schema.Provider {
 				},
 			},
 			DataSourcesMap: map[string]*schema.Resource{
-				"kestra_binding":   dataSourceBinding(),
-				"kestra_flow":      dataSourceFlow(),
-				"kestra_group":     dataSourceGroup(),
-				"kestra_namespace": dataSourceNamespace(),
-				"kestra_role":      dataSourceRole(),
-				"kestra_template":  dataSourceTemplate(),
-				"kestra_user":      dataSourceUser(),
-				"kestra_tenant":    dataSourceTenant(),
+				"kestra_binding":        dataSourceBinding(),
+				"kestra_flow":           dataSourceFlow(),
+				"kestra_group":          dataSourceGroup(),
+				"kestra_namespace":      dataSourceNamespace(),
+				"kestra_role":           dataSourceRole(),
+				"kestra_template":       dataSourceTemplate(),
+				"kestra_user":           dataSourceUser(),
+				"kestra_tenant":         dataSourceTenant(),
+				"kestra_namespace_file": dataSourceNamespaceFile(),
 			},
 			ResourcesMap: map[string]*schema.Resource{
 				"kestra_binding":          resourceBinding(),
@@ -88,6 +89,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 				"kestra_user":             resourceUser(),
 				"kestra_user_password":    resourceUserPassword(),
 				"kestra_tenant":           resourceTenant(),
+				"kestra_namespace_file":   resourceNamespaceFile(),
 			},
 		}
 

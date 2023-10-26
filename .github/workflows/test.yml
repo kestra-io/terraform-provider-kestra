@@ -80,6 +80,8 @@ jobs:
           curl -X POST "127.27.27.27:8080/api/v1/users" > /dev/null
           curl -u john@doe.com:pass -X POST -H 'Content-Type: application/json' -d '{"id":"unit_test","name":"Unit Test"}' "127.27.27.27:8080/api/v1/tenants" > /dev/null
           curl -H "Content-Type: application/x-ndjson" -XPOST "127.27.27.27:9200/_bulk?pretty" --data-binary @.github/workflows/index.jsonl
+          curl -H "Content-Type: multipart/form-data" -u john@doe.com:pass -X POST -F fileContent=@internal/resources/flow.py "127.27.27.27:8080/api/v1/files/namespaces/io.kestra.terraform.data?path=/flow.py"
+
 
       - name: Set up Go
         uses: actions/setup-go@v4

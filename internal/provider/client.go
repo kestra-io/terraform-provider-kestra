@@ -16,11 +16,12 @@ import (
 const DefaultURL string = "http://localhost:8080"
 
 type Client struct {
-	HTTPClient *http.Client
-	Url        string
-	Username   *string
-	Password   *string
-	Jwt        *string
+	HTTPClient  *http.Client
+	Url         string
+	Username    *string
+	Password    *string
+	Jwt         *string
+	ExtraHeader *map[string]string
 }
 
 type RequestError struct {
@@ -28,7 +29,7 @@ type RequestError struct {
 	Err        error
 }
 
-func NewClient(url string, username *string, password *string, jwt *string) (*Client, error) {
+func NewClient(url string, username *string, password *string, jwt *string, extraHeaders *map[string]string) (*Client, error) {
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		Url:        DefaultURL,
@@ -43,6 +44,10 @@ func NewClient(url string, username *string, password *string, jwt *string) (*Cl
 
 	if jwt != nil {
 		c.Jwt = jwt
+	}
+
+	if extraHeaders != nil {
+		c.ExtraHeader = extraHeaders
 	}
 
 	return &c, nil
@@ -111,6 +116,13 @@ func (c *Client) rawRequest(method, url string, req *http.Request) (interface{},
 
 	if c.Jwt != nil {
 		req.AddCookie(&http.Cookie{Name: "JWT", Value: *c.Jwt})
+	}
+
+	if c.ExtraHeader != nil {
+		for key, value := range *c.ExtraHeader {
+			req.Header.Set(key, value)
+
+		}
 	}
 
 	res, err := c.HTTPClient.Do(req)

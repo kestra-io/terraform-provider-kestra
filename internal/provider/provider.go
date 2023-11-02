@@ -85,10 +85,11 @@ func New(version string) func() *schema.Provider {
 			username := d.Get("username").(string)
 			password := d.Get("password").(string)
 			jwt := d.Get("jwt").(string)
+			extraHeaders := d.Get("extra_headers").(map[string]string)
 
 			var diags diag.Diagnostics
 
-			c, err := NewClient(url, &username, &password, &jwt)
+			c, err := NewClient(url, &username, &password, &jwt, &extraHeaders)
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}

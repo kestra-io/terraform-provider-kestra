@@ -29,7 +29,7 @@ type RequestError struct {
 	Err        error
 }
 
-func NewClient(url string, username *string, password *string, jwt *string, extraHeaders *map[string]string) (*Client, error) {
+func NewClient(url string, username *string, password *string, jwt *string, extraHeaders *interface{}) (*Client, error) {
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		Url:        DefaultURL,
@@ -47,7 +47,10 @@ func NewClient(url string, username *string, password *string, jwt *string, extr
 	}
 
 	if extraHeaders != nil {
-		c.ExtraHeader = extraHeaders
+		m, ok := (*extraHeaders).(map[string]string)
+		if ok {
+			c.ExtraHeader = &m
+		}
 	}
 
 	return &c, nil

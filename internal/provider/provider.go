@@ -85,7 +85,7 @@ func New(version string) func() *schema.Provider {
 			username := d.Get("username").(string)
 			password := d.Get("password").(string)
 			jwt := d.Get("jwt").(string)
-			extraHeaders := d.Get("extra_headers").(map[string]string)
+			extraHeaders := d.Get("extra_headers")
 
 			var diags diag.Diagnostics
 

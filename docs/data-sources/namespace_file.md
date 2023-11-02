@@ -14,8 +14,9 @@ Use this data source to access information about an existing Namespace File
 
 ```terraform
 data "kestra_namespace_file" "example" {
-  namespace_       = "io.kestra.mynamespace"
-  destination_path = "myscript.py"
+  namespace = "io.kestra.mynamespace"
+  filename  = "myscript.py"
+  content   = file("myscript.py")
 }
 ```
 
@@ -24,12 +25,12 @@ data "kestra_namespace_file" "example" {
 
 ### Required
 
-- `destination_path` (String) The path to the namespace file.
+- `content` (String) Content to store in the file, expected to be a UTF-8 encoded string.
+- `filename` (String) The filename to the namespace file.
 - `namespace` (String) The namespace of the namespace file resource.
 
 ### Optional
 
-- `content` (String) Content to store in the file, expected to be a UTF-8 encoded string.
 - `tenant_id` (String) The tenant id.
 
 ### Read-Only

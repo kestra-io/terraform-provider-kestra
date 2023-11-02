@@ -14,18 +14,18 @@ Manages a Kestra Namespace File.
 
 ```terraform
 resource "kestra_namespace_file" "example" {
-  namespace        = "io.kestra.mynamespace"
-  destination_path = "/path/my-file.sh"
-  content          = <<EOT
+  namespace = "io.kestra.mynamespace"
+  filename  = "/path/my-file.sh"
+  content   = <<EOT
 #!/bin/bash
 echo "Hello World"
 EOT
 }
 
 resource "kestra_namespace_file" "withsource" {
-  namespace        = "io.kestra.mynamespace"
-  destination_path = "/path/my-file.sh"
-  local_path       = "./kestra/file.sh"
+  namespace = "io.kestra.mynamespace"
+  filename  = "/path/my-file.sh"
+  content   = file("./kestra/file.sh")
 }
 ```
 
@@ -34,7 +34,7 @@ resource "kestra_namespace_file" "withsource" {
 
 ### Required
 
-- `destination_path` (String) The path to the namespace file that will be created.
+- `filename` (String) The path to the namespace file that will be created.
 Missing parent directories will be created.
 If the file already exists, it will be overridden with the given content.
 - `namespace` (String) The namespace of the namespace file resource.
@@ -42,11 +42,6 @@ If the file already exists, it will be overridden with the given content.
 ### Optional
 
 - `content` (String) Content to store in the file, expected to be a UTF-8 encoded string.
- Conflicts with `source`.
- Exactly one of these four arguments must be specified.
-- `source_path` (String) Path to file to use as source for the one we are creating.
- Conflicts with `content`.
- Exactly one of these four arguments must be specified.
 - `tenant_id` (String) The tenant id.
 
 ### Read-Only
@@ -58,5 +53,5 @@ If the file already exists, it will be overridden with the given content.
 Import is supported using the following syntax:
 
 ```shell
-terraform import kestra_namespace_file.example {{namespace}}/{{destination_path}}
+terraform import kestra_namespace_file.example {{namespace}}/{{filename}}
 ```

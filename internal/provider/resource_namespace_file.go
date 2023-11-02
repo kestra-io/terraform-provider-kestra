@@ -9,7 +9,6 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"os"
 	"strings"
 )
 
@@ -24,7 +23,7 @@ func resourceNamespaceFile() *schema.Resource {
 			"tenant_id": {
 				Description: "The tenant id.",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 			},
 			"namespace": {
@@ -33,7 +32,7 @@ func resourceNamespaceFile() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"destination_path": {
+			"filename": {
 				Description: "The path to the namespace file that will be created.\n" +
 					"Missing parent directories will be created.\n" +
 					"If the file already exists, it will be overridden with the given content.",
@@ -41,23 +40,11 @@ func resourceNamespaceFile() *schema.Resource {
 				Required: true,
 				ForceNew: true,
 			},
-			"source_path": {
-				Description: "Path to file to use as source for the one we are creating.\n " +
-					"Conflicts with `content`.\n " +
-					"Exactly one of these four arguments must be specified.",
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				ExactlyOneOf: []string{"content"},
-			},
 			"content": {
-				Description: "Content to store in the file, expected to be a UTF-8 encoded string.\n " +
-					"Conflicts with `source`.\n " +
-					"Exactly one of these four arguments must be specified.",
-				Type:         schema.TypeString,
-				Optional:     true,
-				ForceNew:     true,
-				ExactlyOneOf: []string{"source"},
+				Description: "Content to store in the file, expected to be a UTF-8 encoded string.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -71,14 +58,13 @@ func resourceNamespaceFileCreate(ctx context.Context, d *schema.ResourceData, me
 	var diags diag.Diagnostics
 
 	namespace := d.Get("namespace").(string)
-	filename := d.Get("destination_path").(string)
-	source := d.Get("source_path").(string)
+	filename := d.Get("filename").(string)
 	content := d.Get("content").(string)
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
-	url := c.Url + fmt.Sprintf("%s/files/namespaces/%s?path=%s", apiRoot(tenantId), namespace, filename)
+	url := c.Url + fmt.Sprintf("%s/namespaces/%s/files?path=%s", apiRoot(tenantId), namespace, filename)
 
-	req, err := addFilePartRequest(ctx, url, source, content)
+	req, err := addFilePartRequest(ctx, url, content)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -89,10 +75,16 @@ func resourceNamespaceFileCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", namespace, filename))
+	if *c.TenantId != "" {
+		if err := d.Set("tenant_id", c.TenantId); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if err := d.Set("namespace", namespace); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("destination_path", filename); err != nil {
+	if err := d.Set("filename", filename); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := d.Set("content", content); err != nil {
@@ -107,9 +99,9 @@ func resourceNamespaceFileRead(ctx context.Context, d *schema.ResourceData, meta
 	var diags diag.Diagnostics
 
 	namespace, filename := namespaceFileConvertId(d.Id())
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
-	url := c.Url + fmt.Sprintf("%s/files/namespaces/%s?path=%s", apiRoot(tenantId), namespace, filename)
+	url := c.Url + fmt.Sprintf("%s/namespaces/%s/files?path=%s", apiRoot(tenantId), namespace, filename)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf(url), nil)
 	if err != nil {
@@ -126,10 +118,16 @@ func resourceNamespaceFileRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	d.SetId(fmt.Sprintf("%s/%s", namespace, filename))
+	if *c.TenantId != "" {
+		if err := d.Set("tenant_id", c.TenantId); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if err := d.Set("namespace", namespace); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("destination_path", filename); err != nil {
+	if err := d.Set("filename", filename); err != nil {
 		return diag.FromErr(err)
 	}
 	if err := d.Set("content", string(body)); err != nil {
@@ -144,9 +142,9 @@ func resourceNamespaceFileDelete(ctx context.Context, d *schema.ResourceData, me
 	var diags diag.Diagnostics
 
 	namespace, filename := namespaceFileConvertId(d.Id())
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
-	url := fmt.Sprintf("%s/files/namespaces/%s?path=%s", apiRoot(tenantId), namespace, filename)
+	url := fmt.Sprintf("%s/namespaces/%s/files?path=%s", apiRoot(tenantId), namespace, filename)
 
 	_, reqErr := c.request("DELETE", url, nil)
 	if reqErr != nil {
@@ -158,21 +156,11 @@ func resourceNamespaceFileDelete(ctx context.Context, d *schema.ResourceData, me
 	return diags
 }
 
-func addFilePartRequest(ctx context.Context, url, filePath, content string) (*http.Request, error) {
+func addFilePartRequest(ctx context.Context, url, content string) (*http.Request, error) {
 	var buf bytes.Buffer
 	w := multipart.NewWriter(&buf)
 
-	var r io.Reader
-	if len(filePath) > 0 {
-		file, err := os.Open(filePath)
-		if err != nil {
-			return nil, err
-		}
-		defer file.Close()
-		r = file
-	} else {
-		r = strings.NewReader(content)
-	}
+	var r io.Reader = strings.NewReader(content)
 
 	fw, err := w.CreateFormFile("fileContent", "file.txt")
 	if err != nil {

@@ -18,27 +18,22 @@ func dataSourceNamespaceFile() *schema.Resource {
 			"tenant_id": {
 				Description: "The tenant id.",
 				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Computed:    true,
 			},
 			"namespace": {
 				Description: "The namespace of the namespace file resource.",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 			},
-			"destination_path": {
-				Description: "The path to the namespace file.",
+			"filename": {
+				Description: "The filename to the namespace file.",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 			},
-
 			"content": {
 				Description: "Content to store in the file, expected to be a UTF-8 encoded string.",
 				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Computed:    true,
 			},
 		},
 	}
@@ -50,9 +45,9 @@ func dataSourceNamespaceFileRead(ctx context.Context, d *schema.ResourceData, me
 
 	namespace := d.Get("namespace").(string)
 	filename := d.Get("filename").(string)
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
-	url := c.Url + fmt.Sprintf("%s/files/namespaces/%s?path=%s", apiRoot(tenantId), namespace, filename)
+	url := c.Url + fmt.Sprintf("%s/namespaces/%s/files?path=%s", apiRoot(tenantId), namespace, filename)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf(url), nil)
 	if err != nil {

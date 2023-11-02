@@ -16,7 +16,7 @@ func TestAccDataSourceNamespaceFile(t *testing.T) {
 				Config: testAccDataSourceNamespaceFile("io.kestra.terraform.data", "/flow.py"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.kestra_namespace_file.new", "destination_path", "/flow.py",
+						"data.kestra_namespace_file.new", "filename", "/flow.py",
 					),
 				),
 			},
@@ -29,7 +29,7 @@ func testAccDataSourceNamespaceFile(namespace, filename string) string {
 		`
         data "kestra_namespace_file" "new" {
             namespace = "%s"
-            destination_path = "%s"
+            filename = "%s"
         }`,
 		namespace,
 		filename,

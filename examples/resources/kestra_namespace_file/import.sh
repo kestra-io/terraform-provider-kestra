@@ -1,1 +1,1 @@
-terraform import kestra_namespace_file.example {{namespace}}/{{destination_path}}
+terraform import kestra_namespace_file.example {{namespace}}/{{filename}}

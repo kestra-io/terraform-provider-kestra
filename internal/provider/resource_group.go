@@ -20,7 +20,7 @@ func resourceGroup() *schema.Resource {
 			"tenant_id": {
 				Description: "The tenant id.",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 			},
 			"name": {
@@ -54,14 +54,14 @@ func resourceGroupCreate(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.FromErr(err)
 	}
 
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	r, reqErr := c.request("POST", fmt.Sprintf("%s/groups", apiRoot(tenantId)), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
 
-	errs := groupApiToSchema(r.(map[string]interface{}), d)
+	errs := groupApiToSchema(r.(map[string]interface{}), d, c)
 	if errs != nil {
 		return errs
 	}
@@ -74,7 +74,7 @@ func resourceGroupRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	var diags diag.Diagnostics
 
 	groupId := d.Id()
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	r, reqErr := c.request("GET", fmt.Sprintf("%s/groups/%s", apiRoot(tenantId), groupId), nil)
 	if reqErr != nil {
@@ -86,7 +86,7 @@ func resourceGroupRead(ctx context.Context, d *schema.ResourceData, meta interfa
 		return diag.FromErr(reqErr.Err)
 	}
 
-	errs := groupApiToSchema(r.(map[string]interface{}), d)
+	errs := groupApiToSchema(r.(map[string]interface{}), d, c)
 	if errs != nil {
 		return errs
 	}
@@ -106,14 +106,14 @@ func resourceGroupUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 		}
 
 		groupId := d.Id()
-		tenantId := d.Get("tenant_id").(string)
+		tenantId := c.TenantId
 
 		r, reqErr := c.request("PUT", fmt.Sprintf("%s/groups/%s", apiRoot(tenantId), groupId), body)
 		if reqErr != nil {
 			return diag.FromErr(reqErr.Err)
 		}
 
-		errs := groupApiToSchema(r.(map[string]interface{}), d)
+		errs := groupApiToSchema(r.(map[string]interface{}), d, c)
 		if errs != nil {
 			return errs
 		}
@@ -129,7 +129,7 @@ func resourceGroupDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	var diags diag.Diagnostics
 
 	groupId := d.Id()
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/groups/%s", apiRoot(tenantId), groupId), nil)
 	if reqErr != nil {

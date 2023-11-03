@@ -33,7 +33,6 @@ resource "kestra_binding" "example" {
 ### Optional
 
 - `namespace` (String) The linked namespace.
-- `tenant_id` (String) The tenant id.
 
 ### Read-Only
 

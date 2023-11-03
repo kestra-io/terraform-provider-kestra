@@ -20,12 +20,17 @@ func bindingSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) 
 	return body, nil
 }
 
-func bindingApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Diagnostics {
+func bindingApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	binding := r["binding"].(map[string]interface{})
 
 	d.SetId(binding["id"].(string))
+	if *c.TenantId != "" {
+		if err := d.Set("tenant_id", c.TenantId); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
 	if err := d.Set("type", binding["type"].(string)); err != nil {
 		return diag.FromErr(err)

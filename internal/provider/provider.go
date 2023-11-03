@@ -25,35 +25,46 @@ func init() {
 	}
 }
 
-func New(version string) func() *schema.Provider {
+func New(version string, tenant *string) func() *schema.Provider {
 	return func() *schema.Provider {
 		p := &schema.Provider{
 			Schema: map[string]*schema.Schema{
 				"url": &schema.Schema{
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "Kestra full endpoint url without trailing slash",
+					Description: "The endpoint url without trailing slash",
 					DefaultFunc: schema.EnvDefaultFunc("KESTRA_URL", ""),
+				},
+				"tenant_id": &schema.Schema{
+					Type:        schema.TypeString,
+					Optional:    true,
+					Description: "The tenant id (EE)",
+					DefaultFunc: schema.EnvDefaultFunc("KESTRA_TENANT_ID", ""),
 				},
 				"username": &schema.Schema{
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "Kestra BasicAuth username",
+					Description: "The BasicAuth username",
 					DefaultFunc: schema.EnvDefaultFunc("KESTRA_USERNAME", ""),
 				},
 				"password": &schema.Schema{
 					Type:        schema.TypeString,
 					Optional:    true,
 					Sensitive:   true,
-					Description: "Kestra BasicAuth password",
+					Description: "The BasicAuth password",
 					DefaultFunc: schema.EnvDefaultFunc("KESTRA_PASSWORD", ""),
 				},
 				"jwt": &schema.Schema{
 					Type:        schema.TypeString,
 					Optional:    true,
 					Sensitive:   true,
-					Description: "Kestra JWT token",
+					Description: "The JWT token (EE)",
 					DefaultFunc: schema.EnvDefaultFunc("KESTRA_JWT", ""),
+				},
+				"extra_headers": &schema.Schema{
+					Type:        schema.TypeMap,
+					Optional:    true,
+					Description: "Extra headers to add to every request",
 				},
 			},
 			DataSourcesMap: map[string]*schema.Resource{
@@ -87,9 +98,16 @@ func New(version string) func() *schema.Provider {
 			jwt := d.Get("jwt").(string)
 			extraHeaders := d.Get("extra_headers")
 
+			tenantId := ""
+			if tenant != nil {
+				tenantId = *tenant
+			} else if d.Get("tenant_id") != nil {
+				tenantId = d.Get("tenant_id").(string)
+			}
+
 			var diags diag.Diagnostics
 
-			c, err := NewClient(url, &username, &password, &jwt, &extraHeaders)
+			c, err := NewClient(url, &username, &password, &jwt, &extraHeaders, &tenantId)
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}
@@ -181,10 +199,10 @@ func pointerToString(s *string) string {
 	return *s
 }
 
-func apiRoot(tenantId string) string {
-	if tenantId == "" {
+func apiRoot(tenantId *string) string {
+	if tenantId == nil || *tenantId == "" {
 		return "/api/v1"
 	}
 
-	return fmt.Sprintf("/api/v1/%s", tenantId)
+	return fmt.Sprintf("/api/v1/%s", *tenantId)
 }

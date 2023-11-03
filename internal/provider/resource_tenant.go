@@ -44,7 +44,7 @@ func resourceTenantCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.FromErr(err)
 	}
 
-	r, reqErr := c.request("POST", fmt.Sprintf("%s/tenants", apiRoot("")), body)
+	r, reqErr := c.request("POST", fmt.Sprintf("%s/tenants", apiRoot(nil)), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
@@ -63,7 +63,7 @@ func resourceTenantRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 	tenantId := d.Id()
 
-	r, reqErr := c.request("GET", fmt.Sprintf("%s/tenants/%s", apiRoot(""), tenantId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/tenants/%s", apiRoot(nil), tenantId), nil)
 	if reqErr != nil {
 		if reqErr.StatusCode == http.StatusNotFound {
 			d.SetId("")
@@ -93,7 +93,7 @@ func resourceTenantUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 		tenantId := d.Id()
 
-		r, reqErr := c.request("PUT", fmt.Sprintf("%s/tenants/%s", apiRoot(""), tenantId), body)
+		r, reqErr := c.request("PUT", fmt.Sprintf("%s/tenants/%s", apiRoot(nil), tenantId), body)
 		if err != nil {
 			return diag.FromErr(reqErr.Err)
 		}
@@ -115,7 +115,7 @@ func resourceTenantDelete(ctx context.Context, d *schema.ResourceData, meta inte
 
 	tenantId := d.Id()
 
-	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/tenants/%s", apiRoot(""), tenantId), nil)
+	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/tenants/%s", apiRoot(nil), tenantId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

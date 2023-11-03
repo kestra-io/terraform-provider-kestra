@@ -31,11 +31,11 @@ resource "kestra_group" "example" {
 
 - `description` (String) The group description.
 - `namespace` (String) The linked namespace.
-- `tenant_id` (String) The tenant id.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `tenant_id` (String) The tenant id.
 
 ## Import
 

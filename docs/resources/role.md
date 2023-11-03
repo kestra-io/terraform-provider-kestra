@@ -42,11 +42,11 @@ resource "kestra_role" "example" {
 - `description` (String) The role description.
 - `namespace` (String) The linked namespace.
 - `permissions` (Block Set) The role permissions. (see [below for nested schema](#nestedblock--permissions))
-- `tenant_id` (String) The tenant id.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `tenant_id` (String) The tenant id.
 
 <a id="nestedblock--permissions"></a>
 ### Nested Schema for `permissions`

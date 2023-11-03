@@ -19,10 +19,15 @@ func groupSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
 	return body, nil
 }
 
-func groupApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Diagnostics {
+func groupApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	d.SetId(r["id"].(string))
+	if *c.TenantId != "" {
+		if err := d.Set("tenant_id", c.TenantId); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
 	if err := d.Set("name", r["name"].(string)); err != nil {
 		return diag.FromErr(err)

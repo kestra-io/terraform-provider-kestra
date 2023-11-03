@@ -17,7 +17,7 @@ func dataSourceTemplate() *schema.Resource {
 			"tenant_id": {
 				Description: "The tenant id.",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 			},
 			"namespace": {
 				Description: "The namespace.",
@@ -44,14 +44,14 @@ func dataSourceTemplateRead(ctx context.Context, d *schema.ResourceData, meta in
 
 	namespaceId := d.Get("namespace").(string)
 	templateId := d.Get("template_id").(string)
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	r, reqErr := c.request("GET", fmt.Sprintf("%s/templates/%s/%s", apiRoot(tenantId), namespaceId, templateId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
 
-	errs := templateApiToSchema(r.(map[string]interface{}), d)
+	errs := templateApiToSchema(r.(map[string]interface{}), d, c)
 	if errs != nil {
 		return errs
 	}

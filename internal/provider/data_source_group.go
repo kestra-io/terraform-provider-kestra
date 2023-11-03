@@ -17,7 +17,7 @@ func dataSourceGroup() *schema.Resource {
 			"tenant_id": {
 				Description: "The tenant id.",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 			},
 			"group_id": {
 				Description: "The group.",
@@ -48,14 +48,14 @@ func dataSourceGroupRead(ctx context.Context, d *schema.ResourceData, meta inter
 	var diags diag.Diagnostics
 
 	groupId := d.Get("group_id").(string)
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	r, reqErr := c.request("GET", fmt.Sprintf("%s/groups/%s", apiRoot(tenantId), groupId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
 
-	errs := groupApiToSchema(r.(map[string]interface{}), d)
+	errs := groupApiToSchema(r.(map[string]interface{}), d, c)
 	if errs != nil {
 		return errs
 	}

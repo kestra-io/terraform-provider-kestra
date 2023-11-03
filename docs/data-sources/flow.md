@@ -30,10 +30,10 @@ data "kestra_flow" "example" {
 ### Optional
 
 - `keep_original_source` (Boolean) Use the content as source code, keeping comment and indentation. Defaults to `false`.
-- `tenant_id` (String) The tenant id.
 
 ### Read-Only
 
 - `content` (String) The flow content as yaml.
 - `id` (String) The ID of this resource.
 - `revision` (Number) The flow revision.
+- `tenant_id` (String) The tenant id.

@@ -28,7 +28,6 @@ data "kestra_role" "example" {
 ### Optional
 
 - `namespace` (String) The linked namespace.
-- `tenant_id` (String) The tenant id.
 
 ### Read-Only
 
@@ -36,6 +35,7 @@ data "kestra_role" "example" {
 - `id` (String) The ID of this resource.
 - `name` (String) The role name.
 - `permissions` (Set of Object) The role permissions. (see [below for nested schema](#nestedatt--permissions))
+- `tenant_id` (String) The tenant id.
 
 <a id="nestedatt--permissions"></a>
 ### Nested Schema for `permissions`

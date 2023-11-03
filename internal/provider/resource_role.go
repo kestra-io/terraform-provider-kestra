@@ -20,7 +20,7 @@ func resourceRole() *schema.Resource {
 			"tenant_id": {
 				Description: "The tenant id.",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 			},
 			"namespace": {
 				Description: "The linked namespace.",
@@ -70,7 +70,7 @@ func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	body, err := roleSchemaToApi(d)
 	if err != nil {
@@ -82,7 +82,7 @@ func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		return diag.FromErr(reqErr.Err)
 	}
 
-	errs := roleApiToSchema(r.(map[string]interface{}), d)
+	errs := roleApiToSchema(r.(map[string]interface{}), d, c)
 	if errs != nil {
 		return errs
 	}
@@ -95,7 +95,7 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	var diags diag.Diagnostics
 
 	roleId := d.Id()
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	r, reqErr := c.request("GET", fmt.Sprintf("%s/roles/%s", apiRoot(tenantId), roleId), nil)
 	if reqErr != nil {
@@ -107,7 +107,7 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 		return diag.FromErr(reqErr.Err)
 	}
 
-	errs := roleApiToSchema(r.(map[string]interface{}), d)
+	errs := roleApiToSchema(r.(map[string]interface{}), d, c)
 	if errs != nil {
 		return errs
 	}
@@ -126,14 +126,14 @@ func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 		}
 
 		roleId := d.Id()
-		tenantId := d.Get("tenant_id").(string)
+		tenantId := c.TenantId
 
 		r, reqErr := c.request("PUT", fmt.Sprintf("%s/roles/%s", apiRoot(tenantId), roleId), body)
 		if err != nil {
 			return diag.FromErr(reqErr.Err)
 		}
 
-		errs := roleApiToSchema(r.(map[string]interface{}), d)
+		errs := roleApiToSchema(r.(map[string]interface{}), d, c)
 		if errs != nil {
 			return errs
 		}
@@ -149,7 +149,7 @@ func resourceRoleDelete(ctx context.Context, d *schema.ResourceData, meta interf
 	var diags diag.Diagnostics
 
 	roleId := d.Id()
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/roles/%s", apiRoot(tenantId), roleId), nil)
 	if reqErr != nil {

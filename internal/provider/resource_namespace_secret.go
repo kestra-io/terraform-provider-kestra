@@ -19,7 +19,7 @@ func resourceNamespaceSecret() *schema.Resource {
 			"tenant_id": {
 				Description: "The tenant id.",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 			},
 			"namespace": {
@@ -55,7 +55,7 @@ func resourceNamespaceSecretCreate(ctx context.Context, d *schema.ResourceData, 
 
 	namespaceId := d.Get("namespace").(string)
 	secretKey := d.Get("secret_key").(string)
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	var reqErr *RequestError
 	_, reqErr = c.request("PUT", fmt.Sprintf("%s/namespaces/%s/secrets", apiRoot(tenantId), namespaceId), body)
@@ -85,7 +85,7 @@ func resourceNamespaceSecretUpdate(ctx context.Context, d *schema.ResourceData, 
 		}
 
 		namespaceId := d.Get("namespace").(string)
-		tenantId := d.Get("tenant_id").(string)
+		tenantId := c.TenantId
 
 		var reqErr *RequestError
 		_, reqErr = c.request("PUT", fmt.Sprintf("%s/namespaces/%s/secrets", apiRoot(tenantId), namespaceId), body)
@@ -106,7 +106,7 @@ func resourceNamespaceSecretDelete(ctx context.Context, d *schema.ResourceData, 
 
 	namespaceId := d.Get("namespace").(string)
 	secretKey := d.Get("secret_key").(string)
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/namespaces/%s/secrets/%s", apiRoot(tenantId), namespaceId, secretKey), nil)
 	if reqErr != nil {

@@ -16,12 +16,6 @@ func resourceBinding() *schema.Resource {
 		ReadContext:   resourceBindingRead,
 		DeleteContext: resourceBindingDelete,
 		Schema: map[string]*schema.Schema{
-			"tenant_id": {
-				Description: "The tenant id.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-			},
 			"type": {
 				Description: "The binding type.",
 				Type:        schema.TypeString,
@@ -62,14 +56,14 @@ func resourceBindingCreate(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(err)
 	}
 
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	r, reqErr := c.request("POST", fmt.Sprintf("%s/bindings", apiRoot(tenantId)), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
 
-	errs := bindingApiToSchema(r.(map[string]interface{}), d)
+	errs := bindingApiToSchema(r.(map[string]interface{}), d, c)
 	if errs != nil {
 		return errs
 	}
@@ -82,7 +76,7 @@ func resourceBindingRead(ctx context.Context, d *schema.ResourceData, meta inter
 	var diags diag.Diagnostics
 
 	bindingId := d.Id()
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	r, reqErr := c.request("GET", fmt.Sprintf("%s/bindings/%s", apiRoot(tenantId), bindingId), nil)
 	if reqErr != nil {
@@ -94,7 +88,7 @@ func resourceBindingRead(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.FromErr(reqErr.Err)
 	}
 
-	errs := bindingApiToSchema(r.(map[string]interface{}), d)
+	errs := bindingApiToSchema(r.(map[string]interface{}), d, c)
 	if errs != nil {
 		return errs
 	}
@@ -107,7 +101,7 @@ func resourceBindingDelete(ctx context.Context, d *schema.ResourceData, meta int
 	var diags diag.Diagnostics
 
 	bindingId := d.Id()
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/bindings/%s", apiRoot(tenantId), bindingId), nil)
 	if reqErr != nil {

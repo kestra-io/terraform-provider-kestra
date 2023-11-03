@@ -57,10 +57,15 @@ func controlContent(body map[string]interface{}, content map[string]interface{})
 	return content, nil
 }
 
-func flowApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Diagnostics {
+func flowApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	d.SetId(fmt.Sprintf("%s/%s", r["namespace"].(string), r["id"].(string)))
+	if *c.TenantId != "" {
+		if err := d.Set("tenant_id", c.TenantId); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
 	if err := d.Set("namespace", r["namespace"].(string)); err != nil {
 		return diag.FromErr(err)
@@ -92,10 +97,15 @@ func flowApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Diag
 	return diags
 }
 
-func flowSourceApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Diagnostics {
+func flowSourceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *Client) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	d.SetId(fmt.Sprintf("%s/%s", r["namespace"].(string), r["id"].(string)))
+	if *c.TenantId != "" {
+		if err := d.Set("tenant_id", c.TenantId); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
 	if err := d.Set("namespace", r["namespace"].(string)); err != nil {
 		return diag.FromErr(err)

@@ -43,12 +43,12 @@ EOT
 
 - `description` (String) The namespace friendly description.
 - `task_defaults` (String) The namespace task defaults in yaml string.
-- `tenant_id` (String) The tenant id.
 - `variables` (String) The namespace variables in yaml string.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `tenant_id` (String) The tenant id.
 
 ## Import
 

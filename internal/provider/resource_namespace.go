@@ -20,7 +20,7 @@ func resourceNamespace() *schema.Resource {
 			"tenant_id": {
 				Description: "The tenant id.",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 			},
 			"namespace_id": {
@@ -62,14 +62,14 @@ func resourceNamespaceCreate(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	r, reqErr := c.request("POST", fmt.Sprintf("%s/namespaces", apiRoot(tenantId)), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
 
-	errs := namespaceApiToSchema(r.(map[string]interface{}), d)
+	errs := namespaceApiToSchema(r.(map[string]interface{}), d, c)
 	if errs != nil {
 		return errs
 	}
@@ -82,7 +82,7 @@ func resourceNamespaceRead(ctx context.Context, d *schema.ResourceData, meta int
 	var diags diag.Diagnostics
 
 	namespaceId := d.Id()
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	r, reqErr := c.request("GET", fmt.Sprintf("%s/namespaces/%s", apiRoot(tenantId), namespaceId), nil)
 	if reqErr != nil {
@@ -94,7 +94,7 @@ func resourceNamespaceRead(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(reqErr.Err)
 	}
 
-	errs := namespaceApiToSchema(r.(map[string]interface{}), d)
+	errs := namespaceApiToSchema(r.(map[string]interface{}), d, c)
 	if errs != nil {
 		return errs
 	}
@@ -113,14 +113,14 @@ func resourceNamespaceUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		}
 
 		namespaceId := d.Id()
-		tenantId := d.Get("tenant_id").(string)
+		tenantId := c.TenantId
 
 		r, reqErr := c.request("PUT", fmt.Sprintf("%s/namespaces/%s", apiRoot(tenantId), namespaceId), body)
 		if reqErr != nil {
 			return diag.FromErr(reqErr.Err)
 		}
 
-		errs := namespaceApiToSchema(r.(map[string]interface{}), d)
+		errs := namespaceApiToSchema(r.(map[string]interface{}), d, c)
 		if errs != nil {
 			return errs
 		}
@@ -137,7 +137,7 @@ func resourceNamespaceDelete(ctx context.Context, d *schema.ResourceData, meta i
 	var diags diag.Diagnostics
 
 	namespaceId := d.Id()
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/namespaces/%s", apiRoot(tenantId), namespaceId), nil)
 	if reqErr != nil {

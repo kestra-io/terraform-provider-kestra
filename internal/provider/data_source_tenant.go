@@ -34,7 +34,7 @@ func dataSourceTenantRead(ctx context.Context, d *schema.ResourceData, meta inte
 
 	tenantId := d.Get("tenant_id").(string)
 
-	r, reqErr := c.request("GET", fmt.Sprintf("%s/tenants/%s", apiRoot(""), tenantId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/tenants/%s", apiRoot(nil), tenantId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

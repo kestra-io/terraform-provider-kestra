@@ -50,12 +50,12 @@ EOT
 ### Optional
 
 - `keep_original_source` (Boolean) Use the content as source code, keeping comment and indentation. Defaults to `true`.
-- `tenant_id` (String) The tenant id.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
 - `revision` (Number) The flow revision.
+- `tenant_id` (String) The tenant id.
 
 ## Import
 

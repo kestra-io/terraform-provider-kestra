@@ -35,13 +35,10 @@ EOT
 - `namespace` (String) The template namespace.
 - `template_id` (String) The template id.
 
-### Optional
-
-- `tenant_id` (String) The tenant id.
-
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `tenant_id` (String) The tenant id.
 
 ## Import
 

@@ -20,7 +20,7 @@ func resourceTemplate() *schema.Resource {
 			"tenant_id": {
 				Description: "The tenant id.",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 			},
 			"namespace": {
@@ -57,14 +57,14 @@ func resourceTemplateCreate(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	r, reqErr := c.request("POST", fmt.Sprintf("%s/templates", apiRoot(tenantId)), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
 
-	errs := templateApiToSchema(r.(map[string]interface{}), d)
+	errs := templateApiToSchema(r.(map[string]interface{}), d, c)
 	if errs != nil {
 		return errs
 	}
@@ -77,7 +77,7 @@ func resourceTemplateRead(ctx context.Context, d *schema.ResourceData, meta inte
 	var diags diag.Diagnostics
 
 	namespaceId, templateId := templateConvertId(d.Id())
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	r, reqErr := c.request("GET", fmt.Sprintf("%s/templates/%s/%s", apiRoot(tenantId), namespaceId, templateId), nil)
 	if reqErr != nil {
@@ -89,7 +89,7 @@ func resourceTemplateRead(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.FromErr(reqErr.Err)
 	}
 
-	errs := templateApiToSchema(r.(map[string]interface{}), d)
+	errs := templateApiToSchema(r.(map[string]interface{}), d, c)
 	if errs != nil {
 		return errs
 	}
@@ -108,14 +108,14 @@ func resourceTemplateUpdate(ctx context.Context, d *schema.ResourceData, meta in
 		}
 
 		namespaceId, templateId := templateConvertId(d.Id())
-		tenantId := d.Get("tenant_id").(string)
+		tenantId := c.TenantId
 
 		r, reqErr := c.request("PUT", fmt.Sprintf("%s/templates/%s/%s", apiRoot(tenantId), namespaceId, templateId), body)
 		if reqErr != nil {
 			return diag.FromErr(reqErr.Err)
 		}
 
-		errs := templateApiToSchema(r.(map[string]interface{}), d)
+		errs := templateApiToSchema(r.(map[string]interface{}), d, c)
 		if errs != nil {
 			return errs
 		}
@@ -131,7 +131,7 @@ func resourceTemplateDelete(ctx context.Context, d *schema.ResourceData, meta in
 	var diags diag.Diagnostics
 
 	namespaceId, templateId := templateConvertId(d.Id())
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/templates/%s/%s", apiRoot(tenantId), namespaceId, templateId), nil)
 	if reqErr != nil {

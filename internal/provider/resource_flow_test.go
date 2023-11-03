@@ -166,25 +166,6 @@ func TestAccResourceFlow(t *testing.T) {
 					),
 				),
 			},
-			{
-				Config: concat(
-					"resource \"kestra_flow\" \"yaml_source\" {",
-					"  tenant_id = \"unit_test\"",
-					"  namespace = \"io.kestra.terraform\"",
-					"  flow_id = \"yaml_source\"",
-					"  content = templatefile(\"/tmp/unit-test/source_yaml_2.yml\", {})",
-					"  keep_original_source = true",
-					"}",
-				),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestMatchResourceAttr(
-						"kestra_flow.yaml_source", "content", regexp.MustCompile("# yaml source code must be kept"),
-					),
-					resource.TestMatchResourceAttr(
-						"kestra_flow.yaml_source", "content", regexp.MustCompile("# only comment"),
-					),
-				),
-			},
 		},
 	})
 }
@@ -209,6 +190,45 @@ func TestAccIncohrenceResourceFlow(t *testing.T) {
 					false,
 				),
 				ExpectError: regexp.MustCompile(".*incoherent resource id: simple.*"),
+			},
+		},
+	})
+}
+
+func TestAccTenantResourceFlow(t *testing.T) {
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerTenantFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccResourceFlow(
+					"io.kestra.terraform",
+					"simple",
+					concat(
+						"tasks:",
+						"  - id: t2",
+						"    type: io.kestra.core.tasks.log.Log",
+						"    message: first {{task.id}}",
+						"    level: TRACE",
+					),
+					false,
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"kestra_flow.new", "id", "io.kestra.terraform/simple",
+					),
+					resource.TestCheckResourceAttr(
+						"kestra_flow.new", "namespace", "io.kestra.terraform",
+					),
+					resource.TestCheckResourceAttr(
+						"kestra_flow.new", "tenant_id", "unit_test",
+					),
+				),
+			},
+			{
+				ResourceName:      "kestra_flow.new",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

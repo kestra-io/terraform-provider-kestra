@@ -17,7 +17,7 @@ func dataSourceFlow() *schema.Resource {
 			"tenant_id": {
 				Description: "The tenant id.",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Computed:    true,
 			},
 			"namespace": {
 				Description: "The namespace.",
@@ -55,14 +55,14 @@ func dataSourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 	namespaceId := d.Get("namespace").(string)
 	flowId := d.Get("flow_id").(string)
-	tenantId := d.Get("tenant_id").(string)
+	tenantId := c.TenantId
 
 	r, reqErr := c.request("GET", fmt.Sprintf("%s/flows/%s/%s", apiRoot(tenantId), namespaceId, flowId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
 
-	errs := flowApiToSchema(r.(map[string]interface{}), d)
+	errs := flowApiToSchema(r.(map[string]interface{}), d, c)
 	if errs != nil {
 		return errs
 	}

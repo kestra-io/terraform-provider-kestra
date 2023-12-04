@@ -44,7 +44,6 @@ func resourceFlow() *schema.Resource {
 				Description: "Use the content as source code, keeping comment and indentation.",
 				Type:        schema.TypeBool,
 				Optional:    true,
-				Default:     true,
 			},
 			"content": {
 				Description:      "The flow full content in yaml string.",
@@ -63,8 +62,18 @@ func resourceFlow() *schema.Resource {
 func resourceFlowCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*Client)
 	var diags diag.Diagnostics
+	var yamlSourceCode bool
 
-	yamlSourceCode := d.Get("keep_original_source").(bool)
+	// GetOkExists is deprecated but the GetOk does not work correctly with boolean
+	// Even if you set default to nil for the props, it will always return false if prop is set
+	localKeepOriginalSource, isLocalSet := d.GetOkExists("keep_original_source")
+
+	if isLocalSet == true {
+		yamlSourceCode = localKeepOriginalSource.(bool)
+	} else {
+		yamlSourceCode = *c.KeepOriginalSource
+	}
+
 	tenantId := c.TenantId
 
 	if yamlSourceCode == true {

@@ -66,6 +66,12 @@ func New(version string, tenant *string) func() *schema.Provider {
 					Optional:    true,
 					Description: "Extra headers to add to every request",
 				},
+				"keep_original_source": &schema.Schema{
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Description: "Keep original source code, keeping comment and indentation.",
+					DefaultFunc: schema.EnvDefaultFunc("KESTRA_KEEP_ORIGINAL_SOURCE", true),
+				},
 			},
 			DataSourcesMap: map[string]*schema.Resource{
 				"kestra_binding":        dataSourceBinding(),
@@ -99,6 +105,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 			password := d.Get("password").(string)
 			jwt := d.Get("jwt").(string)
 			extraHeaders := d.Get("extra_headers")
+			keepOriginalSource := d.Get("keep_original_source").(bool)
 
 			tenantId := ""
 			if tenant != nil {
@@ -109,7 +116,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 
 			var diags diag.Diagnostics
 
-			c, err := NewClient(url, &username, &password, &jwt, &extraHeaders, &tenantId)
+			c, err := NewClient(url, &username, &password, &jwt, &extraHeaders, &tenantId, &keepOriginalSource)
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}

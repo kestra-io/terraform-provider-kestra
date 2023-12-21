@@ -39,12 +39,6 @@ func dataSourceFlow() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"keep_original_source": {
-				Description: "Use the content as source code, keeping comment and indentation.",
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-			},
 		},
 	}
 }

@@ -18,6 +18,15 @@ var providerFactories = map[string]func() (*schema.Provider, error){
 	},
 }
 
+// Provider with KeepOriginalSource to false
+var providerFactoriesKOSFalse = map[string]func() (*schema.Provider, error){
+	"kestra": func() (*schema.Provider, error) {
+		provider := New("dev", nil)()
+		provider.Schema["keep_original_source"].Default = false
+		return provider, nil
+	},
+}
+
 var providerTenantFactories = map[string]func() (*schema.Provider, error){
 	"kestra": func() (*schema.Provider, error) {
 		return New("dev", stringToPointer("unit_test"))(), nil

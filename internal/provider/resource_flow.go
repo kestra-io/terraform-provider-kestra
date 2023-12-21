@@ -41,11 +41,6 @@ func resourceFlow() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 			},
-			"keep_original_source": {
-				Description: "Use the content as source code, keeping comment and indentation.",
-				Type:        schema.TypeBool,
-				Optional:    true,
-			},
 			"content": {
 				Description:      "The flow full content in yaml string.",
 				Type:             schema.TypeString,
@@ -63,19 +58,8 @@ func resourceFlow() *schema.Resource {
 func resourceFlowCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*Client)
 	var diags diag.Diagnostics
-	var yamlSourceCode = true
 
-	// GetOkExists is deprecated but the GetOk does not work correctly with boolean
-	// Even if you set default to nil for the props, it will always return false if prop isnt set
-	localKeepOriginalSource, isLocalSet := d.GetOkExists("keep_original_source")
-
-	if isLocalSet == true {
-		yamlSourceCode = localKeepOriginalSource.(bool)
-	} else {
-		if c.KeepOriginalSource != nil {
-			yamlSourceCode = *c.KeepOriginalSource
-		}
-	}
+	var yamlSourceCode = *c.KeepOriginalSource
 
 	tenantId := c.TenantId
 
@@ -116,7 +100,7 @@ func resourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	var diags diag.Diagnostics
 
 	namespaceId, flowId := flowConvertId(d.Id())
-	yamlSourceCode := d.Get("keep_original_source").(bool)
+	var yamlSourceCode = *c.KeepOriginalSource
 
 	tenantId := c.TenantId
 
@@ -136,9 +120,6 @@ func resourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interfac
 			return errs
 		}
 
-		// Set the keep_original_source value back to ResourceData
-		d.Set("keep_original_source", yamlSourceCode)
-
 		return diags
 	} else {
 		r, reqErr := c.request("GET", fmt.Sprintf("%s/flows/%s/%s", apiRoot(tenantId), namespaceId, flowId), nil)
@@ -156,9 +137,6 @@ func resourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interfac
 			return errs
 		}
 
-		// Set the keep_original_source value back to ResourceData
-		d.Set("keep_original_source", yamlSourceCode)
-
 		return diags
 	}
 }
@@ -168,7 +146,7 @@ func resourceFlowUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	var diags diag.Diagnostics
 
 	if d.HasChanges("content") {
-		yamlSourceCode := d.Get("keep_original_source").(bool)
+		var yamlSourceCode = *c.KeepOriginalSource
 		tenantId := c.TenantId
 
 		if yamlSourceCode == true {

@@ -3,9 +3,10 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"net/http"
 )
 
 func resourceFlow() *schema.Resource {
@@ -65,7 +66,7 @@ func resourceFlowCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	var yamlSourceCode = true
 
 	// GetOkExists is deprecated but the GetOk does not work correctly with boolean
-	// Even if you set default to nil for the props, it will always return false if prop is set
+	// Even if you set default to nil for the props, it will always return false if prop isnt set
 	localKeepOriginalSource, isLocalSet := d.GetOkExists("keep_original_source")
 
 	if isLocalSet == true {
@@ -116,6 +117,7 @@ func resourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interfac
 
 	namespaceId, flowId := flowConvertId(d.Id())
 	yamlSourceCode := d.Get("keep_original_source").(bool)
+
 	tenantId := c.TenantId
 
 	if yamlSourceCode == true {
@@ -134,6 +136,9 @@ func resourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interfac
 			return errs
 		}
 
+		// Set the keep_original_source value back to ResourceData
+		d.Set("keep_original_source", yamlSourceCode)
+
 		return diags
 	} else {
 		r, reqErr := c.request("GET", fmt.Sprintf("%s/flows/%s/%s", apiRoot(tenantId), namespaceId, flowId), nil)
@@ -150,6 +155,9 @@ func resourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interfac
 		if errs != nil {
 			return errs
 		}
+
+		// Set the keep_original_source value back to ResourceData
+		d.Set("keep_original_source", yamlSourceCode)
 
 		return diags
 	}

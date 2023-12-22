@@ -130,9 +130,9 @@ func TestAccResourceFlow(t *testing.T) {
 					resource.TestMatchResourceAttr(
 						"kestra_flow.yaml_source", "content", regexp.MustCompile("# yaml source code must be kept"),
 					),
-					// resource.TestMatchResourceAttr(
-					// 	"kestra_flow.yaml_source", "content", regexp.MustCompile("# only comment"),
-					// ),
+					resource.TestMatchResourceAttr(
+						"kestra_flow.yaml_source", "content", regexp.MustCompile("# only comment"),
+					),
 				),
 			},
 		},

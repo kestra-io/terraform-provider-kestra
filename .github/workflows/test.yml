@@ -94,6 +94,9 @@ jobs:
         run: |
           go mod download
 
+      - name: Set env
+        run: echo "TF_LOG=DEBUG" >> $GITHUB_ENV
+
       - name: Terraform acceptance tests
         timeout-minutes: 10
         env:

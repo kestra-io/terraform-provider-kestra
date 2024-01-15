@@ -47,10 +47,6 @@ EOT
 - `flow_id` (String) The flow id.
 - `namespace` (String) The flow namespace.
 
-### Optional
-
-- `keep_original_source` (Boolean) Use the content as source code, keeping comment and indentation. Defaults to `true`.
-
 ### Read-Only
 
 - `id` (String) The ID of this resource.

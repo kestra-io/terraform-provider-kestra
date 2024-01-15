@@ -3,10 +3,11 @@ package provider
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"gopkg.in/yaml.v2"
-	"strings"
 )
 
 func flowConvertId(id string) (string, string) {
@@ -90,10 +91,6 @@ func flowApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *Client
 		return diag.FromErr(err)
 	}
 
-	if err := d.Set("keep_original_source", false); err != nil {
-		return diag.FromErr(err)
-	}
-
 	return diags
 }
 
@@ -117,9 +114,6 @@ func flowSourceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *
 		return diag.FromErr(err)
 	}
 	if err := d.Set("content", r["source"].(string)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("keep_original_source", true); err != nil {
 		return diag.FromErr(err)
 	}
 

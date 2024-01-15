@@ -27,10 +27,6 @@ data "kestra_flow" "example" {
 - `flow_id` (String) The flow id.
 - `namespace` (String) The namespace.
 
-### Optional
-
-- `keep_original_source` (Boolean) Use the content as source code, keeping comment and indentation. Defaults to `false`.
-
 ### Read-Only
 
 - `content` (String) The flow content as yaml.

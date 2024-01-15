@@ -3,9 +3,10 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"net/http"
 )
 
 func resourceFlow() *schema.Resource {
@@ -40,12 +41,6 @@ func resourceFlow() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 			},
-			"keep_original_source": {
-				Description: "Use the content as source code, keeping comment and indentation.",
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-			},
 			"content": {
 				Description:      "The flow full content in yaml string.",
 				Type:             schema.TypeString,
@@ -64,7 +59,8 @@ func resourceFlowCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	yamlSourceCode := d.Get("keep_original_source").(bool)
+	var yamlSourceCode = *c.KeepOriginalSource
+
 	tenantId := c.TenantId
 
 	if yamlSourceCode == true {
@@ -104,7 +100,8 @@ func resourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	var diags diag.Diagnostics
 
 	namespaceId, flowId := flowConvertId(d.Id())
-	yamlSourceCode := d.Get("keep_original_source").(bool)
+	var yamlSourceCode = *c.KeepOriginalSource
+
 	tenantId := c.TenantId
 
 	if yamlSourceCode == true {
@@ -149,7 +146,7 @@ func resourceFlowUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	var diags diag.Diagnostics
 
 	if d.HasChanges("content") {
-		yamlSourceCode := d.Get("keep_original_source").(bool)
+		var yamlSourceCode = *c.KeepOriginalSource
 		tenantId := c.TenantId
 
 		if yamlSourceCode == true {

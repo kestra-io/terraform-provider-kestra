@@ -16,13 +16,14 @@ import (
 const DefaultURL string = "http://localhost:8080"
 
 type Client struct {
-	HTTPClient  *http.Client
-	Url         string
-	Username    *string
-	Password    *string
-	Jwt         *string
-	ExtraHeader *map[string]string
-	TenantId    *string
+	HTTPClient         *http.Client
+	Url                string
+	Username           *string
+	Password           *string
+	Jwt                *string
+	ExtraHeader        *map[string]string
+	TenantId           *string
+	KeepOriginalSource *bool
 }
 
 type RequestError struct {
@@ -30,13 +31,14 @@ type RequestError struct {
 	Err        error
 }
 
-func NewClient(url string, username *string, password *string, jwt *string, extraHeaders *interface{}, tenantId *string) (*Client, error) {
+func NewClient(url string, username *string, password *string, jwt *string, extraHeaders *interface{}, tenantId *string, keepOriginalSource *bool) (*Client, error) {
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		Url:        DefaultURL,
 	}
 
 	c.Url = url
+	c.KeepOriginalSource = keepOriginalSource
 
 	if (username != nil) && (password != nil) {
 		c.Username = username

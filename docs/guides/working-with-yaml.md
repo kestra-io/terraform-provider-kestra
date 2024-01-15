@@ -14,6 +14,8 @@ There is 2 ways (for flow) to handle yaml:
 * use `keep_original_source = true` method: the default one, the raw yaml will be send and save in Kestra.
 * use `keep_original_source = false` method: the yaml will be encoded in json before behind to the server, so comment and indent will be handle by the server
 
+**Those properties have to be set at the provider level.**
+
 !> Take care with `keep_original_source = false` that this terraform provider is not aware of task & plugins. It can't know default values of properties, and most of conversion logic done by Kestra Server. If you see diff that **is always present** (even just after apply), your flow on terraform must have a minor difference return from the server. In this case, **copy the source from Kestra UI** in your terraform files to avoid these difference.
 
 There is in terraform a lot of function that allow to work properly with this yaml content :

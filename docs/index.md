@@ -3,18 +3,16 @@
 page_title: "kestra Provider"
 subcategory: ""
 description: |-
-  
+
 ---
 
 # kestra Provider
-
-
 
 ## Example Usage
 
 ```terraform
 provider "kestra" {
-  # mandatory, the url to kestra
+  # mandatory, the Kestra webserver/standalone URL
   url = "http://localhost:8080"
 
   # optional basic auth username
@@ -44,5 +42,5 @@ provider "kestra" {
 
 - `jwt` (String, Sensitive) Kestra JWT token
 - `password` (String, Sensitive) Kestra BasicAuth password
-- `url` (String) Kestra full endpoint url without trailing slash
+- `url` (String) Kestra webserver/standalone full endpoint URL (without trailing slash)
 - `username` (String) Kestra BasicAuth username

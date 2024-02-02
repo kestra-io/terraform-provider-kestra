@@ -1,5 +1,5 @@
 provider "kestra" {
-  # mandatory, the url to kestra
+  # mandatory, the Kestra webserver/standalone URL
   url = "http://localhost:8080"
 
   # optional basic auth username

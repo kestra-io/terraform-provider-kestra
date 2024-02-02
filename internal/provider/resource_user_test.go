@@ -39,7 +39,7 @@ func TestAccUser(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"kestra_user.new", "username", "admin 2",
+						"kestra_user.new", "username", "admin-2",
 					),
 					resource.TestCheckResourceAttr(
 						"kestra_user.new", "email", "admin2@john.doe",

@@ -25,14 +25,11 @@ data "kestra_namespace_file" "example" {
 
 ### Required
 
-- `content` (String) Content to store in the file, expected to be a UTF-8 encoded string.
 - `filename` (String) The filename to the namespace file.
 - `namespace` (String) The namespace of the namespace file resource.
 
-### Optional
-
-- `tenant_id` (String) The tenant id.
-
 ### Read-Only
 
+- `content` (String) Content to store in the file, expected to be a UTF-8 encoded string.
 - `id` (String) The ID of this resource.
+- `tenant_id` (String) The tenant id.

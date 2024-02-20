@@ -3,10 +3,12 @@
 page_title: "kestra Provider"
 subcategory: ""
 description: |-
-
+  
 ---
 
 # kestra Provider
+
+
 
 ## Example Usage
 
@@ -25,11 +27,11 @@ provider "kestra" {
   jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Iktlc3RyYS5pbyIsImlhdCI6MTUxNjIzOTAyMn0.hm2VKztDJP7CUsI69Th6Y5NLEQrXx7OErLXay55GD5U"
 
   # optional tenant id (EE)
-  tenant_id = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Iktlc3RyYS5pbyIsImlhdCI6MTUxNjIzOTAyMn0.hm2VKztDJP7CUsI69Th6Y5NLEQrXx7OErLXay55GD5U"
+  tenant_id = "the-tenant-id"
 
   # optional extra headers
   extra_headers = {
-    x-pipeline    = "*****"
+    x-pipeline = "*****"
     authorization = "Bearer *****"
   }
 }
@@ -40,7 +42,11 @@ provider "kestra" {
 
 ### Optional
 
-- `jwt` (String, Sensitive) Kestra JWT token
-- `password` (String, Sensitive) Kestra BasicAuth password
-- `url` (String) Kestra webserver/standalone full endpoint URL (without trailing slash)
-- `username` (String) Kestra BasicAuth username
+- `api_token` (String, Sensitive) The API token (EE)
+- `extra_headers` (Map of String) Extra headers to add to every request
+- `jwt` (String, Sensitive) The JWT token (EE)
+- `keep_original_source` (Boolean) Keep original source code, keeping comment and indentation.
+- `password` (String, Sensitive) The BasicAuth password
+- `tenant_id` (String) The tenant id (EE)
+- `url` (String) The endpoint url without trailing slash
+- `username` (String) The BasicAuth username

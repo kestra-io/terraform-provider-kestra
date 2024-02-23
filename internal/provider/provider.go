@@ -61,6 +61,13 @@ func New(version string, tenant *string) func() *schema.Provider {
 					Description: "The JWT token (EE)",
 					DefaultFunc: schema.EnvDefaultFunc("KESTRA_JWT", ""),
 				},
+				"api_token": &schema.Schema{
+					Type:        schema.TypeString,
+					Optional:    true,
+					Sensitive:   true,
+					Description: "The API token (EE)",
+					DefaultFunc: schema.EnvDefaultFunc("KESTRA_API_TOKEN", ""),
+				},
 				"extra_headers": &schema.Schema{
 					Type:        schema.TypeMap,
 					Optional:    true,
@@ -104,6 +111,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 			username := d.Get("username").(string)
 			password := d.Get("password").(string)
 			jwt := d.Get("jwt").(string)
+			apiToken := d.Get("api_token").(string)
 			extraHeaders := d.Get("extra_headers")
 			keepOriginalSource := d.Get("keep_original_source").(bool)
 
@@ -116,7 +124,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 
 			var diags diag.Diagnostics
 
-			c, err := NewClient(url, &username, &password, &jwt, &extraHeaders, &tenantId, &keepOriginalSource)
+			c, err := NewClient(url, &username, &password, &jwt, &apiToken, &extraHeaders, &tenantId, &keepOriginalSource)
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}

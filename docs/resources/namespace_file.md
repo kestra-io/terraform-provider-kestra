@@ -42,11 +42,11 @@ If the file already exists, it will be overridden with the given content.
 ### Optional
 
 - `content` (String) Content to store in the file, expected to be a UTF-8 encoded string.
-- `tenant_id` (String) The tenant id.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `tenant_id` (String) The tenant id.
 
 ## Import
 

@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/json-iterator/go"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"time"
-
-	"github.com/json-iterator/go"
 )
 
 const DefaultURL string = "http://localhost:8080"
@@ -21,6 +20,7 @@ type Client struct {
 	Username           *string
 	Password           *string
 	Jwt                *string
+	ApiToken           *string
 	ExtraHeader        *map[string]string
 	TenantId           *string
 	KeepOriginalSource *bool
@@ -31,7 +31,7 @@ type RequestError struct {
 	Err        error
 }
 
-func NewClient(url string, username *string, password *string, jwt *string, extraHeaders *interface{}, tenantId *string, keepOriginalSource *bool) (*Client, error) {
+func NewClient(url string, username *string, password *string, jwt *string, apiToken *string, extraHeaders *interface{}, tenantId *string, keepOriginalSource *bool) (*Client, error) {
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		Url:        DefaultURL,
@@ -47,6 +47,10 @@ func NewClient(url string, username *string, password *string, jwt *string, extr
 
 	if jwt != nil {
 		c.Jwt = jwt
+	}
+
+	if apiToken != nil {
+		c.ApiToken = apiToken
 	}
 
 	if extraHeaders != nil {
@@ -149,6 +153,11 @@ func (c *Client) rawResponseRequest(method string, req *http.Request) (int, []by
 
 	if c.Jwt != nil {
 		req.AddCookie(&http.Cookie{Name: "JWT", Value: *c.Jwt})
+	}
+
+	if c.ApiToken != nil {
+		bearer := "Bearer " + *c.ApiToken
+		req.Header.Set("Authorization", bearer)
 	}
 
 	if c.ExtraHeader != nil {

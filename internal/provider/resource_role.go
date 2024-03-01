@@ -37,6 +37,12 @@ func resourceRole() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"is_default": {
+			    Description: "The role is the default one at user creation. Only one role can be default. Latest create/update to true will be keep as default.",
+			    Type:        schema.TypeBool,
+			    Optional:    true,
+			    Default:     false,
+			},
 			"permissions": {
 				Description: "The role permissions.",
 				Type:        schema.TypeSet,
@@ -119,7 +125,7 @@ func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	if d.HasChanges("namespace", "name", "description", "permissions") {
+	if d.HasChanges("namespace", "name", "description", "permissions", "is_default") {
 		body, err := roleSchemaToApi(d)
 		if err != nil {
 			return diag.FromErr(err)

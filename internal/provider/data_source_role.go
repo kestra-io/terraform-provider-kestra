@@ -39,6 +39,12 @@ func dataSourceRole() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"is_default": {
+			    Description: "The role is the default one at user creation. Only one role can be default. Latest create/update to true will be keep as default.",
+			    Type:        schema.TypeBool,
+			    Optional:    true,
+			    Default:     false,
+			},
 			"permissions": {
 				Description: "The role permissions.",
 				Type:        schema.TypeSet,

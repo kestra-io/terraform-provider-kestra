@@ -28,6 +28,7 @@ data "kestra_role" "example" {
 ### Optional
 
 - `namespace` (String) The linked namespace.
+- `is_default` (Boolean) The role is the default one at user creation. Only one role can be default. Latest create/update to true will be keep as default.
 
 ### Read-Only
 

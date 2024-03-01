@@ -151,11 +151,11 @@ func (c *Client) rawResponseRequest(method string, req *http.Request) (int, []by
 		)
 	}
 
-	if c.Jwt != nil {
+	if c.Jwt != nil && *c.Jwt != "" {
 		req.AddCookie(&http.Cookie{Name: "JWT", Value: *c.Jwt})
 	}
 
-	if c.ApiToken != nil {
+	if c.ApiToken != nil && *c.ApiToken != "" {
 		bearer := "Bearer " + *c.ApiToken
 		req.Header.Set("Authorization", bearer)
 	}

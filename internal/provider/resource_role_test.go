@@ -90,6 +90,7 @@ func testAccResourceRole(name, description, permissions string) string {
             name = "%s"
             description = "%s"
             %s
+            is_default = false
         }`,
 		name,
 		description,

@@ -23,6 +23,7 @@ func roleSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
 		permissions[item["type"].(string)] = item["permissions"]
 	}
 	body["permissions"] = permissions
+	body["isDefault"] = d.Get("is_default").(bool)
 
 	return body, nil
 }
@@ -64,6 +65,16 @@ func roleApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *Client
 		}
 
 		if err := d.Set("permissions", permissions); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if _, ok := r["isDefault"]; ok {
+		if err := d.Set("is_default", r["isDefault"].(bool)); err != nil {
+			return diag.FromErr(err)
+		}
+	} else {
+		if err := d.Set("is_default", false); err != nil {
 			return diag.FromErr(err)
 		}
 	}

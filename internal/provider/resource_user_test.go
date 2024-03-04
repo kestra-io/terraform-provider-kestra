@@ -33,7 +33,7 @@ func TestAccUser(t *testing.T) {
 			},
 			{
 				Config: testAccResourceUser(
-					"admin 2",
+					"admin-2",
 					"admin2@john.doe",
 					"[]",
 				),

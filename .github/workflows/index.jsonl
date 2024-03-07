@@ -20,3 +20,5 @@
 {"id":"admin","name":"My admin tenants","deleted":false}
 { "index" : { "_index" : "kestra_tenants", "_id" : "unit_test" } }
 {"id":"unit_test","name":"My admin tenants","deleted":false}
+{ "index" : { "_index" : "kestra_users", "_id" : "2EPi5XC0oluKRCVF56gcC" } }
+{"id":"2EPi5XC0oluKRCVF56gcC","username":"test-sa", "type": "SERVICE_ACCOUNT"}

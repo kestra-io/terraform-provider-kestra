@@ -21,4 +21,4 @@
 { "index" : { "_index" : "kestra_tenants", "_id" : "unit_test" } }
 {"id":"unit_test","name":"My admin tenants","deleted":false}
 { "index" : { "_index" : "kestra_users", "_id" : "2EPi5XC0oluKRCVF56gcC" } }
-{"id":"2EPi5XC0oluKRCVF56gcC","username":"test-sa", "type": "SERVICE_ACCOUNT"}
+{"id":"2EPi5XC0oluKRCVF56gcC","username":"test-sa", "type": "SERVICE_ACCOUNT", "auths":[{"type" : "io.kestra.ee.models.auths.ApiTokenAuth", "uid" : "2XDKrmqyHDkoGnU11wlj87", "tokenPrefix" : "TCAMX5", "name" : "test", "description" : "test", "iat" : "2024-01-01T00:00:00Z", "maxAge" : 86400.0, "lastUsed" : "2024-01-01T00:00:00Z", "extended" : false}],"deleted":false}

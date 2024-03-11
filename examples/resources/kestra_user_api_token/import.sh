@@ -1,0 +1,1 @@
+terraform import kestra_user_api_token.example {{user_id}}

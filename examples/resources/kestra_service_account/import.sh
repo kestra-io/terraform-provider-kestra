@@ -1,0 +1,1 @@
+terraform import kestra_service_account.example {{user_id}}

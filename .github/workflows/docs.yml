@@ -1,0 +1,54 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout provider
+        uses: actions/checkout@v4
+        with:
+          path: terraform-provider-kestra
+
+      - name: Checkout docs
+        uses: actions/checkout@v4
+        with:
+          repository: kestra-io/docs
+          path: docs
+          ref: "develop"
+          token: ${{ secrets.GH_PERSONAL_TOKEN }}
+
+      - name: Transform docs for website
+        run: |
+          cd terraform-provider-kestra/docs/
+          
+          find  -type f -name "*.md" -exec sed -i 's/subcategory: ""/editLink: false/g' {} +
+          find . -type f -name "*.md" -exec sed -i 's/```terraform/```hcl/g' {} +
+          
+          find data-sources -type f -name "*.md" -exec sed -Ei  's/page_title: "([^ ]+).*"/title: \1/g' {} +
+          find resources -type f -name "*.md" -exec sed -Ei  's/page_title: "([^ ]+).*"/title: \1/g' {} +
+          find guides -type f -name "*.md" -exec sed -Ei  's/page_title: "([^"]+)"/title: \1/g' {} +
+          
+          find . -type f -name "*.md" -exec sed -Ei  's/-> (.*)/::alert{type="info"}\n\1\n::/g' {} +
+          find . -type f -name "*.md" -exec sed -Ei  's/~> (.*)/::alert{type="warning"}\n\1\n::/g' {} +
+          find . -type f -name "*.md" -exec sed -Ei  's/!> (.*)/::alert{type="danger"}\n\1\n::/g' {} +
+          
+          sed -Ei  's/page_title: "([^ ]+).*"/title: Provider configurations/g' index.md
+          sed -Ei  's/^# kestra Provider/# Provider configurations/g' index.md
+          mv index.md guides/configurations.md
+          
+          cp -R * ../../docs/content/docs/13.terraform/
+
+      - name: Push change to docs
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "feat(docs): update terraform docs"
+          branch: develop
+          file_pattern: 'content/docs/13.terraform/*'
+          repository: "docs"

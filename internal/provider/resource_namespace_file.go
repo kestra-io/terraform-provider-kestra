@@ -84,9 +84,18 @@ func resourceNamespaceFileCreate(ctx context.Context, d *schema.ResourceData, me
 	if err := d.Set("namespace", namespace); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("filename", filename); err != nil {
-		return diag.FromErr(err)
-	}
+
+    filename = d.Get("filename").(string)
+
+    // Check if filename starts with a "/"
+    if !strings.HasPrefix(filename, "/") {
+        filename = "/" + filename
+    }
+
+    if err := d.Set("filename", filename); err != nil {
+     return diag.FromErr(err)
+    }
+
 	if err := d.Set("content", content); err != nil {
 		return diag.FromErr(err)
 	}

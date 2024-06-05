@@ -48,7 +48,7 @@ func roleApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *Client
 		}
 	}
 
-	if _, ok := r["description"]; ok {
+	if _, ok := r["description"].(string); ok {
 		if err := d.Set("description", r["description"].(string)); err != nil {
 			return diag.FromErr(err)
 		}

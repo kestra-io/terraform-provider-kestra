@@ -15,7 +15,7 @@ tasks:
     message: first {{task.id}}
     level: TRACE
 
-taskDefaults:
+pluginDefaults:
   - type: io.kestra.core.tasks.log.Log
     values:
       message: third {{flow.id}}

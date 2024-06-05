@@ -42,7 +42,7 @@ func TestAccResourceFlow(t *testing.T) {
 						"namespace: io.kestra.terraform",
 						"tasks:",
 						"  - ${indent(4, file(\"/tmp/unit-test/t1.yml\"))}",
-						"taskDefaults:",
+						"pluginDefaults:",
 						"  - type: io.kestra.core.tasks.log.Log",
 						"    values:",
 						"      message: third {{flow.id}}",

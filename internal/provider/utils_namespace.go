@@ -18,12 +18,12 @@ func namespaceSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error
 	}
 	body["variables"] = variables
 
-	var taskDefaults interface{}
-	err = yaml.Unmarshal([]byte(d.Get("task_defaults").(string)), &taskDefaults)
+	var pluginDefaults interface{}
+	err = yaml.Unmarshal([]byte(d.Get("plugin_defaults").(string)), &pluginDefaults)
 	if err != nil {
 		return nil, err
 	}
-	body["taskDefaults"] = taskDefaults
+	body["pluginDefaults"] = pluginDefaults
 
 	return body, nil
 }
@@ -61,13 +61,13 @@ func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *C
 		}
 	}
 
-	if _, ok := r["taskDefaults"]; ok {
-		toYaml, err := toYaml(r["taskDefaults"].(interface{}))
+	if _, ok := r["pluginDefaults"]; ok {
+		toYaml, err := toYaml(r["pluginDefaults"].(interface{}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		if err := d.Set("task_defaults", toYaml); err != nil {
+		if err := d.Set("plugin_defaults", toYaml); err != nil {
 			return diag.FromErr(err)
 		}
 	}

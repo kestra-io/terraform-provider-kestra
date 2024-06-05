@@ -21,7 +21,7 @@ k1: 1
 k2:
     v1: 1
 EOT
-  task_defaults = <<EOT
+  plugin_defaults = <<EOT
 - type: io.kestra.core.tasks.log.Log
   values:
     message: first {{flow.id}}
@@ -42,7 +42,7 @@ EOT
 ### Optional
 
 - `description` (String) The namespace friendly description.
-- `task_defaults` (String) The namespace task defaults in yaml string.
+- `plugin_defaults` (String) The namespace plugin defaults in yaml string.
 - `variables` (String) The namespace variables in yaml string.
 
 ### Read-Only

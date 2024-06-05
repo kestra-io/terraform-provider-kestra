@@ -34,8 +34,8 @@ func dataSourceNamespace() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"task_defaults": {
-				Description: "The namespace task defaults.",
+			"plugin_defaults": {
+				Description: "The namespace plugin defaults.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},

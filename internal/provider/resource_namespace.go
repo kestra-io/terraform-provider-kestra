@@ -40,8 +40,8 @@ func resourceNamespace() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: isYamlEquals,
 			},
-			"task_defaults": {
-				Description:      "The namespace task defaults in yaml string.",
+			"plugin_defaults": {
+				Description:      "The namespace plugin defaults in yaml string.",
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: isYamlEquals,
@@ -106,7 +106,7 @@ func resourceNamespaceUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	if d.HasChanges("description", "variables", "task_defaults") {
+	if d.HasChanges("description", "variables", "plugin_defaults") {
 		body, err := namespaceSchemaToApi(d)
 		if err != nil {
 			return diag.FromErr(err)

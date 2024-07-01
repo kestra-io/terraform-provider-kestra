@@ -51,6 +51,9 @@ func TestAccBinding(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"kestra_binding.new", "role_id", "admin",
 					),
+					resource.TestCheckNoResourceAttr(
+						"kestra_binding.new", "namespace",
+					),
 				),
 			},
 			{

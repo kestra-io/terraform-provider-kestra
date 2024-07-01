@@ -32,7 +32,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 				"url": &schema.Schema{
 					Type:        schema.TypeString,
 					Optional:    true,
-					Description: "The endpoint url without trailing slash",
+					Description: "The endpoint url",
 					DefaultFunc: schema.EnvDefaultFunc("KESTRA_URL", ""),
 				},
 				"tenant_id": &schema.Schema{
@@ -111,7 +111,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 		}
 
 		p.ConfigureContextFunc = func(_ context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-			url := d.Get("url").(string)
+			url := strings.TrimRight(d.Get("url").(string), "/")
 			username := d.Get("username").(string)
 			password := d.Get("password").(string)
 			jwt := d.Get("jwt").(string)

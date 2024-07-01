@@ -1,3 +1,9 @@
+## 0.17.1 (July 1, 2024)
+
+BUG FIXES:
+* Don't break provider if the URL contains an ending slash
+* Send a null namespace instead of an empty one not to break the whole Binding system
+
 ## 0.17.0 (June 4, 2024)
 
 BUG FIXES:

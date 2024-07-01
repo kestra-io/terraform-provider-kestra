@@ -15,7 +15,10 @@ func bindingSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) 
 	body["type"] = d.Get("type").(string)
 	body["externalId"] = d.Get("external_id").(string)
 	body["roleId"] = d.Get("role_id").(string)
-	body["namespaceId"] = d.Get("namespace").(string)
+	namespace, provided := d.GetOk("namespace")
+	if provided {
+		body["namespaceId"] = namespace.(string)
+	}
 
 	return body, nil
 }

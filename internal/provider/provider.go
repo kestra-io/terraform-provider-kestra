@@ -108,6 +108,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 				"kestra_namespace_file":   resourceNamespaceFile(),
 				"kestra_service_account":  resourceServiceAccount(),
 				"kestra_user_api_token":   resourceUserApiToken(),
+				"kestra_kv":               resourceKv(),
 			},
 		}
 

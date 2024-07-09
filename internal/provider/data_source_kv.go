@@ -32,7 +32,7 @@ func dataSourceKv() *schema.Resource {
 				Required:    true,
 			},
 			"type": {
-				Description: "The type of the value.",
+				Description: "The type of the value. One of STRING, NUMBER, BOOLEAN, DATETIME, DATE, DURATION, JSON.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},

@@ -76,7 +76,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 				"keep_original_source": &schema.Schema{
 					Type:        schema.TypeBool,
 					Optional:    true,
-					Description: "Keep original source code, keeping comment and indentation.",
+					Description: "Keep original source code, keeping comment and indentation. Setting to false is now deprecated and will be removed in the future.",
 					DefaultFunc: schema.EnvDefaultFunc("KESTRA_KEEP_ORIGINAL_SOURCE", true),
 				},
 			},

@@ -91,6 +91,13 @@ func resourceFlowCreate(ctx context.Context, d *schema.ResourceData, meta interf
 			return errs
 		}
 
+		// Add a warning for JSON creation deprecation
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "Deprecation warning",
+			Detail:   "Creating flow not using the YAML source code is deprecated and will be soon removed.",
+		})
+
 		return diags
 	}
 }

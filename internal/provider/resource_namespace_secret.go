@@ -29,16 +29,31 @@ func resourceNamespaceSecret() *schema.Resource {
 				ForceNew:    true,
 			},
 			"secret_key": {
-				Description: "The namespace secrey key.",
+				Description: "The namespace secret key.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 			},
 			"secret_value": {
-				Description: "The namespace secrey value.",
+				Description: "The namespace secret value.",
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
+			},
+			"secret_description": {
+				Description: "The namespace secret description.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   false,
+			},
+			"secret_tags": {
+				Description: "The namespace secret description.",
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Sensitive:   false,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 		},
 	}

@@ -76,8 +76,20 @@ func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *C
 }
 
 func namespaceSecretSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
-	body := make(map[string]interface{}, 0)
-	body[d.Get("secret_key").(string)] = d.Get("secret_value").(string)
+	secret := make(map[string]interface{}, 0)
+	secret["key"] = d.Get("secret_key").(string)
+	secret["value"] = d.Get("secret_value").(string)
+	secret["description"] = d.Get("secret_description").(string)
 
-	return body, nil
+	tagsByKey := d.Get("secret_tags").(map[string]interface{})
+	tags := make([]interface{}, 0, len(tagsByKey))
+	for key, value := range tagsByKey {
+		tag := make(map[string]interface{}, 0)
+		tag["key"] = key
+		tag["value"] = value
+		tags = append(tags, tag)
+	}
+	secret["tags"] = tags
+
+	return secret, nil
 }

@@ -61,20 +61,18 @@ jobs:
           APPLICATION_SECRETS: ${{ secrets.APPLICATION_SECRETS }}
         run: |
           echo $APPLICATION_SECRETS | base64 -d > .github/docker/application-secrets.yml
-          docker-compose -f docker-compose-ci.yml pull
-          docker-compose -f docker-compose-ci.yml up -d zookeeper kafka elasticsearch vault
+          docker compose -f docker-compose-ci.yml pull
+          docker compose -f docker-compose-ci.yml up -d zookeeper kafka elasticsearch vault
           sleep 30
-          docker-compose -f docker-compose-ci.yml up -d
+          docker compose -f docker-compose-ci.yml up -d
           sleep 30
 
-          echo "\echo 'path \"*\" {capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\", \"sudo\"]}' | vault policy write admins -" | docker exec --interactive terraform-provider-kestra_vault_1 sh -
-          docker exec terraform-provider-kestra_vault_1 vault auth enable userpass
-          docker exec terraform-provider-kestra_vault_1 vault write auth/userpass/users/john \
+          echo "\echo 'path \"*\" {capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\", \"sudo\"]}' | vault policy write admins -" | docker exec --interactive terraform-provider-kestra-vault-1 sh -
+          docker compose -f docker-compose-ci.yml exec vault vault auth enable userpass
+          docker compose -f docker-compose-ci.yml exec vault vault write auth/userpass/users/john \
               password=foo \
               policies=admins \
               token_period=1s
-          docker ps -a
-          docker logs terraform-provider-kestra_kestra_1
 
           curl "127.27.27.27:9200" > /dev/null
           curl -X POST "127.27.27.27:8080/api/v1/users" > /dev/null

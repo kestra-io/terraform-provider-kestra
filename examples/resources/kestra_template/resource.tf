@@ -1,5 +1,5 @@
 resource "kestra_template" "example" {
-  namespace   = "io.kestra.mynamespace"
+  namespace   = "company.team"
   template_id = "my-template"
   content     = <<EOT
 tasks:

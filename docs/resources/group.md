@@ -13,7 +13,7 @@ Manages a Kestra Group.
 
 ```terraform
 resource "kestra_group" "example" {
-  namespace   = "io.kestra.mynamespace"
+  namespace   = "company.team"
   name        = "Friendly name"
   description = "Friendly description"
 }

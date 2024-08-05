@@ -14,7 +14,7 @@ Manages a Kestra User.
 ```terraform
 resource "kestra_user" "example" {
   username    = "my-username"
-  namespace   = "io.kestra.mynamespace"
+  namespace   = "company.team"
   description = "Friendly description"
   first_name  = "John"
   last_name   = "Doe"

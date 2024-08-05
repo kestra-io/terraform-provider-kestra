@@ -26,7 +26,7 @@ You can use simple terraform multiline string with [Heredoc String](https://www.
 
 ```terraform
 resource "kestra_flow" "example" {
-  namespace = "io.kestra.mynamespace"
+  namespace = "company.team"
   flow_id = "my-flow"
   content = <<EOT
 inputs:
@@ -63,7 +63,7 @@ EOT
 
 ```terraform
 resource "kestra_flow" "example" {
-  namespace = "io.kestra.mynamespace"
+  namespace = "company.team"
   flow_id = "my-flow"
   content = file("my-flow.yml")
 }
@@ -104,7 +104,7 @@ And finally create the resource invoking the `templatefile`:
 
 ```terraform
 resource "kestra_flow" "example" {
-  namespace = "io.kestra.mynamespace"
+  namespace = "company.team"
   flow_id = "my-flow"
   content = templatefile("my-flow.yaml", {})
 }

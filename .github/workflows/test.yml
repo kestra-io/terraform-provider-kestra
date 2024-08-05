@@ -80,6 +80,16 @@ jobs:
           curl -H "Content-Type: application/x-ndjson" -XPOST "127.27.27.27:9200/_bulk?pretty" --data-binary @.github/workflows/index.jsonl
           sleep 3
           curl -H "Content-Type: multipart/form-data" -u john@doe.com:pass -X POST -F fileContent=@internal/resources/flow.py "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/files?path=/flow.py"
+          curl -H "Content-Type: text/plain" -u john@doe.com:pass -X PUT -d '"stringValue"' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/string"
+          curl -H "Content-Type: text/plain" -u john@doe.com:pass -X PUT -d '1' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/int"
+          curl -H "Content-Type: text/plain" -u john@doe.com:pass -X PUT -d '1.5' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/double"
+          curl -H "Content-Type: text/plain" -u john@doe.com:pass -X PUT -d 'false' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/falseBoolean"
+          curl -H "Content-Type: text/plain" -u john@doe.com:pass -X PUT -d 'true' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/trueBoolean"
+          curl -H "Content-Type: text/plain" -u john@doe.com:pass -X PUT -d '2022-05-01T03:02:01Z' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/dateTime"
+          curl -H "Content-Type: text/plain" -u john@doe.com:pass -X PUT -d '2022-05-01' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/date"
+          curl -H "Content-Type: text/plain" -u john@doe.com:pass -X PUT -d 'P3DT3H2M1S' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/duration"
+          curl -H "Content-Type: application/json" -u john@doe.com:pass -X PUT -d '{"some":"value","in":"object"}' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/object"
+          curl -H "Content-Type: application/json" -u john@doe.com:pass -X PUT -d '[{"some":"value","in":"object"},{"yet":"another","array":"object"}]' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/array"
 
 
       - name: Set up Go

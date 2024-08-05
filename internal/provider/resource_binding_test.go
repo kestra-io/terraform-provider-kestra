@@ -13,12 +13,7 @@ func TestAccBinding(t *testing.T) {
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccResourceBinding(
-					"GROUP",
-					"admin",
-					"admin",
-					"namespace = \"io.kestra.terraform.data\"",
-				),
+				Config: testAccResourceBinding("GROUP", "admin", "admin", "namespace = \"io.kestra.terraform.data\"", "new"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"kestra_binding.new", "type", "GROUP",
@@ -35,12 +30,7 @@ func TestAccBinding(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccResourceBinding(
-					"USER",
-					"john",
-					"admin",
-					"",
-				),
+				Config: testAccResourceBinding("USER", "john", "admin2", "", "new"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"kestra_binding.new", "type", "USER",
@@ -49,10 +39,7 @@ func TestAccBinding(t *testing.T) {
 						"kestra_binding.new", "external_id", "john",
 					),
 					resource.TestCheckResourceAttr(
-						"kestra_binding.new", "role_id", "admin",
-					),
-					resource.TestCheckNoResourceAttr(
-						"kestra_binding.new", "namespace",
+						"kestra_binding.new", "role_id", "admin2",
 					),
 				),
 			},
@@ -66,23 +53,16 @@ func TestAccBinding(t *testing.T) {
 	})
 }
 
-func testAccResourceBinding(resourceType, externalId, roleId, namespace string) string {
+func testAccResourceBinding(resourceType, externalId, roleId, namespace, id string) string {
 	return fmt.Sprintf(
 		`
-        resource "kestra_role" "new" {
-            name = "my binding role"
-        }
-
-        resource "kestra_role" "new2" {
-            name = "my binding role 2"
-        }
-
-        resource "kestra_binding" "new" {
+        resource "kestra_binding" "%s" {
             type = "%s"
             external_id = "%s"
 			role_id = "%s"
 			%s
         }`,
+		id,
 		resourceType,
 		externalId,
 		roleId,

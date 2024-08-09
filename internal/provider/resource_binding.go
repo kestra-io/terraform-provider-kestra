@@ -16,6 +16,12 @@ func resourceBinding() *schema.Resource {
 		ReadContext:   resourceBindingRead,
 		DeleteContext: resourceBindingDelete,
 		Schema: map[string]*schema.Schema{
+			"tenant_id": {
+				Description: "The tenant id.",
+				Type:        schema.TypeString,
+				Computed:    true,
+				ForceNew:    true,
+			},
 			"type": {
 				Description: "The binding type.",
 				Type:        schema.TypeString,

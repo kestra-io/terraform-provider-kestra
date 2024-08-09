@@ -71,7 +71,9 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		return diag.FromErr(err)
 	}
 
-	r, reqErr := c.request("POST", fmt.Sprintf("%s/users", apiRoot(nil)), body)
+	tenantId := c.TenantId
+
+	r, reqErr := c.request("POST", fmt.Sprintf("%s/users", apiRoot(tenantId)), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
@@ -89,8 +91,9 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	var diags diag.Diagnostics
 
 	userId := d.Id()
+	tenantId := c.TenantId
 
-	r, reqErr := c.request("GET", fmt.Sprintf("%s/users/%s", apiRoot(nil), userId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/users/%s", apiRoot(tenantId), userId), nil)
 	if reqErr != nil {
 		if reqErr.StatusCode == http.StatusNotFound {
 			d.SetId("")
@@ -119,8 +122,9 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 		}
 
 		userId := d.Id()
+		tenantId := c.TenantId
 
-		r, reqErr := c.request("PUT", fmt.Sprintf("%s/users/%s", apiRoot(nil), userId), body)
+		r, reqErr := c.request("PUT", fmt.Sprintf("%s/users/%s", apiRoot(tenantId), userId), body)
 		if reqErr != nil {
 			return diag.FromErr(reqErr.Err)
 		}
@@ -141,8 +145,9 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta interf
 	var diags diag.Diagnostics
 
 	userId := d.Id()
+	tenantId := c.TenantId
 
-	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/users/%s", apiRoot(nil), userId), nil)
+	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/users/%s", apiRoot(tenantId), userId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

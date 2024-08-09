@@ -14,6 +14,11 @@ func dataSourceUser() *schema.Resource {
 
 		ReadContext: dataSourceUserRead,
 		Schema: map[string]*schema.Schema{
+			"tenant_id": {
+				Description: "The tenant id.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"user_id": {
 				Description: "The user.",
 				Type:        schema.TypeString,
@@ -66,8 +71,9 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, meta interf
 	var diags diag.Diagnostics
 
 	userId := d.Get("user_id").(string)
+	tenantId := c.TenantId
 
-	r, reqErr := c.request("GET", fmt.Sprintf("%s/users/%s", apiRoot(nil), userId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/users/%s", apiRoot(tenantId), userId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

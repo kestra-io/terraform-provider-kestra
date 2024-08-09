@@ -63,7 +63,9 @@ func resourceServiceAccountCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	r, reqErr := c.request("POST", fmt.Sprintf("%s/users/service-accounts", apiRoot(nil)), body)
+	tenantId := c.TenantId
+
+	r, reqErr := c.request("POST", fmt.Sprintf("%s/users/service-accounts", apiRoot(tenantId)), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
@@ -81,8 +83,9 @@ func resourceServiceAccountRead(ctx context.Context, d *schema.ResourceData, met
 	var diags diag.Diagnostics
 
 	id := d.Id()
+	tenantId := c.TenantId
 
-	r, reqErr := c.request("GET", fmt.Sprintf("%s/users/%s", apiRoot(nil), id), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/users/%s", apiRoot(tenantId), id), nil)
 	if reqErr != nil {
 		if reqErr.StatusCode == http.StatusNotFound {
 			d.SetId("")
@@ -111,8 +114,9 @@ func resourceServiceAccountUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 
 		id := d.Id()
+		tenantId := c.TenantId
 
-		r, reqErr := c.request("PUT", fmt.Sprintf("%s/users/service-accounts/%s", apiRoot(nil), id), body)
+		r, reqErr := c.request("PUT", fmt.Sprintf("%s/users/service-accounts/%s", apiRoot(tenantId), id), body)
 		if reqErr != nil {
 			return diag.FromErr(reqErr.Err)
 		}
@@ -133,8 +137,9 @@ func resourceServiceAccountDelete(ctx context.Context, d *schema.ResourceData, m
 	var diags diag.Diagnostics
 
 	id := d.Id()
+	tenantId := c.TenantId
 
-	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/users/%s", apiRoot(nil), id), nil)
+	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/users/%s", apiRoot(tenantId), id), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

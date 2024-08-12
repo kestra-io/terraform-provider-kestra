@@ -85,8 +85,9 @@ func resourceUserApiTokenCreate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	userId := d.Get("user_id").(string)
+	tenantId := c.TenantId
 
-	r, reqErr := c.request("POST", fmt.Sprintf("%s/users/%s/api-tokens", apiRoot(nil), userId), body)
+	r, reqErr := c.request("POST", fmt.Sprintf("%s/users/%s/api-tokens", apiRoot(tenantId), userId), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
@@ -115,8 +116,9 @@ func resourceUserApiTokenDelete(ctx context.Context, d *schema.ResourceData, met
 
 	tokenId := d.Id()
 	userId := d.Get("user_id").(string)
+	tenantId := c.TenantId
 
-	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/users/%s/api-tokens/%s", apiRoot(nil), userId, tokenId), nil)
+	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/users/%s/api-tokens/%s", apiRoot(tenantId), userId, tokenId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

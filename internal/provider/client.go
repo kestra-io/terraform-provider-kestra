@@ -189,7 +189,7 @@ func (c *Client) rawResponseRequest(method string, req *http.Request) (int, []by
 		}
 	}
 
-	if (res.StatusCode != http.StatusOK) && (res.StatusCode != http.StatusNoContent) {
+	if (res.StatusCode != http.StatusOK) && (res.StatusCode != http.StatusCreated) && (res.StatusCode != http.StatusNoContent) {
 		return 0, nil, &RequestError{
 			StatusCode: res.StatusCode,
 			Err:        fmt.Errorf("status: %d, method: %s, body: %s", res.StatusCode, method, bodyResult),

@@ -1,4 +1,6 @@
 kestra:
+  encryption:
+    secret-key: LWBErwwlb/BQcxWujsm+/scPeO01cTKzvW44GbAWvII=
   kafka:
     client:
       properties:

@@ -17,6 +17,7 @@ const DefaultURL string = "http://localhost:8080"
 type Client struct {
 	HTTPClient         *http.Client
 	Url                string
+	Timeout            int64
 	Username           *string
 	Password           *string
 	Jwt                *string
@@ -31,9 +32,9 @@ type RequestError struct {
 	Err        error
 }
 
-func NewClient(url string, username *string, password *string, jwt *string, apiToken *string, extraHeaders *interface{}, tenantId *string, keepOriginalSource *bool) (*Client, error) {
+func NewClient(url string, timeout int64, username *string, password *string, jwt *string, apiToken *string, extraHeaders *interface{}, tenantId *string, keepOriginalSource *bool) (*Client, error) {
 	c := Client{
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		HTTPClient: &http.Client{Timeout: time.Duration(timeout) * time.Second},
 		Url:        DefaultURL,
 	}
 

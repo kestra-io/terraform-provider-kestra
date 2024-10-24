@@ -54,6 +54,13 @@ func New(version string, tenant *string) func() *schema.Provider {
 					Description: "The BasicAuth password",
 					DefaultFunc: schema.EnvDefaultFunc("KESTRA_PASSWORD", ""),
 				},
+				"timeout": &schema.Schema{
+					Type:        schema.TypeInt,
+					Optional:    true,
+					Sensitive:   false,
+					Description: "The timeout (in seconds) for http requests",
+					DefaultFunc: schema.EnvDefaultFunc("KESTRA_TIMEOUT", 10),
+				},
 				"jwt": &schema.Schema{
 					Type:        schema.TypeString,
 					Optional:    true,
@@ -116,6 +123,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 
 		p.ConfigureContextFunc = func(_ context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 			url := strings.TrimRight(d.Get("url").(string), "/")
+			timeout := d.Get("timeout").(int64)
 			username := d.Get("username").(string)
 			password := d.Get("password").(string)
 			jwt := d.Get("jwt").(string)
@@ -132,7 +140,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 
 			var diags diag.Diagnostics
 
-			c, err := NewClient(url, &username, &password, &jwt, &apiToken, &extraHeaders, &tenantId, &keepOriginalSource)
+			c, err := NewClient(url, timeout, &username, &password, &jwt, &apiToken, &extraHeaders, &tenantId, &keepOriginalSource)
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}

@@ -185,7 +185,7 @@ func TestAccKv(t *testing.T) {
 			urlEnv := strings.TrimRight(os.Getenv("KESTRA_URL"), "/")
 			usernameEnv := os.Getenv("KESTRA_USERNAME")
 			passwordEnv := os.Getenv("KESTRA_PASSWORD")
-			c, _ := NewClient(urlEnv, &usernameEnv, &passwordEnv, nil, nil, nil, nil, nil)
+			c, _ := NewClient(urlEnv, 10, &usernameEnv, &passwordEnv, nil, nil, nil, nil, nil)
 			url := c.Url + fmt.Sprintf("%s/namespaces/io.kestra.terraform/kv/string", apiRoot(nil))
 			request, _ := http.NewRequest("GET", url, nil)
 			_, _, httpError := c.rawResponseRequest("GET", request)

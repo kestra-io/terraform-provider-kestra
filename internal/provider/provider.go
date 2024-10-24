@@ -123,7 +123,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 
 		p.ConfigureContextFunc = func(_ context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 			url := strings.TrimRight(d.Get("url").(string), "/")
-			timeout := d.Get("timeout").(int64)
+			timeout := d.Get("timeout").(int)
 			username := d.Get("username").(string)
 			password := d.Get("password").(string)
 			jwt := d.Get("jwt").(string)
@@ -140,7 +140,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 
 			var diags diag.Diagnostics
 
-			c, err := NewClient(url, timeout, &username, &password, &jwt, &apiToken, &extraHeaders, &tenantId, &keepOriginalSource)
+			c, err := NewClient(url, int64(timeout), &username, &password, &jwt, &apiToken, &extraHeaders, &tenantId, &keepOriginalSource)
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}

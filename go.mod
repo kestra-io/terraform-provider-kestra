@@ -1,6 +1,8 @@
 module github.com/kestra-io/terraform-provider-kestra
 
-go 1.20
+go 1.21
+
+toolchain go1.22.2
 
 require (
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320

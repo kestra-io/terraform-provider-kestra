@@ -16,7 +16,7 @@ provider "kestra" {
 
   # optional extra headers
   extra_headers = {
-    x-pipeline = "*****"
+    x-pipeline    = "*****"
     authorization = "Bearer *****"
   }
 }

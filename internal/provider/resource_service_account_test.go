@@ -61,6 +61,10 @@ func testAccResourceServiceAccount(name, group string) string {
 		`
         resource "kestra_role" "new" {
             name = "my user role"
+			permissions {
+			    type = "FLOW"
+			    permissions = ["READ", "UPDATE"]
+			}
         }
 
         resource "kestra_group" "group1" {

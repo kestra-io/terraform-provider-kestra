@@ -153,7 +153,7 @@ func resourceNamespaceFileDelete(ctx context.Context, d *schema.ResourceData, me
 	namespace, filename := namespaceFileConvertId(d.Id())
 	tenantId := c.TenantId
 
-	url := fmt.Sprintf("%s/namespaces/%s/files?path=%s", apiRoot(tenantId), namespace, filename)
+	url := c.Url + fmt.Sprintf("%s/namespaces/%s/files?path=%s", apiRoot(tenantId), namespace, filename)
 
 	_, reqErr := c.request("DELETE", url, nil)
 	if reqErr != nil {

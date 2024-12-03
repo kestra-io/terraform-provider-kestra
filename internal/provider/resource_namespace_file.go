@@ -85,16 +85,16 @@ func resourceNamespaceFileCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-    filename = d.Get("filename").(string)
+	filename = d.Get("filename").(string)
 
-    // Check if filename starts with a "/"
-    if !strings.HasPrefix(filename, "/") {
-        filename = "/" + filename
-    }
+	// Check if filename starts with a "/"
+	if !strings.HasPrefix(filename, "/") {
+		filename = "/" + filename
+	}
 
-    if err := d.Set("filename", filename); err != nil {
-     return diag.FromErr(err)
-    }
+	if err := d.Set("filename", filename); err != nil {
+		return diag.FromErr(err)
+	}
 
 	if err := d.Set("content", content); err != nil {
 		return diag.FromErr(err)
@@ -152,6 +152,10 @@ func resourceNamespaceFileDelete(ctx context.Context, d *schema.ResourceData, me
 
 	namespace, filename := namespaceFileConvertId(d.Id())
 	tenantId := c.TenantId
+
+	if !strings.HasPrefix(filename, "/") {
+		filename = "/" + filename
+	}
 
 	url := fmt.Sprintf("%s/namespaces/%s/files?path=%s", apiRoot(tenantId), namespace, filename)
 

@@ -40,7 +40,8 @@ func testAccResourceUserPassword(password string) string {
 	return fmt.Sprintf(
 		`
         resource "kestra_user" "new" {
-            username = "my-new-user"
+            username = "new@user.com"
+			email = "new@user.com"
         }
 
         resource "kestra_user_password" "new" {

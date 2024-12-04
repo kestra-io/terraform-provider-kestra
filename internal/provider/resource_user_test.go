@@ -15,13 +15,12 @@ func TestAccUser(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccResourceUser(
-					"admin",
 					"admin@john.doe",
 					"[kestra_group.group1.id]",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"kestra_user.new", "username", "admin",
+						"kestra_user.new", "username", "admin@john.doe",
 					),
 					resource.TestCheckResourceAttr(
 						"kestra_user.new", "email", "admin@john.doe",
@@ -33,13 +32,12 @@ func TestAccUser(t *testing.T) {
 			},
 			{
 				Config: testAccResourceUser(
-					"admin-2",
 					"admin2@john.doe",
 					"[]",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"kestra_user.new", "username", "admin-2",
+						"kestra_user.new", "username", "admin2@john.doe",
 					),
 					resource.TestCheckResourceAttr(
 						"kestra_user.new", "email", "admin2@john.doe",
@@ -58,7 +56,7 @@ func TestAccUser(t *testing.T) {
 	})
 }
 
-func testAccResourceUser(name, email, groups string) string {
+func testAccResourceUser(email, groups string) string {
 	return fmt.Sprintf(
 		`
         resource "kestra_role" "new" {
@@ -82,7 +80,7 @@ func testAccResourceUser(name, email, groups string) string {
             email = "%s"
             groups = %s
         }`,
-		name,
+		email,
 		email,
 		groups,
 	)

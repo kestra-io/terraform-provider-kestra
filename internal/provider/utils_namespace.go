@@ -25,6 +25,32 @@ func namespaceSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error
 	}
 	body["pluginDefaults"] = pluginDefaults
 
+	allowedNamespaces := d.Get("allowed_namespaces").([]interface{})
+	allowedNamespacesList := make([]map[string]interface{}, len(allowedNamespaces))
+	for i, ns := range allowedNamespaces {
+		nsMap := ns.(map[string]interface{})
+		allowedNamespacesList[i] = map[string]interface{}{
+			"namespace": nsMap["namespace"].(string),
+		}
+	}
+	body["allowedNamespaces"] = allowedNamespacesList
+
+	if storageType := d.Get("storage_type").(string); storageType != "" {
+		body["storageType"] = storageType
+	}
+
+	if storageConfiguration := d.Get("storage_configuration").(map[string]interface{}); len(storageConfiguration) > 0 {
+		body["storageConfiguration"] = storageConfiguration
+	}
+
+	if secretType := d.Get("secret_type").(string); secretType != "" {
+		body["secretType"] = secretType
+	}
+
+	if secretConfiguration := d.Get("secret_configuration").(map[string]interface{}); len(secretConfiguration) > 0 {
+		body["secretConfiguration"] = secretConfiguration
+	}
+
 	return body, nil
 }
 
@@ -42,14 +68,14 @@ func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *C
 		return diag.FromErr(err)
 	}
 
-	if _, ok := r["description"]; ok {
-		if err := d.Set("description", r["description"].(string)); err != nil {
+	if description, ok := r["description"].(string); ok {
+		if err := d.Set("description", description); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	if _, ok := r["variables"]; ok {
-		toYaml, err := toYaml(r["variables"].(map[string]interface{}))
+	if variables, ok := r["variables"].(map[string]interface{}); ok {
+		toYaml, err := toYaml(variables)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -61,13 +87,50 @@ func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *C
 		}
 	}
 
-	if _, ok := r["pluginDefaults"]; ok {
-		toYaml, err := toYaml(r["pluginDefaults"].(interface{}))
+	if pluginDefaults, ok := r["pluginDefaults"].(interface{}); ok {
+		toYaml, err := toYaml(pluginDefaults)
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		if err := d.Set("plugin_defaults", toYaml); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if allowedNamespaces, ok := r["allowedNamespaces"].([]interface{}); ok {
+		allowedNamespacesList := make([]map[string]interface{}, len(allowedNamespaces))
+		for i, ns := range allowedNamespaces {
+			nsMap := ns.(map[string]interface{})
+			allowedNamespacesList[i] = map[string]interface{}{
+				"namespace": nsMap["namespace"].(string),
+			}
+		}
+		if err := d.Set("allowed_namespaces", allowedNamespacesList); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if storageType, ok := r["storageType"].(string); ok {
+		if err := d.Set("storage_type", storageType); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if storageConfiguration, ok := r["storageConfiguration"].(map[string]interface{}); ok {
+		if err := d.Set("storage_configuration", storageConfiguration); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if secretType, ok := r["secretType"].(string); ok {
+		if err := d.Set("secret_type", secretType); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if secretConfiguration, ok := r["secretConfiguration"].(map[string]interface{}); ok {
+		if err := d.Set("secret_configuration", secretConfiguration); err != nil {
 			return diag.FromErr(err)
 		}
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"net/http"
 )
 
@@ -45,6 +46,67 @@ func resourceNamespace() *schema.Resource {
 				Type:             schema.TypeString,
 				Optional:         true,
 				DiffSuppressFunc: isYamlEquals,
+			},
+			"allowed_namespaces": {
+				Description: "The allowed namespaces.",
+				Type:        schema.TypeList,
+				Optional:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Description: "The namespace.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+					},
+				},
+			},
+			"worker_group": {
+				Description: "The worker group.",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Description: "The worker group key.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"fallback": {
+							Description:  "The fallback strategy.",
+							Type:         schema.TypeString,
+							Required:     true,
+							ValidateFunc: validation.StringInSlice([]string{"FAIL", "WAIT", "CANCEL"}, false),
+						},
+					},
+				},
+			},
+			"storage_type": {
+				Description: "The storage type.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"storage_configuration": {
+				Description: "The storage configuration.",
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"secret_type": {
+				Description: "The secret type.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"secret_configuration": {
+				Description: "The secret configuration.",
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
 			},
 		},
 		Importer: &schema.ResourceImporter{

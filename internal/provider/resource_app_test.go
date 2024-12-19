@@ -25,9 +25,9 @@ func TestAccResourceApp(t *testing.T) {
 func testAccResourceApp(resourceId string) string {
 	return fmt.Sprintf(
 		`
-		resource "kestra_flow" "new_flow" {
-			namespace = "company.team"
-			flow_id = "get_data"
+        resource "kestra_flow" "new_flow" {
+            namespace = "company.team"
+            flow_id = "get_data"
             content = <<EOT
 id: get_data
 namespace: company.team
@@ -37,9 +37,10 @@ tasks:
   type: io.kestra.plugin.core.log.Log
   message: Hello World! 🚀
 EOT
-		}
-		resource "kestra_app" "%s" {
-			source = <<-EOF
+        }
+        resource "kestra_app" "%s" {
+			depends_on = [kestra_flow.new_flow]
+            source = <<-EOF
 id: test_tf
 type: io.kestra.plugin.ee.apps.Execution
 displayName: New display name
@@ -49,12 +50,12 @@ access: PRIVATE
 
 layout:
   - on: OPEN
-	blocks:
-	  - type: io.kestra.plugin.ee.apps.core.blocks.Markdown
-		content: |
-		  ## Request data
-		  Select the dataset you want to download.
-			EOF
-		}`,
+    blocks:
+      - type: io.kestra.plugin.ee.apps.core.blocks.Markdown
+        content: |
+          ## Request data
+          Select the dataset you want to download.
+EOF
+        }`,
 		resourceId)
 }

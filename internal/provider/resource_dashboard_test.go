@@ -25,33 +25,32 @@ func TestAccResourceDashboard(t *testing.T) {
 func testAccResourceDashboard(resourceId string) string {
 	return fmt.Sprintf(
 		`
-		resource "kestra_dashboard" "%s" {
-			source_code = <<-EOF
-			title: Overview_test
-			charts:
-			  - id: executions_timeseries
-				type: io.kestra.plugin.core.dashboard.chart.TimeSeries
-				chartOptions:
-				  displayName: Executions
-				  description: Executions duration and count per date
-				  legend:
-					enabled: true
-				  column: date
-				  colorByColumn: state
-				data:
-				  type: io.kestra.plugin.core.dashboard.data.Executions
-				  columns:
-					date:
-					  field: START_DATE
-					  displayName: Date
-					state:
-					  field: STATE
-					total:
-					  displayName: Executions
-					  agg: COUNT
-					  graphStyle: BARS
-
-			EOF
-		}`,
+        resource "kestra_dashboard" "%s" {
+            source_code = <<-EOF
+title: Overview_test
+charts:
+  - id: executions_timeseries
+    type: io.kestra.plugin.core.dashboard.chart.TimeSeries
+    chartOptions:
+      displayName: Executions
+      description: Executions duration and count per date
+      legend:
+        enabled: true
+      column: date
+      colorByColumn: state
+    data:
+      type: io.kestra.plugin.core.dashboard.data.Executions
+      columns:
+        date:
+          field: START_DATE
+          displayName: Date
+        state:
+          field: STATE
+        total:
+          displayName: Executions
+          agg: COUNT
+          graphStyle: BARS
+EOF
+        }`,
 		resourceId)
 }

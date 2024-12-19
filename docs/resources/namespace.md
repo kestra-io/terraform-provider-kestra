@@ -44,6 +44,12 @@ EOT
 - `description` (String) The namespace friendly description.
 - `plugin_defaults` (String) The namespace plugin defaults in yaml string.
 - `variables` (String) The namespace variables in yaml string.
+- `allowed_namespaces` (List of Object) The allowed namespaces.
+  - `namespace` (String) The allowed namespace.
+- `storage_type` (String) The storage type.
+- `storage_configuration` (Map of String) The storage configuration.
+- `secret_type` (String) The secret type.
+- `secret_configuration` (Map of String) The secret configuration.
 
 ### Read-Only
 

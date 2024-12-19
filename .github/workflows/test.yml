@@ -108,8 +108,8 @@ jobs:
           TF_ACC: "1"
           TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
           KESTRA_URL: "http://127.27.27.27:8080"
-          KESTRA_USERNAME: john@doe.com
-          KESTRA_PASSWORD: pass
+          KESTRA_USERNAME: root@root.com
+          KESTRA_PASSWORD: Root!1234
         run: |
           go test -v -cover ./internal/provider/
 

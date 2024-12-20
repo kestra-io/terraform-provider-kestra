@@ -1,4 +1,8 @@
 kestra:
+  security:
+     super-admin:
+       username: root@root.com
+       password: Root!1234
   encryption:
     secret-key: LWBErwwlb/BQcxWujsm+/scPeO01cTKzvW44GbAWvII=
   kafka:

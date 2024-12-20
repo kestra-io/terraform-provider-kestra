@@ -35,6 +35,17 @@ func namespaceSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error
 	}
 	body["allowedNamespaces"] = allowedNamespacesList
 
+	if workerGroup, ok := d.GetOk("worker_group"); ok {
+		workerGroupList := workerGroup.([]interface{})
+		if len(workerGroupList) > 0 {
+			workerGroupMap := workerGroupList[0].(map[string]interface{})
+			body["workerGroup"] = map[string]interface{}{
+				"key":      workerGroupMap["key"].(string),
+				"fallback": workerGroupMap["fallback"].(string),
+			}
+		}
+	}
+
 	if storageType := d.Get("storage_type").(string); storageType != "" {
 		body["storageType"] = storageType
 	}
@@ -107,6 +118,17 @@ func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *C
 			}
 		}
 		if err := d.Set("allowed_namespaces", allowedNamespacesList); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if workerGroup, ok := r["workerGroup"].(map[string]interface{}); ok {
+		if err := d.Set("worker_group", []interface{}{
+			map[string]interface{}{
+				"key":      workerGroup["key"].(string),
+				"fallback": workerGroup["fallback"].(string),
+			},
+		}); err != nil {
 			return diag.FromErr(err)
 		}
 	}

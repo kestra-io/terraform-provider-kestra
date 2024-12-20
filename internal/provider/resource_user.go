@@ -45,7 +45,7 @@ func resourceUser() *schema.Resource {
 			"email": {
 				Description: "The user email.",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 			},
 			"groups": {
 				Description: "The user groups id.",

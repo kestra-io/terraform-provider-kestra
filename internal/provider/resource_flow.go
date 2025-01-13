@@ -9,10 +9,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type ResourceFlow struct{}
+
 func resourceFlow() *schema.Resource {
 	return &schema.Resource{
-		Description: "Manages a Kestra Flow.",
-
+		Description:   "Manages a Kestra Flow.",
 		CreateContext: resourceFlowCreate,
 		ReadContext:   resourceFlowRead,
 		UpdateContext: resourceFlowUpdate,
@@ -63,6 +64,8 @@ func resourceFlowCreate(ctx context.Context, d *schema.ResourceData, meta interf
 
 	tenantId := c.TenantId
 
+	diags = validateFlow(c, d.Get("content").(string), diags)
+
 	if yamlSourceCode == true {
 		r, reqErr := c.yamlRequest("POST", fmt.Sprintf("%s/flows", apiRoot(tenantId)), stringToPointer(d.Get("content").(string)))
 		if reqErr != nil {
@@ -110,6 +113,8 @@ func resourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	var yamlSourceCode = *c.KeepOriginalSource
 
 	tenantId := c.TenantId
+
+	diags = validateFlow(c, d.Get("content").(string), diags)
 
 	if yamlSourceCode == true {
 		r, reqErr := c.yamlRequest("GET", fmt.Sprintf("%s/flows/%s/%s?source=true", apiRoot(tenantId), namespaceId, flowId), nil)
@@ -215,6 +220,81 @@ func resourceFlowDelete(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	d.SetId("")
+
+	return diags
+}
+
+func validateFlow(client *Client, content string, diags diag.Diagnostics) diag.Diagnostics {
+	if *client.KeepOriginalSource && len(content) > 0 {
+		// Call the /flows/validate endpoint
+		r, reqErr := client.yamlRequest("POST", fmt.Sprintf("%s/flows/validate", apiRoot(client.TenantId)), stringToPointer(content))
+		if reqErr != nil {
+			return append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Error validating flow",
+				Detail:   reqErr.Err.Error(),
+			})
+		}
+
+		// Get the first item in the result array as we only sent 1 flow
+		validationResult := r.([]interface{})[0].(map[string]interface{})
+
+		if value, ok := validationResult["constraints"]; ok {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Validation Constraint",
+				Detail:   value.(string),
+			})
+		}
+
+		if value, ok := validationResult["warnings"]; ok {
+			warnings := value.([]interface{})
+			for _, warning := range warnings {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Validation Warning",
+					Detail:   warning.(string),
+				})
+			}
+		}
+
+		if value, ok := validationResult["deprecationPaths"]; ok {
+			deprecationPaths := value.([]interface{})
+			for _, deprecation := range deprecationPaths {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Deprecation Warning",
+					Detail:   fmt.Sprintf("%s is deprecated", deprecation.(string)),
+				})
+			}
+		}
+
+		if value, ok := validationResult["infos"]; ok {
+			infos := value.([]interface{})
+			for _, info := range infos {
+				diags = append(diags, diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Validation Info",
+					Detail:   info.(string),
+				})
+			}
+		}
+	} else {
+		if !*client.KeepOriginalSource {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Validation Skipped",
+				Detail:   "Flow validation has been skipped as it is only compatible with KeepOriginalSource o",
+			})
+		}
+		if len(content) > 0 {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Validation Skipped",
+				Detail:   "Flow validation has been skipped as content was empty",
+			})
+		}
+	}
 
 	return diags
 }

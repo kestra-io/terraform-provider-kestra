@@ -63,7 +63,7 @@ This Terraform Provider is available to install automatically via `terraform ini
 
 ```hcl
 terraform {
-  required_providers =  {
+  required_providers  {
     source = "kestra-io/kestra"
     version = "~> X.Y" # where X.Y is the current major version and minor version
   }

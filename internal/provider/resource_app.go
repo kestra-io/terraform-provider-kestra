@@ -10,7 +10,8 @@ import (
 
 func resourceApp() *schema.Resource {
 	return &schema.Resource{
-		Description: "Manages an App resource.",
+		Description: "Manages an App resource." +
+			EnterpriseEditionDescription,
 
 		CreateContext: resourceAppCreate,
 		ReadContext:   resourceAppRead,

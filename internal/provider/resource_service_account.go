@@ -10,7 +10,8 @@ import (
 
 func resourceServiceAccount() *schema.Resource {
 	return &schema.Resource{
-		Description: "Manages a Kestra Service Account.",
+		Description: "Manages a Kestra Service Account." +
+			EnterpriseEditionDescription,
 
 		CreateContext: resourceServiceAccountCreate,
 		ReadContext:   resourceServiceAccountRead,

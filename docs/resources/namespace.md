@@ -4,19 +4,22 @@ page_title: "kestra_namespace Resource - terraform-provider-kestra"
 subcategory: ""
 description: |-
   Manages a Kestra Namespace.
+  -> This resource is only available on the Enterprise Edition https://kestra.io/enterprise
 ---
 
 # kestra_namespace (Resource)
 
 Manages a Kestra Namespace.
 
+-> This resource is only available on the [Enterprise Edition](https://kestra.io/enterprise)
+
 ## Example Usage
 
 ```terraform
 resource "kestra_namespace" "example" {
-  namespace_id = "company.team"
-  description = "Friendly description"
-  variables = <<EOT
+  namespace_id    = "company.team"
+  description     = "Friendly description"
+  variables       = <<EOT
 k1: 1
 k2:
     v1: 1

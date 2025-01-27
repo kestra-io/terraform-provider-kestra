@@ -10,7 +10,8 @@ import (
 
 func dataSourceNamespace() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use this data source to access information about an existing Kestra Namespace.",
+		Description: "Use this data source to access information about an existing Kestra Namespace." +
+			EnterpriseEditionDescription,
 
 		ReadContext: dataSourceNamespaceRead,
 		Schema: map[string]*schema.Schema{

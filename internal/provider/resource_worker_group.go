@@ -10,7 +10,8 @@ import (
 
 func resourceWorkerGroup() *schema.Resource {
 	return &schema.Resource{
-		Description: "Manages a Kestra Worker Group.",
+		Description: "Manages a Kestra Worker Group." +
+			EnterpriseEditionDescription,
 
 		CreateContext: resourceWorkerGroupCreate,
 		ReadContext:   resourceWorkerGroupRead,

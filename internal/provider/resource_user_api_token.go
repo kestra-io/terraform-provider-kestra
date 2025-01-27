@@ -11,7 +11,9 @@ import (
 
 func resourceUserApiToken() *schema.Resource {
 	return &schema.Resource{
-		Description:   "Manages a Kestra User Api Token.",
+		Description: "Manages a Kestra User Api Token." +
+			EnterpriseEditionDescription,
+
 		CreateContext: resourceUserApiTokenCreate,
 		ReadContext:   resourceUserApiTokenRead,
 		UpdateContext: resourceUserApiTokenUpdate,

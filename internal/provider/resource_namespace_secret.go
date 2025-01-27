@@ -9,7 +9,8 @@ import (
 
 func resourceNamespaceSecret() *schema.Resource {
 	return &schema.Resource{
-		Description: "Manages a Kestra Namespace Secret.",
+		Description: "Manages a Kestra Namespace Secret." +
+			EnterpriseEditionDescription,
 
 		CreateContext: resourceNamespaceSecretCreate,
 		ReadContext:   resourceNamespaceSecretRead,

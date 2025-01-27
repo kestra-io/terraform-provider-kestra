@@ -10,7 +10,8 @@ import (
 
 func resourceRole() *schema.Resource {
 	return &schema.Resource{
-		Description: "Manages a Kestra Role.",
+		Description: "Manages a Kestra Role." +
+			EnterpriseEditionDescription,
 
 		CreateContext: resourceRoleCreate,
 		ReadContext:   resourceRoleRead,
@@ -38,10 +39,10 @@ func resourceRole() *schema.Resource {
 				Optional:    true,
 			},
 			"is_default": {
-			    Description: "The role is the default one at user creation. Only one role can be default. Latest create/update to true will be keep as default.",
-			    Type:        schema.TypeBool,
-			    Optional:    true,
-			    Default:     false,
+				Description: "The role is the default one at user creation. Only one role can be default. Latest create/update to true will be keep as default.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
 			},
 			"permissions": {
 				Description: "The role permissions.",

@@ -4,11 +4,14 @@ page_title: "kestra_role Resource - terraform-provider-kestra"
 subcategory: ""
 description: |-
   Manages a Kestra Role.
+  -> This resource is only available on the Enterprise Edition https://kestra.io/enterprise
 ---
 
 # kestra_role (Resource)
 
 Manages a Kestra Role.
+
+-> This resource is only available on the [Enterprise Edition](https://kestra.io/enterprise)
 
 ## Example Usage
 

@@ -10,8 +10,8 @@ import (
 
 func dataSourceBinding() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use this data source to access information about an existing Kestra binding",
-
+		Description: "Use this data source to access information about an existing Kestra binding" +
+			EnterpriseEditionDescription,
 		ReadContext: dataSourceBindingRead,
 		Schema: map[string]*schema.Schema{
 			"tenant_id": {

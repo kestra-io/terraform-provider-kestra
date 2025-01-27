@@ -1,7 +1,7 @@
 resource "kestra_namespace" "example" {
-  namespace_id = "company.team"
-  description = "Friendly description"
-  variables = <<EOT
+  namespace_id    = "company.team"
+  description     = "Friendly description"
+  variables       = <<EOT
 k1: 1
 k2:
     v1: 1

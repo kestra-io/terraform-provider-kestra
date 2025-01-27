@@ -4,11 +4,14 @@ page_title: "kestra_tenant Data Source - terraform-provider-kestra"
 subcategory: ""
 description: |-
   Use this data source to access information about an existing Kestra Tenant.
+  -> This resource is only available on the Enterprise Edition https://kestra.io/enterprise
 ---
 
 # kestra_tenant (Data Source)
 
 Use this data source to access information about an existing Kestra Tenant.
+
+-> This resource is only available on the [Enterprise Edition](https://kestra.io/enterprise)
 
 ## Example Usage
 

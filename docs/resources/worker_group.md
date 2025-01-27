@@ -4,11 +4,14 @@ page_title: "kestra_worker_group Resource - terraform-provider-kestra"
 subcategory: ""
 description: |-
   Manages a Kestra Worker Group.
+  -> This resource is only available on the Enterprise Edition https://kestra.io/enterprise
 ---
 
 # kestra_worker_group (Resource)
 
 Manages a Kestra Worker Group.
+
+-> This resource is only available on the [Enterprise Edition](https://kestra.io/enterprise)
 
 
 

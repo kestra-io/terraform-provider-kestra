@@ -10,7 +10,8 @@ import (
 
 func dataSourceUser() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use this data source to access information about an existing Kestra User.",
+		Description: "Use this data source to access information about an existing Kestra User." +
+			EnterpriseEditionDescription,
 
 		ReadContext: dataSourceUserRead,
 		Schema: map[string]*schema.Schema{

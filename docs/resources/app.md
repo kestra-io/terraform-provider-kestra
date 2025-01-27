@@ -4,11 +4,14 @@ page_title: "kestra_app Resource - terraform-provider-kestra"
 subcategory: ""
 description: |-
   Manages an App resource.
+  -> This resource is only available on the Enterprise Edition https://kestra.io/enterprise
 ---
 
 # kestra_app (Resource)
 
 Manages an App resource.
+
+-> This resource is only available on the [Enterprise Edition](https://kestra.io/enterprise)
 
 
 

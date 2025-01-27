@@ -4,11 +4,14 @@ page_title: "kestra_namespace_secret Resource - terraform-provider-kestra"
 subcategory: ""
 description: |-
   Manages a Kestra Namespace Secret.
+  -> This resource is only available on the Enterprise Edition https://kestra.io/enterprise
 ---
 
 # kestra_namespace_secret (Resource)
 
 Manages a Kestra Namespace Secret.
+
+-> This resource is only available on the [Enterprise Edition](https://kestra.io/enterprise)
 
 ## Example Usage
 

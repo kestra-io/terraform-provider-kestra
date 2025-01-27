@@ -4,11 +4,14 @@ page_title: "kestra_user_api_tokens Data Source - terraform-provider-kestra"
 subcategory: ""
 description: |-
   Use this data source to access information about the API tokens of a Kestra User.
+  -> This resource is only available on the Enterprise Edition https://kestra.io/enterprise
 ---
 
 # kestra_user_api_tokens (Data Source)
 
 Use this data source to access information about the API tokens of a Kestra User.
+
+-> This resource is only available on the [Enterprise Edition](https://kestra.io/enterprise)
 
 
 

@@ -10,7 +10,8 @@ import (
 
 func dataSourceUserApiTokens() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use this data source to access information about the API tokens of a Kestra User.",
+		Description: "Use this data source to access information about the API tokens of a Kestra User." +
+			EnterpriseEditionDescription,
 
 		ReadContext: dataSourceUserApiTokensRead,
 		Schema: map[string]*schema.Schema{

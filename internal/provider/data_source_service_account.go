@@ -10,7 +10,8 @@ import (
 
 func dataSourceServiceAccount() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use this data source to access information about an existing Kestra Service Account.",
+		Description: "Use this data source to access information about an existing Kestra Service Account." +
+			EnterpriseEditionDescription,
 
 		ReadContext: dataSourceServiceAccountRead,
 		Schema: map[string]*schema.Schema{

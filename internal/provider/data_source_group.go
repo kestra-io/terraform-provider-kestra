@@ -10,7 +10,8 @@ import (
 
 func dataSourceGroup() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use this data source to access information about an existing Kestra Group.",
+		Description: "Use this data source to access information about an existing Kestra Group." +
+			EnterpriseEditionDescription,
 
 		ReadContext: dataSourceGroupRead,
 		Schema: map[string]*schema.Schema{

@@ -4,11 +4,14 @@ page_title: "kestra_group Data Source - terraform-provider-kestra"
 subcategory: ""
 description: |-
   Use this data source to access information about an existing Kestra Group.
+  -> This resource is only available on the Enterprise Edition https://kestra.io/enterprise
 ---
 
 # kestra_group (Data Source)
 
 Use this data source to access information about an existing Kestra Group.
+
+-> This resource is only available on the [Enterprise Edition](https://kestra.io/enterprise)
 
 ## Example Usage
 

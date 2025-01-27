@@ -10,7 +10,8 @@ import (
 
 func resourceUser() *schema.Resource {
 	return &schema.Resource{
-		Description: "Manages a Kestra User.",
+		Description: "Manages a Kestra User." +
+			EnterpriseEditionDescription,
 
 		CreateContext: resourceUserCreate,
 		ReadContext:   resourceUserRead,

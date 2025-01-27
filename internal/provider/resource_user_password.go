@@ -10,7 +10,8 @@ import (
 
 func resourceUserPassword() *schema.Resource {
 	return &schema.Resource{
-		Description: "Manages a Kestra User Basic Auth Password.",
+		Description: "Manages a Kestra User Basic Auth Password." +
+			EnterpriseEditionDescription,
 
 		CreateContext: resourceUserPasswordCreate,
 		ReadContext:   resourceUserPasswordRead,

@@ -4,11 +4,14 @@ page_title: "kestra_worker_group Data Source - terraform-provider-kestra"
 subcategory: ""
 description: |-
   Use this data source to access information about an existing Kestra Worker Group.
+  -> This resource is only available on the Enterprise Edition https://kestra.io/enterprise
 ---
 
 # kestra_worker_group (Data Source)
 
 Use this data source to access information about an existing Kestra Worker Group.
+
+-> This resource is only available on the [Enterprise Edition](https://kestra.io/enterprise)
 
 
 

@@ -10,7 +10,8 @@ import (
 
 func dataSourceRole() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use this data source to access information about an existing Kestra Role.",
+		Description: "Use this data source to access information about an existing Kestra Role." +
+			EnterpriseEditionDescription,
 
 		ReadContext: dataSourceRoleRead,
 		Schema: map[string]*schema.Schema{
@@ -40,10 +41,10 @@ func dataSourceRole() *schema.Resource {
 				Computed:    true,
 			},
 			"is_default": {
-			    Description: "The role is the default one at user creation. Only one role can be default. Latest create/update to true will be keep as default.",
-			    Type:        schema.TypeBool,
-			    Optional:    true,
-			    Default:     false,
+				Description: "The role is the default one at user creation. Only one role can be default. Latest create/update to true will be keep as default.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
 			},
 			"permissions": {
 				Description: "The role permissions.",

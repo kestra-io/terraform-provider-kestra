@@ -11,7 +11,8 @@ import (
 
 func resourceTenant() *schema.Resource {
 	return &schema.Resource{
-		Description: "Manages a Kestra Tenant.",
+		Description: "Manages a Kestra Tenant." +
+			EnterpriseEditionDescription,
 
 		CreateContext: resourceTenantCreate,
 		ReadContext:   resourceTenantRead,

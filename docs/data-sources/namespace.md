@@ -4,11 +4,14 @@ page_title: "kestra_namespace Data Source - terraform-provider-kestra"
 subcategory: ""
 description: |-
   Use this data source to access information about an existing Kestra Namespace.
+  -> This resource is only available on the Enterprise Edition https://kestra.io/enterprise
 ---
 
 # kestra_namespace (Data Source)
 
 Use this data source to access information about an existing Kestra Namespace.
+
+-> This resource is only available on the [Enterprise Edition](https://kestra.io/enterprise)
 
 ## Example Usage
 

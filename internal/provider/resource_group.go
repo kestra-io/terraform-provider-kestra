@@ -10,7 +10,8 @@ import (
 
 func resourceGroup() *schema.Resource {
 	return &schema.Resource{
-		Description: "Manages a Kestra Group.",
+		Description: "Manages a Kestra Group." +
+			EnterpriseEditionDescription,
 
 		CreateContext: resourceGroupCreate,
 		ReadContext:   resourceGroupRead,

@@ -10,7 +10,8 @@ import (
 
 func resourceBinding() *schema.Resource {
 	return &schema.Resource{
-		Description: "Manages a Kestra Binding.",
+		Description: "Manages a Kestra Binding." +
+			EnterpriseEditionDescription,
 
 		CreateContext: resourceBindingCreate,
 		ReadContext:   resourceBindingRead,

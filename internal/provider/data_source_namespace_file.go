@@ -54,9 +54,9 @@ func dataSourceNamespaceFileRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	statusCode, body, reqErr := c.rawResponseRequest("GET", req)
+	_, body, reqErr := c.rawResponseRequest("GET", req)
 	if reqErr != nil {
-		if statusCode == http.StatusNotFound {
+		if reqErr.StatusCode == http.StatusNotFound {
 			d.SetId("")
 			return diags
 		}

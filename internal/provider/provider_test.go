@@ -14,7 +14,7 @@ import (
 // to create a provider server to which the CLI can reattach.
 var providerFactories = map[string]func() (*schema.Provider, error){
 	"kestra": func() (*schema.Provider, error) {
-		return New("dev", nil)(), nil
+		return New("dev", stringToPointer("lde"))(), nil
 	},
 }
 
@@ -43,6 +43,17 @@ func testAccPreCheck(t *testing.T) {
 	// You can add code here to run prior to any test case execution, for example assertions
 	// about the appropriate environment variables being set are common to see in a pre-check
 	// function.
+	if v := os.Getenv("KESTRA_URL"); v == "" {
+		t.Fatal("KESTRA_URL must be set for acceptance tests")
+	}
+
+	if v := os.Getenv("KESTRA_USERNAME"); v == "" {
+		t.Fatal("KESTRA_USERNAME must be set for acceptance tests")
+	}
+
+	if v := os.Getenv("KESTRA_PASSWORD"); v == "" {
+		t.Fatal("KESTRA_PASSWORD must be set for acceptance tests")
+	}
 }
 
 func concat(s ...string) string {

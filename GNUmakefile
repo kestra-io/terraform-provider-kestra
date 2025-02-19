@@ -17,8 +17,8 @@ doc:
 	go generate
 
 install: build
-	mkdir -p ~/.terraform.d/plugins/${OS_ARCH}
-	mv ${BINARY} ~/.terraform.d/plugins/${OS_ARCH}
+	mkdir -p ~/.terraform.d/plugins/kestra.local/kestra/kestra/1.0.0/${OS_ARCH}
+	mv ${BINARY} ~/.terraform.d/plugins/kestra.local/kestra/kestra/1.0.0/${OS_ARCH}
 
 test:
 	go test -i $(TEST) || exit 1

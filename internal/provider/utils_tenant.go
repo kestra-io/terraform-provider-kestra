@@ -12,14 +12,7 @@ func tenantSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
 	body["name"] = d.Get("name").(string)
 
 	if workerGroup, ok := d.GetOk("worker_group"); ok {
-		workerGroupList := workerGroup.([]interface{})
-		if len(workerGroupList) > 0 {
-			workerGroupMap := workerGroupList[0].(map[string]interface{})
-			body["workerGroup"] = map[string]interface{}{
-				"key":      workerGroupMap["key"].(string),
-				"fallback": workerGroupMap["fallback"].(string),
-			}
-		}
+		body["workerGroup"] = includedWorkerGroupSchemaToApi(workerGroup.([]interface{}))
 	}
 
 	if storageType := d.Get("storage_type").(string); storageType != "" {
@@ -54,12 +47,9 @@ func tenantApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Di
 	}
 
 	if workerGroup, ok := r["workerGroup"].(map[string]interface{}); ok {
-		if err := d.Set("worker_group", []interface{}{
-			map[string]interface{}{
-				"key":      workerGroup["key"].(string),
-				"fallback": workerGroup["fallback"].(string),
-			},
-		}); err != nil {
+		workerGroupDataList := includedWorkerGroupApiToList(workerGroup)
+
+		if err := d.Set("worker_group", workerGroupDataList); err != nil {
 			return diag.FromErr(err)
 		}
 	}

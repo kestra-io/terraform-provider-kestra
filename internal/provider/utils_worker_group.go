@@ -46,3 +46,32 @@ func workerGroupApiToSchema(r map[string]interface{}, d *schema.ResourceData) di
 
 	return diags
 }
+
+func includedWorkerGroupSchemaToApi(workerGroupList []interface{}) map[string]interface{} {
+	var workerGroupData = make(map[string]interface{})
+
+	if len(workerGroupList) > 0 {
+		workerGroupMap := workerGroupList[0].(map[string]interface{})
+		workerGroupData["key"] = workerGroupMap["key"].(string)
+
+		if workerGroupMap["fallback"] != "" {
+			workerGroupData["fallback"] = workerGroupMap["fallback"].(string)
+		}
+	}
+
+	return workerGroupData
+}
+
+func includedWorkerGroupApiToList(workerGroup map[string]interface{}) []map[string]interface{} {
+	var workerGroupData = make(map[string]interface{})
+	workerGroupData["key"] = workerGroup["key"].(string)
+
+	if workerGroup["fallback"] != nil {
+		workerGroupData["fallback"] = workerGroup["fallback"].(string)
+	}
+
+	var workerGroupDataList []map[string]interface{}
+	workerGroupDataList = append(workerGroupDataList, workerGroupData)
+
+	return workerGroupDataList
+}

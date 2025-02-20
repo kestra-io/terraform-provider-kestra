@@ -77,7 +77,7 @@ func resourceNamespace() *schema.Resource {
 						"fallback": {
 							Description:  "The fallback strategy.",
 							Type:         schema.TypeString,
-							Required:     true,
+							Optional:     true,
 							ValidateFunc: validation.StringInSlice([]string{"FAIL", "WAIT", "CANCEL"}, false),
 						},
 					},

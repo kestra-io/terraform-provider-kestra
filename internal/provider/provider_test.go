@@ -14,7 +14,7 @@ import (
 // to create a provider server to which the CLI can reattach.
 var providerFactories = map[string]func() (*schema.Provider, error){
 	"kestra": func() (*schema.Provider, error) {
-		return New("dev", stringToPointer("lde"))(), nil
+		return New("dev", nil)(), nil
 	},
 }
 

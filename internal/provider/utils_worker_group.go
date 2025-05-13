@@ -64,7 +64,12 @@ func includedWorkerGroupSchemaToApi(workerGroupList []interface{}) map[string]in
 
 func includedWorkerGroupApiToList(workerGroup map[string]interface{}) []map[string]interface{} {
 	var workerGroupData = make(map[string]interface{})
-	workerGroupData["key"] = workerGroup["key"].(string)
+
+	if key, ok := workerGroup["key"].(string); ok {
+		workerGroupData["key"] = key
+	} else {
+		return nil
+	}
 
 	if workerGroup["fallback"] != nil {
 		workerGroupData["fallback"] = workerGroup["fallback"].(string)

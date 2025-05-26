@@ -39,7 +39,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 					Type:        schema.TypeString,
 					Optional:    true,
 					Description: "The tenant id (EE)",
-					DefaultFunc: schema.EnvDefaultFunc("KESTRA_TENANT_ID", ""),
+					DefaultFunc: schema.EnvDefaultFunc("KESTRA_TENANT_ID", "main"),
 				},
 				"username": &schema.Schema{
 					Type:        schema.TypeString,
@@ -133,13 +133,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 			apiToken := d.Get("api_token").(string)
 			extraHeaders := d.Get("extra_headers")
 			keepOriginalSource := d.Get("keep_original_source").(bool)
-
-			tenantId := ""
-			if tenant != nil {
-				tenantId = *tenant
-			} else if d.Get("tenant_id") != nil {
-				tenantId = d.Get("tenant_id").(string)
-			}
+			tenantId := d.Get("tenant_id").(string)
 
 			var diags diag.Diagnostics
 
@@ -239,6 +233,5 @@ func apiRoot(tenantId *string) string {
 	if tenantId == nil || *tenantId == "" {
 		return "/api/v1"
 	}
-
 	return fmt.Sprintf("/api/v1/%s", *tenantId)
 }

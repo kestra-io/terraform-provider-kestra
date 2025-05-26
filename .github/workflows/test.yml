@@ -6,8 +6,17 @@ on:
   push:
     paths-ignore:
       - 'README.md'
+    branches:
+      - main
+      - 'releases/**'
+    tags:
+      - 'v*'
   # schedule:
   #   - cron: '0 13 * * *'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -41,9 +50,9 @@ jobs:
       fail-fast: false
       matrix:
         terraform:
+          - '1.7.5'
           - '1.8.5'
           - '1.9.8'
-          - '1.10.5'
 
     steps:
       - name: Check out code into the Go module directory
@@ -56,41 +65,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
+
+
       - name: Build the docker-compose stack
         env:
           APPLICATION_SECRETS: ${{ secrets.APPLICATION_SECRETS }}
         run: |
           echo $APPLICATION_SECRETS | base64 -d > .github/docker/application-secrets.yml
-          docker compose -f docker-compose-ci.yml pull
-          docker compose -f docker-compose-ci.yml up -d zookeeper kafka elasticsearch vault
-          sleep 30
-          docker compose -f docker-compose-ci.yml up -d
-          sleep 30
-
-          echo "\echo 'path \"*\" {capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\", \"sudo\"]}' | vault policy write admins -" | docker exec --interactive terraform-provider-kestra-vault-1 sh -
-          docker compose -f docker-compose-ci.yml exec vault vault auth enable userpass
-          docker compose -f docker-compose-ci.yml exec vault vault write auth/userpass/users/john \
-              password=foo \
-              policies=admins \
-              token_period=1s
-
-          curl "127.27.27.27:9200" > /dev/null
-          curl -X POST "127.27.27.27:8080/api/v1/users" > /dev/null
-          curl -u root@root.com:Root!1234 -X POST -H 'Content-Type: application/json' -d '{"id":"unit_test","name":"Unit Test"}' "127.27.27.27:8080/api/v1/tenants" > /dev/null
-          curl -H "Content-Type: application/x-ndjson" -XPOST "127.27.27.27:9200/_bulk?pretty" --data-binary @.github/workflows/index.jsonl
-          sleep 3
-          curl -H "Content-Type: multipart/form-data" -u root@root.com:Root!1234 -X POST -F fileContent=@internal/resources/flow.py "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/files?path=/flow.py"
-          curl -H "Content-Type: text/plain" -u root@root.com:Root!1234 -X PUT -d '"stringValue"' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/string"
-          curl -H "Content-Type: text/plain" -u root@root.com:Root!1234 -X PUT -d '1' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/int"
-          curl -H "Content-Type: text/plain" -u root@root.com:Root!1234 -X PUT -d '1.5' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/double"
-          curl -H "Content-Type: text/plain" -u root@root.com:Root!1234 -X PUT -d 'false' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/falseBoolean"
-          curl -H "Content-Type: text/plain" -u root@root.com:Root!1234 -X PUT -d 'true' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/trueBoolean"
-          curl -H "Content-Type: text/plain" -u root@root.com:Root!1234 -X PUT -d '2022-05-01T03:02:01Z' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/dateTime"
-          curl -H "Content-Type: text/plain" -u root@root.com:Root!1234 -X PUT -d '2022-05-01' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/date"
-          curl -H "Content-Type: text/plain" -u root@root.com:Root!1234 -X PUT -d 'P3DT3H2M1S' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/duration"
-          curl -H "Content-Type: application/json" -u root@root.com:Root!1234 -X PUT -d '{"some":"value","in":"object"}' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/object"
-          curl -H "Content-Type: application/json" -u root@root.com:Root!1234 -X PUT -d '[{"some":"value","in":"object"},{"yet":"another","array":"object"}]' "127.27.27.27:8080/api/v1/namespaces/io.kestra.terraform.data/kv/array"
-
+          
+          sh init-tests-env.sh
 
       - name: Set up Go
         uses: actions/setup-go@v5

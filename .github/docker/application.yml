@@ -3,15 +3,18 @@ kestra:
      super-admin:
        username: root@root.com
        password: Root!1234
+       tenantAdminAccess: main
   encryption:
     secret-key: LWBErwwlb/BQcxWujsm+/scPeO01cTKzvW44GbAWvII=
-  kafka:
+  kafka: 
     client:
       properties:
         bootstrap.servers: kafka:9092
   elasticsearch:
     client:
       http-hosts: http://elasticsearch:9200
+    defaults:
+      indice-prefix: "kestra_"
   repository:
     type: elasticsearch
   storage:

@@ -44,7 +44,7 @@ echo "start Kestra"
 docker compose -f docker-compose-ci.yml logs kestra;
 
 echo "inject test data in Vault"
-echo "\echo 'path \"*\" {capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\", \"sudo\"]}' | vault policy write admins -" | docker exec --interactive terraform-provider-kestra-vault-1 sh -
+echo "echo 'path \"*\" {capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\", \"sudo\"]}' | vault policy write admins -" | docker exec --interactive terraform-provider-kestra-vault-1 sh -
 docker compose -f docker-compose-ci.yml exec vault vault auth enable userpass
 docker compose -f docker-compose-ci.yml exec vault vault write auth/userpass/users/john \
     password=foo \

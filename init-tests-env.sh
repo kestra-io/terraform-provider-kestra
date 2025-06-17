@@ -1,3 +1,6 @@
+#!/bin/bash
+set -e;
+
 echo "initializing test environment with docker compose"
 
 docker compose -f docker-compose-ci.yml up elasticsearch kafka vault -d --wait || {
@@ -20,11 +23,14 @@ docker compose -f docker-compose-ci.yml exec vault vault write auth/userpass/use
     policies=admins \
     token_period=1s
 
+
 curl --fail-with-body "127.27.27.27:9200"
+#curl --fail-with-body -u 'root@root.com:Root!1234' -X POST "127.27.27.27:8080/api/v1/main/users"
+curl --fail-with-body -u 'root@root.com:Root!1234' "127.27.27.27:8080/api/v1/main/users/search"
+curl --fail-with-body -u 'root@root.com:Root!1234' -X POST -H 'Content-Type: application/json' -d '{"id":"unit_test","name":"Unit Test"}' "127.27.27.27:8080/api/v1/tenants" > /dev/null
 curl --fail-with-body -H "Content-Type: application/x-ndjson" -XPOST "127.27.27.27:9200/_bulk?pretty" --data-binary @.github/workflows/index.jsonl > /dev/null
 sleep 5
 
-#curl --fail-with-body -X POST "127.27.27.27:8080/api/v1/users"
 
 curl  --fail-with-body -H "Content-Type: multipart/form-data" -u 'root@root.com:Root!1234' -X POST -F "fileContent=@internal/resources/flow.py" "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/files?path=/flow.py" > /dev/null
 curl  --fail-with-body -H "Content-Type: text/plain" -u 'root@root.com:Root!1234' -X PUT -d '"stringValue"' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/string"

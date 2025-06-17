@@ -13,8 +13,6 @@ kestra:
   elasticsearch:
     client:
       http-hosts: http://elasticsearch:9200
-    defaults:
-      indice-prefix: "kestra_"
   repository:
     type: elasticsearch
   storage:

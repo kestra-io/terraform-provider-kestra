@@ -133,7 +133,13 @@ func New(version string, tenant *string) func() *schema.Provider {
 			apiToken := d.Get("api_token").(string)
 			extraHeaders := d.Get("extra_headers")
 			keepOriginalSource := d.Get("keep_original_source").(bool)
-			tenantId := d.Get("tenant_id").(string)
+
+			tenantId := ""
+			if tenant != nil {
+				tenantId = *tenant
+			} else if d.Get("tenant_id") != nil {
+				tenantId = d.Get("tenant_id").(string)
+			}
 
 			var diags diag.Diagnostics
 

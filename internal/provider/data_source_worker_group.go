@@ -1,10 +1,6 @@
 package provider
 
 import (
-	"context"
-	"fmt"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -37,24 +33,4 @@ func dataSourceWorkerGroup() *schema.Resource {
 			},
 		},
 	}
-}
-
-func dataSourceWorkerGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*Client)
-	var diags diag.Diagnostics
-
-	id := d.Get("id").(string)
-	tenantId := c.TenantId
-
-	r, reqErr := c.request("GET", fmt.Sprintf("%s/cluster/workergroups/%s", apiRoot(tenantId), id), nil)
-	if reqErr != nil {
-		return diag.FromErr(reqErr.Err)
-	}
-
-	errs := workerGroupApiToSchema(r.(map[string]interface{}), d)
-	if errs != nil {
-		return errs
-	}
-
-	return diags
 }

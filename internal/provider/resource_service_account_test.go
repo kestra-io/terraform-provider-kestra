@@ -20,7 +20,7 @@ func TestAccServiceAccount(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"kestra_service_account.new", "username", "sa-1",
+						"kestra_service_account.new", "name", "sa-1",
 					),
 					resource.TestCheckResourceAttr(
 						"kestra_service_account.new", "description", "Test description",
@@ -37,7 +37,7 @@ func TestAccServiceAccount(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"kestra_service_account.new", "username", "sa-2",
+						"kestra_service_account.new", "name", "sa-2",
 					),
 					resource.TestCheckResourceAttr(
 						"kestra_service_account.new", "description", "Test description",
@@ -72,7 +72,7 @@ func testAccResourceServiceAccount(name, group string) string {
         }
 
         resource "kestra_service_account" "new" {
-            username = "%s"
+            name = "%s"
 			description = "Test description"
 			%s
         }`,

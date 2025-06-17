@@ -18,7 +18,7 @@ func resourceServiceAccount() *schema.Resource {
 		UpdateContext: resourceServiceAccountUpdate,
 		DeleteContext: resourceServiceAccountDelete,
 		Schema: map[string]*schema.Schema{
-			"username": {
+			"name": {
 				Description: "The service account name.",
 				Type:        schema.TypeString,
 				Required:    true,
@@ -108,7 +108,7 @@ func resourceServiceAccountUpdate(ctx context.Context, d *schema.ResourceData, m
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	if d.HasChanges("username", "description", "groups") {
+	if d.HasChanges("name", "description", "groups") {
 		body, err := serviceAccountSchemaToApi(d)
 		if err != nil {
 			return diag.FromErr(err)

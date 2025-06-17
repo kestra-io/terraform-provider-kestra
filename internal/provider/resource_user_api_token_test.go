@@ -43,7 +43,7 @@ func testAccResourceUserApiToken() string {
 	return fmt.Sprintf(
 		`
         resource "kestra_service_account" "new" {
-            username = "test-service-account"
+            name = "test-service-account"
 			description = "Test description"
 		}
 

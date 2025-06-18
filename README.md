@@ -113,7 +113,19 @@ $ ./init-tests-env.sh
 ```sh
 $ TF_ACC=1 KESTRA_URL=http://127.0.0.1:8088 KESTRA_USERNAME=root@root.com KESTRA_PASSWORD='Root!1234' go test -v -cover ./internal/provider/
 ```
+#### Test coverage
+To display generate a test coverage file in local you can add `-coverprofile` to your test command:
+```
+go test -v -coverprofile=test-coverage-result.out ./internal/provider/
+```
+and then to display it:
+```
+# in browser
+$ go tool cover -html=test-coverage-result.out
 
+# in terminal
+$ go tool cover -func=test-coverage-result.out
+```
 ### Adding Dependencies
 
 This provider uses [Go modules](https://github.com/golang/go/wiki/Modules).

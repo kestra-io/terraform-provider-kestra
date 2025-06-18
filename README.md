@@ -101,6 +101,19 @@ $ make testacc
 $ go install
 ```
 
+### Start tests in local
+The full test suite requires to start the full [docker-compose-ci.yml](docker-compose-ci.yml) and have access to Kestra EE docker image:
+
+1. read and do requirements of [init-tests-env.sh](init-tests-env.sh)
+2. init test environment 
+```sh 
+$ ./init-tests-env.sh
+```
+3. run tests
+```sh
+$ TF_ACC=1 KESTRA_URL=http://127.0.0.1:8088 KESTRA_USERNAME=root@root.com KESTRA_PASSWORD='Root!1234' go test -v -cover ./internal/provider/
+```
+
 ### Adding Dependencies
 
 This provider uses [Go modules](https://github.com/golang/go/wiki/Modules).

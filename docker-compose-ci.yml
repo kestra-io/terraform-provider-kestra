@@ -43,7 +43,8 @@ services:
 
   kestra:
     image: ghcr.io/kestra-io/kestra-ee:develop
-#    image: europe-west1-docker.pkg.dev/kestra-host/docker/kestra-ee:develop it may be easier to use this in local
+    # it may be easier to use gcp registry in local
+#    image: europe-west1-docker.pkg.dev/kestra-host/docker/kestra-ee:develop
     command: server standalone
     healthcheck:
       test: ["CMD-SHELL", "curl -fs http://localhost:8080/health"]
@@ -58,7 +59,7 @@ services:
 
     ports:
       - 127.27.27.27:8080:8080
-#      - 8088:8080 use this in local to be able to use/access the kestra app
+      - 8088:8080 # allowing to run tests in local
     links:
       - kafka
       - vault

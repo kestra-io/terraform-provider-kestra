@@ -43,7 +43,8 @@ func resourceServiceAccount() *schema.Resource {
 						"tenant_id": {
 							Description: "The tenant id for this group.",
 							Type:        schema.TypeString,
-							Optional:    true,
+							Computed:    true, // currently this field is readonly in the API
+							ForceNew:    true,
 						},
 					},
 				},

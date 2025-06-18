@@ -30,7 +30,7 @@ func TestAccBinding(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccResourceBinding("USER", "john", "launcher_default", "", "new"),
+				Config: testAccResourceBinding("USER", "john", "launcher_main", "", "new"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"kestra_binding.new", "type", "USER",

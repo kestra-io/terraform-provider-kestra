@@ -31,7 +31,7 @@ echo "initializing test environment with docker compose"
 
 docker compose -f docker-compose-ci.yml up elasticsearch kafka vault -d --wait || {
    echo "db Docker Compose failed. Dumping logs:";
-   docker-compose -f docker-compose-ci.yml logs;
+   docker compose -f docker-compose-ci.yml logs;
    exit 1;
 }
 docker compose -f docker-compose-ci.yml up kestra -d --wait || {

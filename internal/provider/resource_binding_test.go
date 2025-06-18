@@ -39,7 +39,7 @@ func TestAccBinding(t *testing.T) {
 						"kestra_binding.new", "external_id", "john",
 					),
 					resource.TestCheckResourceAttr(
-						"kestra_binding.new", "role_id", "launcher_default",
+						"kestra_binding.new", "role_id", "launcher_main",
 					),
 				),
 			},

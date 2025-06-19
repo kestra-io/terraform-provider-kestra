@@ -33,7 +33,7 @@ services:
       - 127.27.27.27:9200:9200
 
   kestra:
-    image: ghcr.io/kestra-io/kestra-ee:develop
+    image: ghcr.io/kestra-io/kestra-ee:v0.22.14
     command: server standalone
     volumes:
       - ./.github/docker/application.yml:/app/confs/application.yml:ro

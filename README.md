@@ -37,24 +37,14 @@
 
 This repository defines Kestra resources so that they can be deployed using Infrastructure as Code with Terraform.
 
-![Kestra orchestrator](https://kestra.io/video.gif)
+> [!IMPORTANT]  
+> Kestra Terraform provider 0.23.x is only compatible with Kestra 0.23.x and above.
+> Additionally, if you want to terraform Kestra 0.23.x you need to use Kestra Terraform provider 0.23.x
 
 ## Documentation
 
 * The official Kestra documentation can be found under [kestra.io/docs](https://kestra.io/docs)
 * Kestra Terraform provider documentation can be found [here](https://kestra.io/docs/terraform/).
-
-
-## License
-Apache 2.0 © [Kestra Technologies](https://kestra.io)
-
-
-## Stay up to date
-
-We release new versions every month. Give the [main repository](https://github.com/kestra-io/kestra) a star to stay up to date with the latest releases and get notified about future updates.
-
-![Star the repo](https://kestra.io/star.gif)
-
 
 
 ## Using the provider
@@ -139,3 +129,13 @@ go mod tidy
 ```
 
 Then commit the changes to `go.mod` and `go.sum`.
+
+
+## Stay up to date
+
+We release new versions every month. Give the [main repository](https://github.com/kestra-io/kestra) a star to stay up to date with the latest releases and get notified about future updates.
+
+![Star the repo](https://kestra.io/star.gif)
+
+## License
+Apache 2.0 © [Kestra Technologies](https://kestra.io)

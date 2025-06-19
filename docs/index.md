@@ -8,6 +8,15 @@ description: |-
 
 # kestra Provider
 
+## Kestra 0.23.x compatibility
+
+!> **Warning:** Kestra Terraform provider 0.23.x is only compatible with Kestra 0.23.x and above.
+
+Additionally, if you want to terraform Kestra 0.23.x you need to use Kestra Terraform provider 0.23.x
+
+### Breaking changes from 0.23.x
+
+`kestra_service_account` resource field `username` was renamed to `name` (see [service_account.md](resources/service_account.md)) 
 
 
 ## Example Usage

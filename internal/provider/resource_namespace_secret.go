@@ -94,7 +94,7 @@ func resourceNamespaceSecretUpdate(ctx context.Context, d *schema.ResourceData, 
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	if d.HasChanges("secret_key", "secret_value") {
+	if d.HasChanges("secret_key", "secret_value", "secret_description", "secret_tags") {
 		body, err := namespaceSecretSchemaToApi(d)
 		if err != nil {
 			return diag.FromErr(err)

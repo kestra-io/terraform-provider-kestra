@@ -32,22 +32,31 @@ echo ""
 echo "docker compose down --volumes, need fresh databases"
 docker compose -f docker-compose-ci.yml down --volumes --remove-orphans
 
+echo ""
+echo "--------------------------------------------"
+echo ""
 echo "initializing test environment with docker compose"
 docker compose -f docker-compose-ci.yml up elasticsearch kafka vault -d --wait || {
    echo "db Docker Compose failed. Dumping logs:";
    docker compose -f docker-compose-ci.yml logs;
    exit 1;
 }
+echo ""
+echo "--------------------------------------------"
+echo ""
+echo "start Kestra"
 docker compose -f docker-compose-ci.yml up kestra -d --wait || {
    echo "kestra Docker Compose failed. Dumping logs:";
    docker compose -f docker-compose-ci.yml logs kestra;
    exit 1;
 }
+# all of these sleep are maybe not needed anymore
 sleep 10
-echo ""
-echo "start Kestra"
+
 docker compose -f docker-compose-ci.yml logs kestra;
 
+echo ""
+echo "--------------------------------------------"
 echo ""
 echo "inject test data in Vault"
 echo "echo 'path \"*\" {capabilities = [\"create\", \"read\", \"update\", \"delete\", \"list\", \"sudo\"]}' | vault policy write admins -" | docker exec --interactive terraform-provider-kestra-vault-1 sh -
@@ -58,20 +67,27 @@ docker compose -f docker-compose-ci.yml exec vault vault write auth/userpass/use
     token_period=1s
 
 echo ""
+echo "--------------------------------------------"
+echo ""
 echo "do some basic healthchecks"
-curl --fail-with-body -sS "127.27.27.27:9200" > /dev/null
+curl --fail-with-body -sS "127.27.27.27:9200"
 curl --fail-with-body -sS -u 'root@root.com:Root!1234' "127.27.27.27:8080/api/v1/main/users/search"
 
 echo ""
+echo "--------------------------------------------"
 echo ""
 echo "create unit_test tenant using Kestra API"
-curl --fail-with-body -sS -u 'root@root.com:Root!1234' -X POST -H 'Content-Type: application/json' -d '{"id":"unit_test","name":"Unit Test"}' "127.27.27.27:8080/api/v1/tenants" > /dev/null
+curl --fail-with-body -sS -u 'root@root.com:Root!1234' -X POST -H 'Content-Type: application/json' -d '{"id":"unit_test","name":"Unit Test"}' "127.27.27.27:8080/api/v1/tenants"
 
 echo ""
+echo "--------------------------------------------"
+echo ""
 echo "inject most test data directly into ES, yes this is ugly, we should migrate this to using Kestra API or better the new SDK"
-curl --fail-with-body -sS -H "Content-Type: application/x-ndjson" -XPOST "127.27.27.27:9200/_bulk?pretty" --data-binary @.github/workflows/index.jsonl  > /dev/null
+curl --fail-with-body -sS -H "Content-Type: application/x-ndjson" -XPOST "127.27.27.27:9200/_bulk?pretty" --data-binary @.github/workflows/index.jsonl 
 sleep 5
 
+echo ""
+echo "--------------------------------------------"
 echo ""
 echo "inject more test data using Kestra API (namespace, flow.py, kv data)"
 curl  --fail-with-body -sS -H "Content-Type: application/json" -u 'root@root.com:Root!1234' -X POST -d '{"id":"io.kestra.terraform.data", "tenantId":"main", "description": "My Kestra Namespace data"}' "127.27.27.27:8080/api/v1/main/namespaces"
@@ -87,6 +103,7 @@ curl  --fail-with-body -sS -H "Content-Type: text/plain" -u 'root@root.com:Root!
 curl  --fail-with-body -sS -H "Content-Type: application/json" -u 'root@root.com:Root!1234' -X PUT -d '{"some":"value","in":"object"}' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/object"
 curl  --fail-with-body -sS -H "Content-Type: application/json" -u 'root@root.com:Root!1234' -X PUT -d '[{"some":"value","in":"object"},{"yet":"another","array":"object"}]' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/array"
 
+echo ""
 echo ""
 echo "init-tests-env.sh finished successfully"
 echo ""

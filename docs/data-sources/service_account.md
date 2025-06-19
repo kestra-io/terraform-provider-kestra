@@ -35,7 +35,7 @@ data "kestra_user_service_account" "example" {
 ### Read-Only
 
 - `description` (String) The service account description.
-- `username` (String) The service account name.
+- `name` (String) The service account name.
 
 <a id="nestedblock--group"></a>
 ### Nested Schema for `group`

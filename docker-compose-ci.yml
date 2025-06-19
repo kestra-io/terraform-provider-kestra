@@ -4,8 +4,9 @@ services:
     healthcheck:
       test: [ "CMD-SHELL", "kafka-cluster cluster-id --bootstrap-server localhost:9092" ]
       interval: 2s
-      timeout: 30s
-      retries: 10
+      timeout: 10s
+      retries: 30
+      start_period: 5s
     environment:
       KAFKA_KRAFT_MODE: "true"  # This enables KRaft mode in Kafka.
       KAFKA_PROCESS_ROLES: controller,broker  # Kafka acts as both broker and controller.
@@ -27,8 +28,9 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "curl -fs http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\"\\|\"status\":\"yellow\"'"]
       interval: 2s
-      timeout: 30s
-      retries: 10
+      timeout: 10s
+      retries: 30
+      start_period: 5s
     environment:
       discovery.type: single-node
       cluster.routing.allocation.disk.threshold_enabled: "false"
@@ -50,7 +52,8 @@ services:
       test: ["CMD-SHELL", "curl -fs http://localhost:8080/health"]
       interval: 2s
       timeout: 30s
-      retries: 10
+      retries: 30
+      start_period: 5s
     volumes:
       - ./.github/docker/application.yml:/app/confs/application.yml:ro
       - ./.github/docker/application-secrets.yml:/app/secrets/application-secrets.yml:ro
@@ -76,8 +79,9 @@ services:
     healthcheck:
       test: [ "CMD-SHELL", "vault status -format=json | grep '\"initialized\": true'" ]
       interval: 2s
-      timeout: 30s
-      retries: 10
+      timeout: 10s
+      retries: 30
+      start_period: 5s
     environment:
       VAULT_ADDR: http://localhost:8200
       VAULT_API_ADDR: http://localhost:8200

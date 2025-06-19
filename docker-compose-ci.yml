@@ -44,7 +44,7 @@ services:
       - 127.27.27.27:9200:9200
 
   kestra:
-    image: ghcr.io/kestra-io/kestra-ee:develop
+    image: ghcr.io/kestra-io/kestra-ee:v0.23.0
     # it may be easier to use gcp registry in local
 #    image: europe-west1-docker.pkg.dev/kestra-host/docker/kestra-ee:develop
     command: server standalone

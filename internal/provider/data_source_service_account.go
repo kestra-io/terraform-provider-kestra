@@ -20,7 +20,7 @@ func dataSourceServiceAccount() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"username": {
+			"name": {
 				Description: "The service account name.",
 				Type:        schema.TypeString,
 				Computed:    true,

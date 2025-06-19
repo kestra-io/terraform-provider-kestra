@@ -20,10 +20,10 @@ Use this data source to access information about an existing Kestra Worker Group
 
 ### Required
 
+- `id` (String) The worker group id.
 - `key` (String) The worker group key.
 
 ### Read-Only
 
 - `allowed_tenants` (String) The list of tenants allowed to use the worker group.
 - `description` (String) The worker group description.
-- `id` (String) The worker group id.

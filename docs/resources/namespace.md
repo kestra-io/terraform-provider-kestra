@@ -72,8 +72,11 @@ Required:
 
 Required:
 
-- `fallback` (String) The fallback strategy.
 - `key` (String) The worker group key.
+
+Optional:
+
+- `fallback` (String) The fallback strategy.
 
 ## Import
 

@@ -13,7 +13,7 @@ func TestAccBinding(t *testing.T) {
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccResourceBinding("GROUP", "admin", "admin_default", "namespace = \"io.kestra.terraform.data\"", "new"),
+				Config: testAccResourceBinding("GROUP", "admin", "admin_main", "namespace = \"io.kestra.terraform.data\"", "new"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"kestra_binding.new", "type", "GROUP",
@@ -22,7 +22,7 @@ func TestAccBinding(t *testing.T) {
 						"kestra_binding.new", "external_id", "admin",
 					),
 					resource.TestCheckResourceAttr(
-						"kestra_binding.new", "role_id", "admin_default",
+						"kestra_binding.new", "role_id", "admin_main",
 					),
 					resource.TestCheckResourceAttr(
 						"kestra_binding.new", "namespace", "io.kestra.terraform.data",
@@ -30,7 +30,7 @@ func TestAccBinding(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccResourceBinding("USER", "john", "launcher_default", "", "new"),
+				Config: testAccResourceBinding("USER", "john", "launcher_main", "", "new"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"kestra_binding.new", "type", "USER",
@@ -39,7 +39,7 @@ func TestAccBinding(t *testing.T) {
 						"kestra_binding.new", "external_id", "john",
 					),
 					resource.TestCheckResourceAttr(
-						"kestra_binding.new", "role_id", "launcher_default",
+						"kestra_binding.new", "role_id", "launcher_main",
 					),
 				),
 			},

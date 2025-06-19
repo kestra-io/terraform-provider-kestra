@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -13,12 +12,12 @@ func dataSourceWorkerGroup() *schema.Resource {
 		Description: "Use this data source to access information about an existing Kestra Worker Group." +
 			EnterpriseEditionDescription,
 
-		ReadContext: dataSourceUserRead,
+		ReadContext: dataSourceWorkerGroupRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Description: "The worker group id.",
 				Type:        schema.TypeString,
-				Computed:    true,
+				Required:    true,
 			},
 			"key": {
 				Description: "The worker group key.",
@@ -44,9 +43,8 @@ func dataSourceWorkerGroupRead(ctx context.Context, d *schema.ResourceData, meta
 	var diags diag.Diagnostics
 
 	id := d.Get("id").(string)
-	tenantId := c.TenantId
 
-	r, reqErr := c.request("GET", fmt.Sprintf("%s/cluster/workergroups/%s", apiRoot(tenantId), id), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/cluster/workergroups/%s", apiRoot(nil), id), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

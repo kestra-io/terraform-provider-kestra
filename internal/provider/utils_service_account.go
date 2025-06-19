@@ -12,7 +12,7 @@ func serviceAccountSchemaToApi(d *schema.ResourceData) (map[string]interface{}, 
 		body["id"] = d.Id()
 	}
 
-	body["username"] = d.Get("username").(string)
+	body["name"] = d.Get("name").(string)
 	body["description"] = d.Get("description").(string)
 
 	// Convert group data from schema.Set to a slice of maps
@@ -39,7 +39,7 @@ func serviceAccountApiToSchema(r map[string]interface{}, d *schema.ResourceData)
 
 	d.SetId(r["id"].(string))
 
-	if err := d.Set("username", r["username"].(string)); err != nil {
+	if err := d.Set("name", r["name"].(string)); err != nil {
 		return diag.FromErr(err)
 	}
 

@@ -37,24 +37,14 @@
 
 This repository defines Kestra resources so that they can be deployed using Infrastructure as Code with Terraform.
 
-![Kestra orchestrator](https://kestra.io/video.gif)
+> [!IMPORTANT]  
+> Kestra Terraform provider 0.23.x is only compatible with Kestra 0.23.x and above.
+> Additionally, if you want to terraform Kestra 0.23.x you need to use Kestra Terraform provider 0.23.x
 
 ## Documentation
 
 * The official Kestra documentation can be found under [kestra.io/docs](https://kestra.io/docs)
 * Kestra Terraform provider documentation can be found [here](https://kestra.io/docs/terraform/).
-
-
-## License
-Apache 2.0 © [Kestra Technologies](https://kestra.io)
-
-
-## Stay up to date
-
-We release new versions every month. Give the [main repository](https://github.com/kestra-io/kestra) a star to stay up to date with the latest releases and get notified about future updates.
-
-![Star the repo](https://kestra.io/star.gif)
-
 
 
 ## Using the provider
@@ -101,6 +91,31 @@ $ make testacc
 $ go install
 ```
 
+### Start tests in local
+The full test suite requires to start the full [docker-compose-ci.yml](docker-compose-ci.yml) and have access to Kestra EE docker image:
+
+1. read and do requirements of [init-tests-env.sh](init-tests-env.sh)
+2. init test environment 
+```sh 
+$ ./init-tests-env.sh
+```
+3. run tests
+```sh
+$ TF_ACC=1 KESTRA_URL=http://127.0.0.1:8088 KESTRA_USERNAME=root@root.com KESTRA_PASSWORD='Root!1234' go test -v -cover ./internal/provider/
+```
+#### Test coverage
+To display generate a test coverage file in local you can add `-coverprofile` to your test command:
+```
+go test -v -coverprofile=test-coverage-result.out ./internal/provider/
+```
+and then to display it:
+```
+# in browser
+$ go tool cover -html=test-coverage-result.out
+
+# in terminal
+$ go tool cover -func=test-coverage-result.out
+```
 ### Adding Dependencies
 
 This provider uses [Go modules](https://github.com/golang/go/wiki/Modules).
@@ -114,3 +129,13 @@ go mod tidy
 ```
 
 Then commit the changes to `go.mod` and `go.sum`.
+
+
+## Stay up to date
+
+We release new versions every month. Give the [main repository](https://github.com/kestra-io/kestra) a star to stay up to date with the latest releases and get notified about future updates.
+
+![Star the repo](https://kestra.io/star.gif)
+
+## License
+Apache 2.0 © [Kestra Technologies](https://kestra.io)

@@ -3,10 +3,10 @@ package provider
 import (
 	"context"
 	"fmt"
-	"net/http"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"net/http"
+	"strings"
 )
 
 type ResourceFlow struct{}
@@ -69,29 +69,29 @@ func resourceFlowCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	if yamlSourceCode == true {
 		r, reqErr := c.yamlRequest("POST", fmt.Sprintf("%s/flows", apiRoot(tenantId)), stringToPointer(d.Get("content").(string)))
 		if reqErr != nil {
-			return diag.FromErr(reqErr.Err)
+			return append(diags, diag.FromErr(reqErr.Err)...)
 		}
 
 		errs := flowSourceApiToSchema(r.(map[string]interface{}), d, c)
 		if errs != nil {
-			return errs
+			return append(diags, errs...)
 		}
 
 		return diags
 	} else {
 		body, err := flowSchemaToApi(d)
 		if err != nil {
-			return diag.FromErr(err)
+			return append(diags, diag.FromErr(err)...)
 		}
 
 		r, reqErr := c.request("POST", fmt.Sprintf("%s/flows", apiRoot(tenantId)), body)
 		if reqErr != nil {
-			return diag.FromErr(reqErr.Err)
+			return append(diags, diag.FromErr(reqErr.Err)...)
 		}
 
 		errs := flowApiToSchema(r.(map[string]interface{}), d, c)
 		if errs != nil {
-			return errs
+			return append(diags, errs...)
 		}
 
 		// Add a warning for JSON creation deprecation
@@ -124,12 +124,12 @@ func resourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interfac
 				return diags
 			}
 
-			return diag.FromErr(reqErr.Err)
+			return append(diags, diag.FromErr(reqErr.Err)...)
 		}
 
 		errs := flowSourceApiToSchema(r.(map[string]interface{}), d, c)
 		if errs != nil {
-			return errs
+			return append(diags, errs...)
 		}
 
 		return diags
@@ -141,12 +141,12 @@ func resourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interfac
 				return diags
 			}
 
-			return diag.FromErr(reqErr.Err)
+			return append(diags, diag.FromErr(reqErr.Err)...)
 		}
 
 		errs := flowApiToSchema(r.(map[string]interface{}), d, c)
 		if errs != nil {
-			return errs
+			return append(diags, errs...)
 		}
 
 		return diags
@@ -173,31 +173,31 @@ func resourceFlowUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 				stringToPointer(d.Get("content").(string)),
 			)
 			if reqErr != nil {
-				return diag.FromErr(reqErr.Err)
+				return append(diags, diag.FromErr(reqErr.Err)...)
 			}
 
 			errs := flowSourceApiToSchema(r.(map[string]interface{}), d, c)
 			if errs != nil {
-				return errs
+				return append(diags, errs...)
 			}
 
 			return diags
 		} else {
 			body, err := flowSchemaToApi(d)
 			if err != nil {
-				return diag.FromErr(err)
+				return append(diags, diag.FromErr(err)...)
 			}
 
 			namespaceId, flowId := flowConvertId(d.Id())
 
 			r, reqErr := c.request("PUT", fmt.Sprintf("%s/flows/%s/%s", apiRoot(tenantId), namespaceId, flowId), body)
 			if reqErr != nil {
-				return diag.FromErr(reqErr.Err)
+				return append(diags, diag.FromErr(reqErr.Err)...)
 			}
 
 			errs := flowApiToSchema(r.(map[string]interface{}), d, c)
 			if errs != nil {
-				return errs
+				return append(diags, errs...)
 			}
 
 			return diags
@@ -216,7 +216,7 @@ func resourceFlowDelete(ctx context.Context, d *schema.ResourceData, meta interf
 
 	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/flows/%s/%s", apiRoot(tenantId), namespaceId, flowId), nil)
 	if reqErr != nil {
-		return diag.FromErr(reqErr.Err)
+		return append(diags, diag.FromErr(reqErr.Err)...)
 	}
 
 	d.SetId("")
@@ -228,6 +228,15 @@ func validateFlow(client *Client, content string, diags diag.Diagnostics) diag.D
 	if *client.KeepOriginalSource && len(content) > 0 {
 		// Call the /flows/validate endpoint
 		r, reqErr := client.yamlRequest("POST", fmt.Sprintf("%s/flows/validate", apiRoot(client.TenantId)), stringToPointer(content))
+
+		if strings.Contains(fmt.Sprintf("%s", r), "Unable to validate the flow") {
+			// this can happen if the flow syntax is invalid, or if we try to validate a flow without id and namespace
+			return append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Unable to validate the flow",
+				Detail:   fmt.Sprintf("%s", r),
+			})
+		}
 		if reqErr != nil {
 			return append(diags, diag.Diagnostic{
 				Severity: diag.Error,

@@ -1,0 +1,20 @@
+id: return-flow
+namespace: io.kestra.terraform.e2e.data
+
+inputs:
+  - id: inputA
+    type: STRING
+
+tasks:
+  - id: hello
+    type: io.kestra.plugin.core.log.Log
+    message: "inputA: {{ inputs.inputA }}"
+
+  - id: return
+    type: io.kestra.plugin.core.debug.Return
+    format: "{{ inputs.inputA }}"
+
+outputs:
+  - id: "outputA"
+    type: STRING
+    value: "{{ outputs.return.value }}"

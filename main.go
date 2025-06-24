@@ -4,13 +4,13 @@ import (
 	"context"
 	"flag"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/kestra-io/terraform-provider-kestra/internal/provider"
 	"github.com/kestra-io/terraform-provider-kestra/internal/provider_v2"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov5/tf5server"
 	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
-	"github.com/kestra-io/terraform-provider-kestra/internal/provider"
 )
 
 // Run "go generate" to format example terraform files and generate the docs for the registry/website

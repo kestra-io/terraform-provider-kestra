@@ -1,0 +1,12 @@
+id: my-flow
+namespace: io.kestra.terraform.data
+inputs:
+  - name: my-value
+    type: STRING
+    required: true
+
+tasks:
+  - id: t2
+    type: io.kestra.core.tasks.log.Log
+    message: first {{task.id}}
+    level: TRACE

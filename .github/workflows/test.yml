@@ -97,6 +97,17 @@ jobs:
         run: |
           go test -v -cover ./internal/provider/
 
+      - name: Terraform E2E tests
+        timeout-minutes: 10
+        env:
+          TF_ACC: "1"
+          TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
+          KESTRA_URL: "http://127.27.27.27:8080"
+          KESTRA_USERNAME: root@root.com
+          KESTRA_PASSWORD: Root!1234
+        run: |
+          sh e2e-test.sh
+
       # Slack
       - name: Slack notification
         uses: 8398a7/action-slack@v3

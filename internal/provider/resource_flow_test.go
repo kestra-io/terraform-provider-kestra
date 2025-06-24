@@ -14,6 +14,7 @@ func TestAccResourceFlow(t *testing.T) {
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
+			// TODO these test don't work well on macos
 			{
 				PreConfig: func() {
 					t1, _ := filepath.Abs("../resources/t1.yml")

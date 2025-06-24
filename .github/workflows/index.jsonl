@@ -13,6 +13,9 @@
 { "index" : { "_index" : "kestra_flows", "_id" : "io.kestra.terraform.data_simple" } }
 {"id":"simple", "tenantId":"main", "namespace":"io.kestra.terraform.data","revision":1,"tasks":[{"id":"t1","type":"io.kestra.core.tasks.log.Log","message":"first {{task.id}}","level":"TRACE"},{"id":"t2","type":"io.kestra.core.tasks.log.Log","disabled":true,"message":"second {{task.type}}","level":"WARN"},{"id":"t3","type":"io.kestra.core.tasks.log.Log","message":"third {{flow.id}}","level":"ERROR"}],"deleted":false}
 
+{ "index": {"_index" : "kestra_testsuites", "_id": "main_io.kestra.terraform.data_test-suite-2-already-in-db"}}
+{ "id" : "test-suite-2-already-in-db", "tenantId" : "main", "description" : "assert flow is returning the input value as output", "namespace" : "io.kestra.terraform.data", "flowId" : "simple", "source" : "id: test-suite-2-already-in-db\nnamespace: io.kestra.terraform.data\ndescription: assert flow is returning the input value as output\nflowId: simple\ntestCases:\n  - id: test_case_1\n type: io.kestra.core.tests.flow.UnitTest\n fixtures:\n  inputs:\n  inputA: \"Hi there\"\n assertions:\n  - value: \"{{ outputs.return.value }}\"\n  equalTo: 'Hi there'\n", "testCases" : [  {  "id" : "test_case_1",  "type" : "io.kestra.core.tests.flow.UnitTest",  "disabled" : false,  "fixtures" : { "inputs" : {  "inputA" : "Hi there" }  },  "assertions" : [ {  "value" : "{{ outputs.return.value }}",  "equalTo" : "Hi there" }  ]  } ], "deleted" : false}
+
 { "index" : { "_index" : "kestra_templates", "_id" : "io.kestra.terraform.data_simple" } }
 {"id":"simple", "tenantId":"main", "namespace":"io.kestra.terraform.data","tasks":[{"id":"t1","type":"io.kestra.core.tasks.log.Log","message":"first {{task.id}}","level":"TRACE"},{"id":"t2","type":"io.kestra.core.tasks.log.Log","disabled":true,"message":"second {{task.type}}","level":"WARN"},{"id":"t3","type":"io.kestra.core.tasks.log.Log","message":"third {{flow.id}}","level":"ERROR"}],"deleted":false}
 

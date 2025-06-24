@@ -106,7 +106,7 @@ $ TF_ACC=1 KESTRA_URL=http://127.0.0.1:8088 KESTRA_USERNAME=root@root.com KESTRA
 #### Test coverage
 To display generate a test coverage file in local you can add `-coverprofile` to your test command:
 ```
-go test -v -coverprofile=test-coverage-result.out ./internal/provider/
+go test -v -coverprofile=test-coverage-result.out ./internal/...
 ```
 and then to display it:
 ```

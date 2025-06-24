@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	kestraOldProvider "github.com/kestra-io/terraform-provider-kestra/internal/provider"
-	"log"
+	kestra_api_client "github.com/kestra-io/client-sdk/go-sdk"
+	"github.com/kestra-io/terraform-provider-kestra/internal/provider_v2/sdk_client"
 	"os"
 	"strconv"
 )
@@ -47,7 +47,7 @@ func New(version string) func() provider.Provider {
 }
 
 func (p *kestraProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "hashicups"
+	resp.TypeName = "kestra"
 	resp.Version = p.version
 }
 
@@ -55,47 +55,54 @@ func (p *kestraProvider) Schema(ctx context.Context, req provider.SchemaRequest,
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"url": &schema.StringAttribute{
-				Optional:    true,
-				Description: "The endpoint url",
+				Optional:            true,
+				MarkdownDescription: "The endpoint url",
 			},
 			"tenant_id": &schema.StringAttribute{
-				Optional:    true,
-				Description: "The tenant id (EE)",
+				Optional:            true,
+				MarkdownDescription: "The tenant id (EE)",
 			},
 			"username": &schema.StringAttribute{
-				Optional:    true,
-				Description: "The BasicAuth username",
+				Optional:            true,
+				MarkdownDescription: "The BasicAuth username",
 			},
 			"password": &schema.StringAttribute{
-				Optional:    true,
-				Sensitive:   true,
-				Description: "The BasicAuth password",
+				Optional:            true,
+				Sensitive:           true,
+				MarkdownDescription: "The BasicAuth password",
 			},
 			"timeout": &schema.Int64Attribute{
-				Optional:    true,
-				Sensitive:   false,
-				Description: "The timeout (in seconds) for http requests",
+				Optional:            true,
+				Sensitive:           false,
+				MarkdownDescription: "The timeout (in seconds) for http requests",
 			},
 			"jwt": &schema.StringAttribute{
-				Optional:    true,
-				Sensitive:   true,
-				Description: "The JWT token (EE)",
+				Optional:            true,
+				Sensitive:           true,
+				MarkdownDescription: "The JWT token (EE)",
 			},
 			"api_token": &schema.StringAttribute{
-				Optional:    true,
-				Sensitive:   true,
-				Description: "The API token (EE)",
+				Optional:            true,
+				Sensitive:           true,
+				MarkdownDescription: "The API token (EE)",
 			},
 			"extra_headers": &schema.MapAttribute{
-				Optional:    true,
-				Description: "Extra headers to add to every request",
+				Optional:            true,
+				MarkdownDescription: "Extra headers to add to every request",
+				ElementType:         types.StringType,
 			},
 			"keep_original_source": &schema.BoolAttribute{
-				Optional:    true,
-				Description: "Keep original source code, keeping comment and indentation. Setting to false is now deprecated and will be removed in the future.",
+				Optional: true,
+				//DeprecationMessage:  "this is not used in new provider version", cannot add this depreciation because bot provider must exactly match
+				MarkdownDescription: "Keep original source code, keeping comment and indentation. Setting to false is now deprecated and will be removed in the future.",
 			},
 		},
 	}
+}
+
+type ProviderData struct {
+	Client   *kestra_api_client.APIClient
+	TenantId string
 }
 
 func (p *kestraProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
@@ -109,35 +116,41 @@ func (p *kestraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	// keeping the same conf as sdk2 provider, it will be improved when migration is done
 	url := ""
-	if !config.Url.IsNull() {
+	urlEnv, urlEnvPresent := os.LookupEnv("KESTRA_URL")
+	if urlEnvPresent && urlEnv != "" {
+		url = urlEnv
+	}
+	if !config.Url.IsNull() && config.Url.ValueString() != "" {
 		url = config.Url.ValueString()
 	}
 
 	tenantId := "main"
 	tenantIdEnv, isTenantIdEnvPresent := os.LookupEnv("KESTRA_TENANT_ID")
-	if isTenantIdEnvPresent {
+	if isTenantIdEnvPresent && tenantIdEnv != "" {
 		tenantId = tenantIdEnv
 	}
-	if !config.TenantId.IsNull() {
+	if !config.TenantId.IsNull() && config.TenantId.ValueString() != "" {
 		tenantId = config.TenantId.ValueString()
 	}
 
-	username := ""
+	var username *string = nil
 	usernameEnv, isUsernameEnvPresent := os.LookupEnv("KESTRA_USERNAME")
 	if isUsernameEnvPresent {
-		username = usernameEnv
+		username = &usernameEnv
 	}
-	if !config.Username.IsNull() {
-		username = config.Username.ValueString()
+	if !config.Username.IsNull() && config.Username.ValueString() != "" {
+		tmp := config.Username.ValueString()
+		username = &tmp
 	}
 
-	password := ""
+	var password *string = nil
 	passwordEnv, ispasswordEnvPresent := os.LookupEnv("KESTRA_PASSWORD")
 	if ispasswordEnvPresent {
-		password = passwordEnv
+		password = &passwordEnv
 	}
-	if !config.Password.IsNull() {
-		password = config.Password.ValueString()
+	if !config.Password.IsNull() && config.Password.ValueString() != "" {
+		tmp := config.Password.ValueString()
+		password = &tmp
 	}
 
 	var timeout int64 = 10
@@ -157,85 +170,87 @@ func (p *kestraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		timeout = config.Timeout.ValueInt64()
 	}
 
-	jwt := ""
+	var jwt *string = nil
 	jwtEnv, isjwtEnvPresent := os.LookupEnv("KESTRA_JWT")
 	if isjwtEnvPresent {
-		jwt = jwtEnv
+		jwt = &jwtEnv
 	}
-	if !config.Jwt.IsNull() {
-		jwt = config.Jwt.ValueString()
+	if !config.Jwt.IsNull() && config.Jwt.ValueString() != "" {
+		tmp := config.Jwt.ValueString()
+		jwt = &tmp
 	}
 
-	apiToken := ""
+	var apiToken *string = nil
 	apiTokenEnv, isapiTokenEnvPresent := os.LookupEnv("KESTRA_API_TOKEN")
 	if isapiTokenEnvPresent {
-		apiToken = apiTokenEnv
+		apiToken = &apiTokenEnv
 	}
-	if !config.ApiToken.IsNull() {
-		apiToken = config.ApiToken.ValueString()
+	if !config.ApiToken.IsNull() && config.ApiToken.ValueString() != "" {
+		tmp := config.ApiToken.ValueString()
+		apiToken = &tmp
 	}
 
-	extraHeaders := types.MapNull(config.ExtraHeaders.Type(ctx))
+	extraHeaders := make(map[string]string)
 	if !config.ExtraHeaders.IsNull() {
-		value, _ := config.ExtraHeaders.ToMapValue(ctx)
-		extraHeaders = value
-	}
-
-	keepOriginalSource := true
-	keepOriginalSourceEnv, iskeepOriginalSourceEnvPresent := os.LookupEnv("KESTRA_KEEP_ORIGINAL_SOURCE")
-	if iskeepOriginalSourceEnvPresent {
-		i, err := strconv.ParseBool(keepOriginalSourceEnv)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Unable to parse KESTRA_KEEP_ORIGINAL_SOURCE env var",
-				"It should be a string, but was: "+keepOriginalSourceEnv+", err: "+err.Error(),
-			)
-			return
+		valueMap, _ := config.ExtraHeaders.ToMapValue(ctx)
+		for k, v := range valueMap.Elements() {
+			extraHeaders[k] = v.String()
 		}
-		keepOriginalSource = i
-	}
-	if !config.KeepOriginalSource.IsNull() {
-		keepOriginalSource = config.KeepOriginalSource.ValueBool()
 	}
 
-	if extraHeaders.Type(ctx) != nil {
-		log.Printf("rezr")
+	// validation
+	if url == "" {
+		resp.Diagnostics.AddError(
+			"url is mandatory",
+			"It was null or empty",
+		)
 	}
-	client, err := kestraOldProvider.NewClient(url, int64(timeout), &username, &password, &jwt, &apiToken, new(interface{}), &tenantId, &keepOriginalSource)
+	if tenantId == "" {
+		resp.Diagnostics.AddError(
+			"tenantId is mandatory",
+			"It was null or empty",
+		)
+	}
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	_, iskeepOriginalSourceEnvPresent := os.LookupEnv("KESTRA_KEEP_ORIGINAL_SOURCE")
+	if iskeepOriginalSourceEnvPresent || !config.KeepOriginalSource.IsNull() {
+		resp.Diagnostics.AddWarning(
+			"keep_original_source is not used anymore in our new provider", "",
+		)
+	}
+
+	client, err := sdk_client.NewClient(ctx, url, int64(timeout), username, password, jwt, apiToken, &extraHeaders)
+
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to Create Provider API Client",
-			"An unexpected error occurred when creating the Provider API client. "+
-				"Kestra Client Error: "+err.Error(),
+			"Unable to Create Kestra API Client",
+			"An unexpected error occurred when creating the API client. "+
+				"If the error is not clear, please contact the provider developers.\n\n"+
+				"Kestra API Clien: "+err.Error(),
 		)
 		return
 	}
 
-	//client := &http.Client{}
-	/*if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Create HashiCups API Client",
-			"An unexpected error occurred when creating the HashiCups API client. "+
-				"If the error is not clear, please contact the provider developers.\n\n"+
-				"HashiCups Client Error: "+err.Error(),
-		)
-		return
-	}*/
-
-	// Make the HashiCups client available during DataSource and Resource
-	// type Configure methods.
-	resp.DataSourceData = client
-	resp.ResourceData = client
+	// Make client and tenantId available during DataSource and Resource type Configure methods.
+	providerData := &ProviderData{
+		Client:   client,
+		TenantId: tenantId,
+	}
+	resp.DataSourceData = providerData
+	resp.ResourceData = providerData
 }
 
 func (p *kestraProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		NewExampleResource,
+		NewTestResource,
 	}
 }
 
 func (p *kestraProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		NewExampleDataSource,
+		NewTestDataSource,
 	}
 }

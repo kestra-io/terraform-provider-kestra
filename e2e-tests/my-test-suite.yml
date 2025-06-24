@@ -1,0 +1,13 @@
+id: simple-return-test-suite-1-id
+namespace: io.kestra.terraform.e2e.data
+description: assert flow is returning the input value as output
+flowId: return-flow
+testCases:
+  - id: test_case_1
+    type: io.kestra.core.tests.flow.UnitTest
+    fixtures:
+      inputs:
+        inputA: "Hi there"
+    assertions:
+      - value: "{{ outputs.return.value }}"
+        equalTo: 'Hi there'

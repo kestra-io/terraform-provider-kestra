@@ -3,10 +3,14 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/kestra-io/terraform-provider-kestra/internal/provider"
+	"github.com/kestra-io/terraform-provider-kestra/internal/provider_v2"
 	"log"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
-	"github.com/kestra-io/terraform-provider-kestra/internal/provider"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5/tf5server"
+	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
 )
 
 // Run "go generate" to format example terraform files and generate the docs for the registry/website
@@ -29,21 +33,37 @@ var (
 )
 
 func main() {
-	var debugMode bool
+	ctx := context.Background()
 
-	flag.BoolVar(&debugMode, "debug", false, "set to true to run the provider with support for debuggers like delve")
+	var debug bool
+
+	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
 	flag.Parse()
 
-	opts := &plugin.ServeOpts{ProviderFunc: provider.New(version, nil)}
-
-	if debugMode {
-		// TODO: update this string with the full name of your provider as used in your configs
-		err := plugin.Debug(context.Background(), "registry.terraform.io/kestra-io/kestra", opts)
-		if err != nil {
-			log.Fatal(err.Error())
-		}
-		return
+	providers := []func() tfprotov5.ProviderServer{
+		providerserver.NewProtocol5(provider_v2.New(version)()), // new terraform-plugin-framework provider
+		provider.New(version, nil)().GRPCProvider,               // old terraform-plugin-sdk provider
 	}
 
-	plugin.Serve(opts)
+	muxServer, err := tf5muxserver.NewMuxServer(ctx, providers...)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var serveOpts []tf5server.ServeOpt
+
+	if debug {
+		serveOpts = append(serveOpts, tf5server.WithManagedDebug())
+	}
+
+	err = tf5server.Serve(
+		"registry.terraform.io/kestra-io/kestra",
+		muxServer.ProviderServer,
+		serveOpts...,
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 }

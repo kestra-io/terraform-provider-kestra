@@ -97,6 +97,11 @@ jobs:
         run: |
           go test -v -cover ./internal/provider/
 
+      - name: Set up Terraform for E2E tests
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ matrix.terraform }}
+
       - name: Terraform E2E tests
         timeout-minutes: 10
         env:

@@ -18,3 +18,6 @@ echo ""
 echo "terraform apply with the provider we just built"
 echo ""
 TF_LOG_PATH=terraform-trace.log TF_LOG=DEBUG terraform -chdir=./e2e-tests apply -auto-approve
+echo ""
+echo "terraform apply succeded"
+echo "this test has no assertions yet, but playing apply checks: providers/mux config is working, a real world example is working"

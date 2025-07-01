@@ -150,6 +150,12 @@ github.com/kestra-io/client-sdk/go-sdk v0.0.0-20250626170322-6a974f12f0f6 h1:ThA
 github.com/kestra-io/client-sdk/go-sdk v0.0.0-20250626170322-6a974f12f0f6/go.mod h1:HRxFehF3bpqof1D6O/WzeB+67P8/OmmimhFJrK5E58Q=
 github.com/kestra-io/client-sdk/go-sdk v0.0.0-20250627124541-2ff23d1e4277 h1:4VH868oWd7FImS7U9B4D0ofRvN38Q2rzBN5/ndM7hnY=
 github.com/kestra-io/client-sdk/go-sdk v0.0.0-20250627124541-2ff23d1e4277/go.mod h1:HRxFehF3bpqof1D6O/WzeB+67P8/OmmimhFJrK5E58Q=
+github.com/kestra-io/client-sdk/go-sdk v0.0.0-20250701100222-4fc6a94ff843 h1:ccbtxeq3fZipt3CihYED7Px7LIYrxjGdjXT7rSW7KBM=
+github.com/kestra-io/client-sdk/go-sdk v0.0.0-20250701100222-4fc6a94ff843/go.mod h1:HRxFehF3bpqof1D6O/WzeB+67P8/OmmimhFJrK5E58Q=
+github.com/kestra-io/client-sdk/go-sdk v0.0.0-20250701150011-0d8042d07c91 h1:MVQy2JSvnoMxo0HrVLgSrWLdUqrak8UXslon4IAtJb0=
+github.com/kestra-io/client-sdk/go-sdk v0.0.0-20250701150011-0d8042d07c91/go.mod h1:HRxFehF3bpqof1D6O/WzeB+67P8/OmmimhFJrK5E58Q=
+github.com/kestra-io/client-sdk/go-sdk v0.0.0-20250701151316-a9448de99957 h1:Nuhb+RS4lS2zRNznE4P8DPO4zjuVCeqoL2nm2yhK0l8=
+github.com/kestra-io/client-sdk/go-sdk v0.0.0-20250701151316-a9448de99957/go.mod h1:HRxFehF3bpqof1D6O/WzeB+67P8/OmmimhFJrK5E58Q=
 github.com/kevinburke/ssh_config v1.2.0 h1:x584FjTGwHzMwvHx18PXxbBVzfnxogHaAReU4gf13a4=
 github.com/kevinburke/ssh_config v1.2.0/go.mod h1:CT57kijsi8u/K/BOFA39wgDQJ9CxiF4nAY/ojJ6r6mM=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=

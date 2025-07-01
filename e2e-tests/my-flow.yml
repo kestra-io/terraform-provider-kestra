@@ -1,6 +1,10 @@
 id: return-flow
 namespace: io.kestra.terraform.e2e.data
 
+variables:
+  myvar: hello
+  numeric_variable: 42
+
 inputs:
   - id: inputA
     type: STRING

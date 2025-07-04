@@ -51,7 +51,7 @@ func resourceUserPasswordCreate(ctx context.Context, d *schema.ResourceData, met
 
 	userId := d.Get("user_id").(string)
 
-	r, reqErr := c.request("PUT", fmt.Sprintf("%s/users/%s/password", apiRoot(nil), userId), body)
+	r, reqErr := c.request("PATCH", fmt.Sprintf("%s/users/%s/password", apiRoot(nil), userId), body)
 	if reqErr != nil {
 		if reqErr.StatusCode == http.StatusNotFound {
 			d.SetId("")
@@ -78,7 +78,7 @@ func resourceUserPasswordUpdate(ctx context.Context, d *schema.ResourceData, met
 
 		userId := d.Id()
 
-		r, reqErr := c.request("PUT", fmt.Sprintf("%s/users/%s/password", apiRoot(nil), userId), body)
+		r, reqErr := c.request("PATCH", fmt.Sprintf("%s/users/%s/password", apiRoot(nil), userId), body)
 		if reqErr != nil {
 			return diag.FromErr(reqErr.Err)
 		}

@@ -87,9 +87,8 @@ func resourceUserApiTokenCreate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	userId := d.Get("user_id").(string)
-	tenantId := c.TenantId
 
-	r, reqErr := c.request("POST", fmt.Sprintf("%s/users/%s/api-tokens", apiRoot(tenantId), userId), body)
+	r, reqErr := c.request("POST", fmt.Sprintf("%s/users/%s/api-tokens", apiRoot(nil), userId), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

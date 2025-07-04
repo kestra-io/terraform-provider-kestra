@@ -121,7 +121,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 
 		userId := d.Id()
 
-		r, reqErr := c.request("PATCH", fmt.Sprintf("%s/users/%s", apiRoot(nil), userId), body)
+		r, reqErr := c.request("PUT", fmt.Sprintf("%s/users/%s", apiRoot(nil), userId), body)
 		if reqErr != nil {
 			return diag.FromErr(reqErr.Err)
 		}

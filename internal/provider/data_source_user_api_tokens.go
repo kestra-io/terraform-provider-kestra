@@ -87,7 +87,6 @@ func dataSourceUserApiTokensRead(ctx context.Context, d *schema.ResourceData, me
 	var diags diag.Diagnostics
 
 	id := d.Get("user_id").(string)
-	tenantId := c.TenantId
 
 	r, reqErr := c.request("GET", fmt.Sprintf("%s/users/%s/api-tokens", apiRoot(nil), id), nil)
 	if reqErr != nil {

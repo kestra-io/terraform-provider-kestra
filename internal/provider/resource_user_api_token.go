@@ -118,7 +118,6 @@ func resourceUserApiTokenDelete(ctx context.Context, d *schema.ResourceData, met
 
 	tokenId := d.Id()
 	userId := d.Get("user_id").(string)
-	tenantId := c.TenantId
 
 	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/users/%s/api-tokens/%s", apiRoot(nil), userId, tokenId), nil)
 	if reqErr != nil {

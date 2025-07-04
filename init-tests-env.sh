@@ -71,7 +71,7 @@ echo "--------------------------------------------"
 echo ""
 echo "do some basic healthchecks"
 curl --fail-with-body -sS "127.27.27.27:9200"
-curl --fail-with-body -sS -u 'root@root.com:Root!1234' "127.27.27.27:8080/api/v1/main/users/search"
+curl --fail-with-body -sS -u 'root@root.com:Root!1234' "127.27.27.27:8080/api/v1/main/flows/search"
 
 echo ""
 echo "--------------------------------------------"

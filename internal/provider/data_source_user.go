@@ -72,9 +72,8 @@ func dataSourceUserRead(ctx context.Context, d *schema.ResourceData, meta interf
 	var diags diag.Diagnostics
 
 	userId := d.Get("user_id").(string)
-	tenantId := c.TenantId
 
-	r, reqErr := c.request("GET", fmt.Sprintf("%s/users/%s", apiRoot(tenantId), userId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/users/%s", apiRoot(nil), userId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

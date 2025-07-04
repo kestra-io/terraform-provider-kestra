@@ -14,22 +14,20 @@ func serviceAccountSchemaToApi(d *schema.ResourceData) (map[string]interface{}, 
 
 	body["name"] = d.Get("name").(string)
 	body["description"] = d.Get("description").(string)
+	body["superAdmin"] = d.Get("super_admin").(bool)
 
 	// Convert group data from schema.Set to a slice of maps
 	var groupList []map[string]interface{}
-	if groups, ok := d.Get("group").(*schema.Set); ok {
+	if groups, ok := d.Get("groups").(*schema.Set); ok {
 		for _, item := range groups.List() {
 			if schemaGroup, ok := item.(map[string]interface{}); ok {
 				var apiGroup = map[string]interface{}{}
-				apiGroup["groupId"] = schemaGroup["group_id"]
-				if tenantId, ok := schemaGroup["tenantId"]; ok {
-					apiGroup["tenantId"] = tenantId
-				}
+				apiGroup["id"] = schemaGroup["id"]
 				groupList = append(groupList, apiGroup)
 			}
 		}
 	}
-	body["groupList"] = groupList
+	body["groups"] = groupList
 
 	return body, nil
 }
@@ -59,16 +57,21 @@ func serviceAccountApiToSchema(r map[string]interface{}, d *schema.ResourceData)
 		}
 	}
 
+	if _, ok := r["superAdmin"]; ok {
+		if err := d.Set("super_admin", r["superAdmin"].(bool)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	// Convert group data from a slice of maps to a schema.Set
-	if groupList, ok := r["groupList"].([]interface{}); ok {
+	if groupList, ok := r["groups"].([]interface{}); ok {
 		groups := make([]map[string]interface{}, len(groupList))
 		for i, apiGroup := range groupList {
 			var schemaGroup = map[string]interface{}{}
-			schemaGroup["group_id"] = apiGroup.(map[string]interface{})["groupId"]
-			schemaGroup["tenant_id"] = apiGroup.(map[string]interface{})["tenantId"]
+			schemaGroup["id"] = apiGroup.(map[string]interface{})["id"]
 			groups[i] = schemaGroup
 		}
-		if err := d.Set("group", groups); err != nil {
+		if err := d.Set("groups", groups); err != nil {
 			return diag.FromErr(err)
 		}
 	}

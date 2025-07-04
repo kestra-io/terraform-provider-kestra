@@ -16,7 +16,7 @@ func TestAccServiceAccount(t *testing.T) {
 			{
 				Config: testAccResourceServiceAccount(
 					"sa-1",
-					"group { group_id = kestra_group.group1.id }",
+					"groups { id = kestra_group.group1.id }",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
@@ -26,14 +26,14 @@ func TestAccServiceAccount(t *testing.T) {
 						"kestra_service_account.new", "description", "Test description",
 					),
 					resource.TestMatchResourceAttr(
-						"kestra_service_account.new", "group.0.group_id", regexp.MustCompile(".*"),
+						"kestra_service_account.new", "groups.0.id", regexp.MustCompile(".*"),
 					),
 				),
 			},
 			{
 				Config: testAccResourceServiceAccount(
 					"sa-2",
-					"group { group_id = kestra_group.group1.id }",
+					"groups { id = kestra_group.group1.id }",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
@@ -43,7 +43,7 @@ func TestAccServiceAccount(t *testing.T) {
 						"kestra_service_account.new", "description", "Test description",
 					),
 					resource.TestMatchResourceAttr(
-						"kestra_service_account.new", "group.0.group_id", regexp.MustCompile(".*"),
+						"kestra_service_account.new", "groups.0.id", regexp.MustCompile(".*"),
 					),
 				),
 			},

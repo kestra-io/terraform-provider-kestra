@@ -30,22 +30,21 @@ func dataSourceServiceAccount() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"group": {
+			"super_admin": {
+				Description: "The service account description.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+			},
+			"groups": {
 				Description: "The service account group.",
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"group_id": {
+						"id": {
 							Description: "The group id.",
 							Type:        schema.TypeString,
-							Computed:    true,
-						},
-						"tenant_id": {
-							Description: "The tenant id for this group.",
-							Type:        schema.TypeString,
-							Optional:    true,
 							Computed:    true,
 						},
 					},
@@ -62,7 +61,7 @@ func dataSourceServiceAccountRead(ctx context.Context, d *schema.ResourceData, m
 	id := d.Get("id").(string)
 	tenantId := c.TenantId
 
-	r, reqErr := c.request("GET", fmt.Sprintf("%s/users/%s", apiRoot(tenantId), id), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/service-accounts/%s", apiRoot(tenantId), id), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

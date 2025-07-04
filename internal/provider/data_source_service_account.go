@@ -60,9 +60,8 @@ func dataSourceServiceAccountRead(ctx context.Context, d *schema.ResourceData, m
 	var diags diag.Diagnostics
 
 	id := d.Get("id").(string)
-	tenantId := c.TenantId
 
-	r, reqErr := c.request("GET", fmt.Sprintf("%s/users/%s", apiRoot(tenantId), id), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/users/%s", apiRoot(nil), id), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

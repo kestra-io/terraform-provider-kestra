@@ -8,7 +8,7 @@
 {"id":"admin", "tenantId":"main", "name":"Group Admin", "description":"My description","deleted":false}
 
 { "index" : { "_index" : "kestra_users", "_id" : "john" } }
-{"id":"john","username":"john@doe.com","auths":[{"type":"io.kestra.ee.models.auths.BasicAuth","salt":"0ghOqlkf41KpHl0D5Hf1Qhu77uiQ4ez3","password":"a74f765210a72aeb690824c1805bc364b71769362afbf7cfd9b1fb7b283902b41f630aee940e3b38058a43552c964293e802a9276e1d501455b39616802953b5","uid":"BasicAuth"}],"groups":["admin"],"deleted":false, "type": "SUPER_ADMIN"}
+{"id":"john","username":"john@doe.com","auths":[{"type":"io.kestra.ee.models.auths.BasicAuth","salt":"0ghOqlkf41KpHl0D5Hf1Qhu77uiQ4ez3","password":"a74f765210a72aeb690824c1805bc364b71769362afbf7cfd9b1fb7b283902b41f630aee940e3b38058a43552c964293e802a9276e1d501455b39616802953b5","uid":"BasicAuth"}],"groups":["admin"],"deleted":false, "type": "STANDARD", "superAdmin": true}
 
 { "index" : { "_index" : "kestra_flows", "_id" : "io.kestra.terraform.data_simple" } }
 {"id":"simple", "tenantId":"main", "namespace":"io.kestra.terraform.data","revision":1,"tasks":[{"id":"t1","type":"io.kestra.core.tasks.log.Log","message":"first {{task.id}}","level":"TRACE"},{"id":"t2","type":"io.kestra.core.tasks.log.Log","disabled":true,"message":"second {{task.type}}","level":"WARN"},{"id":"t3","type":"io.kestra.core.tasks.log.Log","message":"third {{flow.id}}","level":"ERROR"}],"deleted":false}

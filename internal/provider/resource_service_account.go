@@ -28,23 +28,22 @@ func resourceServiceAccount() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"group": {
+			"super_admin": {
+				Description: "Is the service account a super admin.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+			},
+			"groups": {
 				Description: "The service account group.",
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"group_id": {
+						"id": {
 							Description: "The group id.",
 							Type:        schema.TypeString,
 							Required:    true,
-						},
-						"tenant_id": {
-							Description: "The tenant id for this group.",
-							Type:        schema.TypeString,
-							Computed:    true, // currently this field is readonly in the API
-							ForceNew:    true,
 						},
 					},
 				},

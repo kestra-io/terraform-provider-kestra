@@ -16,10 +16,10 @@ Additionally, if you want to terraform Kestra 0.24.x you need to use Kestra Terr
 
 ### Breaking changes from 0.24.x
 
-1) Service account API token were extracted to a dedicated Resource `kestra_service_account_api_token` and DataSource `kestra_service_account_api_tokens`.
+1) Service account API token were extracted to a dedicated Resource [kestra_service_account_api_token](resources/service_account_api_token.md) and DataSource [kestra_service_account_api_tokens](data-sources/service_account_api_tokens.md).
 Using Users Resource `kestra_user_api_token` and DataSource `kestra_user_api_tokens` will not work anymore on Service Accounts
 
-2) Service account `group` property was replaced by `groups` containing only the `id` property.
+2) Service account `group` property was replaced by `groups` containing only the `id` property. (see [kestra_service_account](resources/service_account.md))
 
 ## Example Usage
 

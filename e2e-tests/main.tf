@@ -21,7 +21,7 @@ resource "kestra_user" "example" {
   description = "Friendly description"
   first_name  = "John"
   last_name   = "Doe"
-  email       = "john@doe.com"
+  email       = "john@example.com"
   groups      = ["4by6NvSLcPXFhCj8nwbZOM"]
 }
 resource "kestra_user" "example2" {
@@ -135,15 +135,7 @@ resource "kestra_tenant" "exahhhmple" {
 #   max_age     = "PT1H"
 #   extended    = false
 # }
-resource "kestra_user" "exahqmple" {
-  username    = "my-username"
-  namespace   = "io.kestra.terraform.e2e.data"
-  description = "Friendly description"
-  first_name  = "John"
-  last_name   = "Doe"
-  email       = "john@doe.com"
-  groups      = ["4by6NvSLcPXFhCj8nwbZOM"]
-}
+
 # resource "kestra_user_password" "exampertrele" {
 #   user_id  = "4DPVrcZKRZnCMGMYoTDRaj"
 #   password = "6ZEUYT32fdsfmy-random-password"

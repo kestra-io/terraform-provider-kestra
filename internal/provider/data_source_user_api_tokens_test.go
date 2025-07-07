@@ -13,10 +13,10 @@ func TestAccDataSourceUserApiTokens(t *testing.T) {
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccDataSourceUserApiTokens("2EPi5XC0oluKRCVF56gcC"),
+				Config: testAccDataSourceUserApiTokens("user_with_api_tokens"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"data.kestra_user_api_tokens.new", "user_id", "2EPi5XC0oluKRCVF56gcC",
+						"data.kestra_user_api_tokens.new", "user_id", "user_with_api_tokens",
 					),
 					resource.TestCheckResourceAttr(
 						"data.kestra_user_api_tokens.new", "api_tokens.0.name", "test",

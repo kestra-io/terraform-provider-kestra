@@ -8,29 +8,29 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccUserApiTokenAccount(t *testing.T) {
+func TestAccServiceAccountApiTokenAccount(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccResourceUserApiToken(),
+				Config: testAccResourceServiceAccountApiToken(),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"kestra_user_api_token.new", "name", "test-token",
+						"kestra_service_account_api_token.new", "name", "test-token",
 					),
 					resource.TestCheckResourceAttr(
-						"kestra_user_api_token.new", "description", "Test token",
+						"kestra_service_account_api_token.new", "description", "Test token",
 					),
 					resource.TestMatchResourceAttr(
-						"kestra_user_api_token.new", "full_token", regexp.MustCompile(".*"),
+						"kestra_service_account_api_token.new", "full_token", regexp.MustCompile(".*"),
 					),
 				),
 			},
 			/**
 			// not supported
 			{
-				ResourceName:      "kestra_user_api_token.new",
+				ResourceName:      "kestra_service_account_api_token.new",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -39,24 +39,23 @@ func TestAccUserApiTokenAccount(t *testing.T) {
 	})
 }
 
-func testAccResourceUserApiToken() string {
+func testAccResourceServiceAccountApiToken() string {
 	return fmt.Sprintf(
 		`
-        resource "kestra_user" "new" {
-            username = "test-user@example.com"
-            email = "test-user@example.com"
+        resource "kestra_service_account" "new" {
+            name = "my-service-account-1"
 			description = "Test description"
 		}
 
-        resource "kestra_user_api_token" "new" {
-			user_id = resource.kestra_user.new.id
+        resource "kestra_service_account_api_token" "new" {
+			service_account_id = resource.kestra_service_account.new.id
 
             name = "test-token"
 			description = "Test token"
 			max_age = "PT1H"
 			extended = false
 
-			depends_on = [resource.kestra_user.new]
+			depends_on = [resource.kestra_service_account.new]
         }`,
 	)
 }

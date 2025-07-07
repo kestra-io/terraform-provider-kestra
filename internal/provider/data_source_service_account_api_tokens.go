@@ -8,20 +8,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func dataSourceUserApiTokens() *schema.Resource {
+func dataSourceServiceAccountApiTokens() *schema.Resource {
 	return &schema.Resource{
-		Description: "Use this data source to access information about the API tokens of a Kestra User." +
+		Description: "Use this data source to access information about the API tokens of a Kestra Service Account." +
 			EnterpriseEditionDescription,
 
-		ReadContext: dataSourceUserApiTokensRead,
+		ReadContext: dataSourceServiceAccountApiTokensRead,
 		Schema: map[string]*schema.Schema{
-			"user_id": {
-				Description: "The ID of the user owning the API Tokens.",
+			"service_account_id": {
+				Description: "The ID of the Service Account owning the API Tokens.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
 			"api_tokens": {
-				Description: "The API tokens of the user.",
+				Description: "The API tokens of the Service Account.",
 				Type:        schema.TypeSet,
 				Computed:    true,
 				Elem: &schema.Resource{
@@ -82,13 +82,14 @@ func dataSourceUserApiTokens() *schema.Resource {
 	}
 }
 
-func dataSourceUserApiTokensRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSourceServiceAccountApiTokensRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	id := d.Get("user_id").(string)
+	id := d.Get("service_account_id").(string)
+	tenantId := c.TenantId
 
-	r, reqErr := c.request("GET", fmt.Sprintf("%s/users/%s/api-tokens", apiRoot(nil), id), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/service-accounts/%s/api-tokens", apiRoot(tenantId), id), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

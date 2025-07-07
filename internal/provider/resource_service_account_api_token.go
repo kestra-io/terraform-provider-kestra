@@ -9,18 +9,18 @@ import (
 	"regexp"
 )
 
-func resourceUserApiToken() *schema.Resource {
+func resourceServiceAccountApiToken() *schema.Resource {
 	return &schema.Resource{
-		Description: "Manages a Kestra User Api Token." +
+		Description: "Manages a Kestra Service Account Api Token." +
 			EnterpriseEditionDescription,
 
-		CreateContext: resourceUserApiTokenCreate,
-		ReadContext:   resourceUserApiTokenRead,
-		UpdateContext: resourceUserApiTokenUpdate,
-		DeleteContext: resourceUserApiTokenDelete,
+		CreateContext: resourceServiceAccountApiTokenCreate,
+		ReadContext:   resourceServiceAccountApiTokenRead,
+		UpdateContext: resourceServiceAccountApiTokenUpdate,
+		DeleteContext: resourceServiceAccountApiTokenDelete,
 		Schema: map[string]*schema.Schema{
-			"user_id": {
-				Description: "The ID of the user owning the API Token.",
+			"service_account_id": {
+				Description: "The ID of the Service Account owning the API Token.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
@@ -77,23 +77,24 @@ func resourceUserApiToken() *schema.Resource {
 	}
 }
 
-func resourceUserApiTokenCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceServiceAccountApiTokenCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	body, err := userApiTokenFromSchema(d)
+	body, err := serviceAccountApiTokenFromSchema(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	userId := d.Get("user_id").(string)
+	serviceAccountId := d.Get("service_account_id").(string)
+	tenantId := c.TenantId
 
-	r, reqErr := c.request("POST", fmt.Sprintf("%s/users/%s/api-tokens", apiRoot(nil), userId), body)
+	r, reqErr := c.request("POST", fmt.Sprintf("%s/service-accounts/%s/api-tokens", apiRoot(tenantId), serviceAccountId), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
 
-	errs := userApiTokenToSchema(r.(map[string]interface{}), d)
+	errs := serviceAccountApiTokenToSchema(r.(map[string]interface{}), d)
 	if errs != nil {
 		return errs
 	}
@@ -101,24 +102,25 @@ func resourceUserApiTokenCreate(ctx context.Context, d *schema.ResourceData, met
 	return diags
 }
 
-func resourceUserApiTokenRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceServiceAccountApiTokenRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This operation is no-op, since there's nothing to read
 	return nil
 }
 
-func resourceUserApiTokenUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceServiceAccountApiTokenUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// This operation is no-op, since there's nothing to update
 	return nil
 }
 
-func resourceUserApiTokenDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceServiceAccountApiTokenDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
 	tokenId := d.Id()
-	userId := d.Get("user_id").(string)
+	serviceAccountId := d.Get("service_account_id").(string)
+	tenantId := c.TenantId
 
-	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/users/%s/api-tokens/%s", apiRoot(nil), userId, tokenId), nil)
+	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/service-accounts/%s/api-tokens/%s", apiRoot(tenantId), serviceAccountId, tokenId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

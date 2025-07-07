@@ -38,8 +38,8 @@
 This repository defines Kestra resources so that they can be deployed using Infrastructure as Code with Terraform.
 
 > [!IMPORTANT]  
-> Kestra Terraform provider 0.23.x is only compatible with Kestra 0.23.x and above.
-> Additionally, if you want to terraform Kestra 0.23.x you need to use Kestra Terraform provider 0.23.x
+> Kestra Terraform provider 0.24.x is only compatible with Kestra 0.24.x and above.
+> Additionally, if you want to terraform Kestra 0.24.x you need to use Kestra Terraform provider 0.24.x
 
 ## Documentation
 

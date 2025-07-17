@@ -33,7 +33,6 @@ resource "kestra_user" "example" {
 ### Required
 
 - `email` (String) The user email.
-- `username` (String) The user name.
 
 ### Optional
 
@@ -46,6 +45,7 @@ resource "kestra_user" "example" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `username` (String) The user name. Always the email.
 
 ## Import
 

@@ -1,9 +1,8 @@
 resource "kestra_user" "example" {
-  username    = "my-username"
+  email       = "john@doe.com"
   namespace   = "company.team"
   description = "Friendly description"
   first_name  = "John"
   last_name   = "Doe"
-  email       = "john@doe.com"
   groups      = ["4by6NvSLcPXFhCj8nwbZOM"]
 }

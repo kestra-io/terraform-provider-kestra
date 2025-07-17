@@ -19,9 +19,9 @@ func resourceUser() *schema.Resource {
 		DeleteContext: resourceUserDelete,
 		Schema: map[string]*schema.Schema{
 			"username": {
-				Description: "The user name.",
+				Description: "The user name. Always the email.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Computed:    true,
 			},
 			"namespace": {
 				Description: "The linked namespace.",

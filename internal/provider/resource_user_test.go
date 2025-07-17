@@ -2,7 +2,6 @@ package provider
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -25,8 +24,8 @@ func TestAccUser(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"kestra_user.new", "email", "admin@john.doe",
 					),
-					resource.TestMatchResourceAttr(
-						"kestra_user.new", "groups.1", regexp.MustCompile(".*"),
+					resource.TestCheckResourceAttr(
+						"kestra_user.new", "groups.1", "[kestra_group.group1.id]",
 					),
 				),
 			},
@@ -41,6 +40,9 @@ func TestAccUser(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						"kestra_user.new", "email", "admin2@john.doe",
+					),
+					resource.TestCheckResourceAttr(
+						"kestra_user.new", "groups", "admin2@john.doe",
 					),
 					resource.TestCheckNoResourceAttr(
 						"kestra_role.new", "groups.1",
@@ -76,11 +78,9 @@ func testAccResourceUser(email, groups string) string {
         }
 
         resource "kestra_user" "new" {
-            username = "%s"
             email = "%s"
             groups = %s
         }`,
-		email,
 		email,
 		groups,
 	)

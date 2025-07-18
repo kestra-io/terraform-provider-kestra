@@ -20,4 +20,20 @@ echo ""
 TF_CLI_CONFIG_FILE=$(pwd)/e2e-tests/.terraformrc TF_LOG_PATH=terraform-trace.log TF_LOG=DEBUG terraform -chdir=./e2e-tests apply -auto-approve
 echo ""
 echo "terraform apply succeded"
-echo "this test has no assertions yet, but playing apply checks: providers/mux config is working, a real world example is working"
+echo ""
+echo "terraform plan"
+exit_code=0
+TF_CLI_CONFIG_FILE=$(pwd)/e2e-tests/.terraformrc TF_LOG_PATH=terraform-trace.log TF_LOG=DEBUG terraform -chdir=./e2e-tests plan -detailed-exitcode || exit_code=$?
+echo ""
+echo "checking terraform plan is empty"
+if [ $exit_code -eq 0 ]; then
+  echo "✅ No changes to apply."
+elif [ $exit_code -eq 2 ]; then
+  echo "⚠️  There are changes to apply. It should not happen after an apply, something is wrong in the provider for these specific Resources"
+  exit 2
+else
+  echo "❌ Terraform plan failed."
+  exit 1
+fi
+echo ""
+echo "this test has no assertions yet, but playing apply and plan we check that: providers/mux config is working, a real world example is working"

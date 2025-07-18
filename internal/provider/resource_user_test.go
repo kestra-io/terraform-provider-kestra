@@ -2,7 +2,6 @@ package provider
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -15,40 +14,60 @@ func TestAccUser(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccResourceUser(
+					"new_user_one_group",
 					"admin@john.doe",
 					"[kestra_group.group1.id]",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"kestra_user.new", "username", "admin@john.doe",
+						"kestra_user.new_user_one_group", "username", "admin@john.doe",
 					),
 					resource.TestCheckResourceAttr(
-						"kestra_user.new", "email", "admin@john.doe",
+						"kestra_user.new_user_one_group", "email", "admin@john.doe",
 					),
-					resource.TestMatchResourceAttr(
-						"kestra_user.new", "groups.1", regexp.MustCompile(".*"),
+					resource.TestCheckResourceAttr(
+						"kestra_user.new_user_one_group", "groups.#", "1", // counting groups
 					),
 				),
 			},
+			/*{ TODO this is not working yet in Kestra but is mandatory
+				Config: testAccResourceUser(
+					"new_user_one_group",
+					"admin@john.doe",
+					"[]", // removing the user group
+				),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"kestra_user.new_user_one_group", "username", "admin@john.doe",
+					),
+					resource.TestCheckResourceAttr(
+						"kestra_user.new_user_one_group", "email", "admin@john.doe",
+					),
+					resource.TestCheckResourceAttr(
+						"kestra_user.new_user_one_group", "groups.#", "0",
+					),
+				),
+			},*/
 			{
 				Config: testAccResourceUser(
+					"new_user_no_group",
 					"admin2@john.doe",
 					"[]",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"kestra_user.new", "username", "admin2@john.doe",
+						"kestra_user.new_user_no_group", "username", "admin2@john.doe",
 					),
 					resource.TestCheckResourceAttr(
-						"kestra_user.new", "email", "admin2@john.doe",
+						"kestra_user.new_user_no_group", "email", "admin2@john.doe",
 					),
-					resource.TestCheckNoResourceAttr(
-						"kestra_role.new", "groups.1",
+					resource.TestCheckResourceAttr(
+						"kestra_user.new_user_no_group", "groups.#", "0",
 					),
 				),
 			},
 			{
-				ResourceName:      "kestra_user.new",
+				ResourceName:      "kestra_user.new_user_no_group",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -56,7 +75,7 @@ func TestAccUser(t *testing.T) {
 	})
 }
 
-func testAccResourceUser(email, groups string) string {
+func testAccResourceUser(tfstateid, email, groups string) string {
 	return fmt.Sprintf(
 		`
         resource "kestra_role" "new" {
@@ -75,12 +94,11 @@ func testAccResourceUser(email, groups string) string {
             name = "group 2"
         }
 
-        resource "kestra_user" "new" {
-            username = "%s"
+        resource "kestra_user" "%s" {
             email = "%s"
             groups = %s
         }`,
-		email,
+		tfstateid,
 		email,
 		groups,
 	)

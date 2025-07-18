@@ -12,11 +12,12 @@ func userSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
 		body["id"] = d.Id()
 	}
 
-	body["username"] = d.Get("username").(string)
+	body["username"] = d.Get("email").(string)
+	body["email"] = d.Get("email").(string)
+
 	body["namespaceId"] = d.Get("namespace").(string)
 	body["firstName"] = d.Get("first_name").(string)
 	body["lastName"] = d.Get("last_name").(string)
-	body["email"] = d.Get("email").(string)
 	body["groups"] = d.Get("groups").([]interface{})
 
 	return body, nil
@@ -64,7 +65,20 @@ func userApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Diag
 	}
 
 	if _, ok := r["groups"]; ok {
-		if err := d.Set("groups", r["groups"].([]interface{})); err != nil {
+		groups := r["groups"].([]interface{})
+		groupIDs := make([]string, 0, len(groups))
+		for _, g := range groups {
+			if groupMap, ok := g.(map[string]interface{}); ok {
+				if id, ok := groupMap["id"].(string); ok {
+					groupIDs = append(groupIDs, id)
+				}
+			}
+		}
+		if err := d.Set("groups", groupIDs); err != nil {
+			return diag.FromErr(err)
+		}
+	} else {
+		if err := d.Set("groups", make([]string, 0)); err != nil {
 			return diag.FromErr(err)
 		}
 	}

@@ -16,7 +16,6 @@ provider "kestra" {
 }
 
 resource "kestra_user" "example" {
-  username    = "my-username"
   namespace   = "io.kestra.terraform.e2e.data"
   description = "Friendly description"
   first_name  = "John"
@@ -25,7 +24,6 @@ resource "kestra_user" "example" {
   groups      = ["4by6NvSLcPXFhCj8nwbZOM"]
 }
 resource "kestra_user" "example2" {
-  username    = "my-username-racevedo"
   namespace   = "io.kestra.terraform.e2e.data"
   description = "Friendly descriptionracevedo"
   first_name  = "Johnracevedo"
@@ -79,9 +77,11 @@ k2:
 EOT
   plugin_defaults = <<EOT
 - type: io.kestra.core.tasks.log.Log
+  forced: false
   values:
     message: first {{flow.id}}
 - type: io.kestra.core.tasks.debugs.Return
+  forced: false
   values:
     format: first {{flow.id}}
 EOT

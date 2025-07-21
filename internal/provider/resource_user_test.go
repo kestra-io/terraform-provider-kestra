@@ -30,7 +30,7 @@ func TestAccUser(t *testing.T) {
 					),
 				),
 			},
-			/*{ TODO this is not working yet in Kestra but is mandatory
+			{
 				Config: testAccResourceUser(
 					"new_user_one_group",
 					"admin@john.doe",
@@ -47,7 +47,7 @@ func TestAccUser(t *testing.T) {
 						"kestra_user.new_user_one_group", "groups.#", "0",
 					),
 				),
-			},*/
+			},
 			{
 				Config: testAccResourceUser(
 					"new_user_no_group",

@@ -15,13 +15,17 @@ provider "kestra" {
   password = "Root!1234"
 }
 
+resource "kestra_group" "my_group_1" {
+  namespace   = "io.kestra.terraform.e2e.data"
+  name        = "my-group-1"
+  description = "my-group-1 description"
+}
 resource "kestra_user" "example" {
   namespace   = "io.kestra.terraform.e2e.data"
   description = "Friendly description"
   first_name  = "John"
   last_name   = "Doe"
   email       = "john@example.com"
-  groups      = ["4by6NvSLcPXFhCj8nwbZOM"]
 }
 resource "kestra_user" "example2" {
   namespace   = "io.kestra.terraform.e2e.data"
@@ -29,7 +33,7 @@ resource "kestra_user" "example2" {
   first_name  = "Johnracevedo"
   last_name   = "Doeracevedo"
   email       = "racevedo@example.com"
-  groups      = ["4by6NvSLcPXFhCj8nwbZOM"]
+  groups      = [kestra_group.my_group_1.id]
 }
 resource "kestra_namespace_secret" "environment" {
   namespace = "io.kestra.terraform.e2e.data"
@@ -85,11 +89,6 @@ EOT
   values:
     format: first {{flow.id}}
 EOT
-}
-resource "kestra_group" "exfsfsample" {
-  namespace   = "io.kestra.terraform.e2e.data"
-  name        = "Friendly name"
-  description = "Friendly description"
 }
 # resource "kestra_binding" "exgggample" {
 #   type        = "GROUP"

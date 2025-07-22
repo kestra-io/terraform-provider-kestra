@@ -64,6 +64,17 @@ resource "kestra_flow" "ekestra_flowxample" {
   content   = file("my-flow.yml")
 }
 
+# this is just an example importing real world flows, sanity-checks are not actually runned/used
+resource "kestra_flow" "sanity_checks_flows" {
+  for_each = local.sanitycheck_files
+
+  flow_id   = yamldecode(templatefile("${path.module}/example-sanity-checks/${each.value}", {}))["id"]
+  namespace = yamldecode(templatefile("${path.module}/example-sanity-checks/${each.value}", {}))["namespace"]
+  content   = templatefile("${path.module}/example-sanity-checks/${each.value}", {})
+}
+
+
+
 resource "kestra_test" "kestra_testsuite_example" {
   namespace = "io.kestra.terraform.e2e.data"
   test_id   = "simple-return-test-suite-1-id"

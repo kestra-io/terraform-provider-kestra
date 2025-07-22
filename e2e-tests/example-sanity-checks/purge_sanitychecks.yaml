@@ -1,0 +1,17 @@
+id: purge_sanitychecks
+namespace: sanitychecks
+tasks:
+  - id: purge_executions
+    type: io.kestra.plugin.core.execution.PurgeExecutions
+    startDate: "{{ now() | dateAdd(-14, 'DAYS') }}"
+    endDate: "{{ now() }}"
+    purgeLog: true
+    namespace: sanitychecks
+
+triggers:
+  - id: daily
+    disabled: true
+    type: io.kestra.plugin.core.trigger.Flow
+    conditions:
+      - type: io.kestra.plugin.core.condition.ExecutionNamespace
+        namespace: sanitychecks

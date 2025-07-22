@@ -1,0 +1,22 @@
+id: alert_sanitychecks
+namespace: sanitychecks
+
+tasks:
+  - id: send_alert
+    type: io.kestra.plugin.notifications.slack.SlackExecution
+    url: "{{ secret('SANITYCHECK_SLACK_WEBHOOK') }}"
+    executionId: "{{ trigger.executionId }}"
+    channel: "#_int_flows"
+
+triggers:
+  - id: on_failure
+    disabled: true
+    type: io.kestra.plugin.core.trigger.Flow
+    conditions:
+      - type: io.kestra.plugin.core.condition.ExecutionStatus
+        in:
+          - FAILED
+          - WARNING
+      - type: io.kestra.plugin.core.condition.ExecutionNamespace
+        namespace: sanitychecks
+        prefix: true

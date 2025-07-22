@@ -1,0 +1,75 @@
+id: sync_sanitychecks
+namespace: sanitychecks
+
+tasks:
+  - id: git_sync
+    type: io.kestra.plugin.git.SyncFlows
+    url: https://github.com/kestra-io/sanity-checks
+    gitDirectory: sanitychecks
+    targetNamespace: sanitychecks
+    includeChildNamespaces: true
+    username: "{{ secret('SANITYCHECK_GITHUB_USERNAME') }}"
+    password: "{{ secret('SANITYCHECK_GITHUB_TOKEN') }}"
+    branch: develop
+
+  - id: to_json
+    type: io.kestra.plugin.serdes.json.IonToJson
+    from: "{{ outputs.git_sync.flows }}"
+
+  - id: extract
+    type: io.kestra.plugin.scripts.python.Script
+    inputFiles:
+      flows.json: "{{ outputs.to_json.uri }}"
+    dependencies:
+      - kestra
+    script: |
+      import json
+      from kestra import Kestra
+
+      def extract_flows_and_namespaces(file_path="flows.json"):
+          with open(file_path, 'r') as f:
+            for line in f:
+              data = json.loads(line.strip())
+              if data.get("namespace").startswith("sanitychecks.blueprints") or (data.get("namespace").startswith("sanitychecks.plugins") and data.get("flowId").startswith("all_")):
+                yield {"flow": data.get("flowId"), "namespace": data.get("namespace")}
+
+      flow_namespace_list = list(extract_flows_and_namespaces())
+      Kestra.outputs(dict(flows=flow_namespace_list))
+
+  - id: for_each_sanitychecks
+    type: io.kestra.plugin.core.flow.ForEach
+    concurrencyLimit: 5
+    values: "{{ outputs.extract.vars.flows }}"
+    tasks:
+      - id: subflow
+        type: io.kestra.plugin.core.flow.Subflow
+        namespace: "{{ json(taskrun.value).namespace }}"
+        flowId: "{{ json(taskrun.value).flow }}"
+        allowFailure: true
+
+  - id: backend_test
+    type: io.kestra.plugin.core.flow.WorkingDirectory
+    runIf: "{{ kestra.url | split('\\.') | first | split('-') | last == 'ee' }}"
+    tasks:
+      - id: git
+        type: io.kestra.plugin.git.Clone
+        url: https://github.com/kestra-io/mcp-server-python
+        branch: main
+  
+      - id: run_backend_test
+        type: io.kestra.plugin.scripts.python.Commands
+        containerImage: ghcr.io/kestra-io/mcp-server-python:latest
+        inputFiles:
+          .env: |
+            KESTRA_BASE_URL={{kestra.url}}/api/v1
+            KESTRA_TENANT_ID=main
+            KESTRA_API_TOKEN={{ secret('KESTRA_API_TOKEN') }}
+        taskRunner: 
+          type: io.kestra.plugin.scripts.runner.docker.Docker
+          pullPolicy: ALWAYS
+        commands:
+          - uv run pytest -v --durations=0 tests/
+triggers:
+  - id: daily
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 */2 * * *"

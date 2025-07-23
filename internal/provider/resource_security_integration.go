@@ -12,7 +12,7 @@ import (
 
 func resourceSecurityIntegration() *schema.Resource {
 	return &schema.Resource{
-		Description: "Manages a Kestra Security Integration. Note that when imported URI and secret token are not provided.",
+		Description: "Manages a Kestra Security Integration. Note that when imported URI and secret token are not provided." + EnterpriseEditionDescription,
 
 		CreateContext: resourceSecurityIntegrationCreate,
 		ReadContext:   resourceSecurityIntegrationRead,

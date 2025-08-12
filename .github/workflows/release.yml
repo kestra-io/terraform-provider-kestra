@@ -4,6 +4,9 @@ on:
     tags:
       - 'v*'
 jobs:
+  tests:
+    name: tests
+    uses: ./.github/workflows/test.yml
   goreleaser:
     name: Release
     runs-on: ubuntu-latest

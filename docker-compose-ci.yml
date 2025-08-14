@@ -44,9 +44,9 @@ services:
       - 127.27.27.27:9200:9200
 
   kestra:
-#    image: ghcr.io/kestra-io/kestra-ee:v0.24.1
+    image: ghcr.io/kestra-io/kestra-ee:v0.24.1
     # it may be easier to use gcp registry in local
-    image: europe-west1-docker.pkg.dev/kestra-host/docker/kestra-ee:v0.24.1
+#    image: europe-west1-docker.pkg.dev/kestra-host/docker/kestra-ee:v0.24.1
     command: server standalone
     healthcheck:
       test: ["CMD-SHELL", "curl -fs http://localhost:8080/health"]

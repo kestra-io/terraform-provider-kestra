@@ -44,7 +44,7 @@ func dataSourceWorkerGroupRead(ctx context.Context, d *schema.ResourceData, meta
 
 	id := d.Get("id").(string)
 
-	r, reqErr := c.request("GET", fmt.Sprintf("%s/cluster/workergroups/%s", apiRoot(nil), id), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/instance/workergroups/%s", apiRoot(nil), id), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

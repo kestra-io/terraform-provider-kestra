@@ -52,7 +52,7 @@ func resourceWorkerGroupCreate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	r, reqErr := c.request("POST", fmt.Sprintf("%s/cluster/workergroups", apiRoot(nil)), body)
+	r, reqErr := c.request("POST", fmt.Sprintf("%s/instance/workergroups", apiRoot(nil)), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
@@ -71,7 +71,7 @@ func resourceWorkerGroupRead(ctx context.Context, d *schema.ResourceData, meta i
 
 	workerGroupId := d.Id()
 
-	r, reqErr := c.request("GET", fmt.Sprintf("%s/cluster/workergroups/%s", apiRoot(nil), workerGroupId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/instance/workergroups/%s", apiRoot(nil), workerGroupId), nil)
 	if reqErr != nil {
 		if reqErr.StatusCode == http.StatusNotFound {
 			d.SetId("")
@@ -101,7 +101,7 @@ func resourceWorkerGroupUpdate(ctx context.Context, d *schema.ResourceData, meta
 
 		workerGroupId := d.Id()
 
-		r, reqErr := c.request("PUT", fmt.Sprintf("%s/cluster/workergroups/%s", apiRoot(nil), workerGroupId), body)
+		r, reqErr := c.request("PUT", fmt.Sprintf("%s/instance/workergroups/%s", apiRoot(nil), workerGroupId), body)
 		if reqErr != nil {
 			return diag.FromErr(reqErr.Err)
 		}
@@ -123,7 +123,7 @@ func resourceWorkerGroupDelete(ctx context.Context, d *schema.ResourceData, meta
 
 	workerGroupId := d.Id()
 
-	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/cluster/workergroups/%s", apiRoot(nil), workerGroupId), nil)
+	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/instance/workergroups/%s", apiRoot(nil), workerGroupId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

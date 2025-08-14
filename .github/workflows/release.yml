@@ -7,6 +7,7 @@ jobs:
   tests:
     name: tests
     uses: ./.github/workflows/test.yml
+    secrets: inherit
   goreleaser:
     name: Release
     runs-on: ubuntu-latest

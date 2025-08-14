@@ -1,5 +1,4 @@
 resource "kestra_role" "example" {
-  namespace   = "company.team"
   name        = "Friendly name"
   description = "Friendly description"
 
@@ -9,7 +8,7 @@ resource "kestra_role" "example" {
   }
 
   permissions {
-    type        = "TEMPLATE"
+    type        = "EXECUTION"
     permissions = ["READ", "UPDATE"]
   }
 }

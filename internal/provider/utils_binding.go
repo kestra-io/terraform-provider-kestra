@@ -23,10 +23,8 @@ func bindingSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) 
 	return body, nil
 }
 
-func bindingApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *Client) diag.Diagnostics {
+func bindingApiToSchema(binding map[string]interface{}, d *schema.ResourceData, c *Client) diag.Diagnostics {
 	var diags diag.Diagnostics
-
-	binding := r["binding"].(map[string]interface{})
 
 	d.SetId(binding["id"].(string))
 	if *c.TenantId != "" {
@@ -39,12 +37,30 @@ func bindingApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *Cli
 		return diag.FromErr(err)
 	}
 
-	if err := d.Set("external_id", binding["externalId"].(string)); err != nil {
-		return diag.FromErr(err)
+	if binding["type"].(string) == "GROUP" {
+		if groupValue, ok := binding["group"]; ok {
+			if groupMap, ok := groupValue.(map[string]interface{}); ok {
+				if err := d.Set("external_id", groupMap["id"].(string)); err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		}
+	} else if binding["type"].(string) == "USER" {
+		if userValue, ok := binding["user"]; ok {
+			if userMap, ok := userValue.(map[string]interface{}); ok {
+				if err := d.Set("external_id", userMap["id"].(string)); err != nil {
+					return diag.FromErr(err)
+				}
+			}
+		}
 	}
 
-	if err := d.Set("role_id", binding["roleId"].(string)); err != nil {
-		return diag.FromErr(err)
+	if roleValue, ok := binding["role"]; ok {
+		if roleMap, ok := roleValue.(map[string]interface{}); ok {
+			if err := d.Set("role_id", roleMap["id"].(string)); err != nil {
+				return diag.FromErr(err)
+			}
+		}
 	}
 
 	if _, ok := binding["namespaceId"]; ok {

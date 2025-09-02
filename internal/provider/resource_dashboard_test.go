@@ -27,6 +27,7 @@ func testAccResourceDashboard(resourceId string) string {
 		`
         resource "kestra_dashboard" "%s" {
             source_code = <<-EOF
+id: %s
 title: Overview_test
 charts:
   - id: executions_timeseries
@@ -52,5 +53,6 @@ charts:
           graphStyle: BARS
 EOF
         }`,
+		resourceId,
 		resourceId)
 }

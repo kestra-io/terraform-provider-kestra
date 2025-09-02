@@ -1,17 +1,16 @@
 module github.com/kestra-io/terraform-provider-kestra
 
-go 1.23.0
-
-toolchain go1.23.2
+go 1.23.7
 
 require (
 	github.com/hashicorp/go-cty v1.5.0
-	github.com/hashicorp/terraform-plugin-docs v0.21.0
+	github.com/hashicorp/terraform-plugin-docs v0.22.0
 	github.com/hashicorp/terraform-plugin-framework v1.15.0
 	github.com/hashicorp/terraform-plugin-go v0.28.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-mux v0.20.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.37.0
+	github.com/hashicorp/terraform-plugin-testing v1.13.2
 	github.com/json-iterator/go v1.1.12
 	github.com/kestra-io/client-sdk/go-sdk v0.0.0-20250701151316-a9448de99957
 	gopkg.in/yaml.v2 v2.4.0
@@ -49,7 +48,6 @@ require (
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform-exec v0.23.0 // indirect
 	github.com/hashicorp/terraform-json v0.25.0 // indirect
-	github.com/hashicorp/terraform-plugin-testing v1.13.2 // indirect
 	github.com/hashicorp/terraform-registry-address v0.2.5 // indirect
 	github.com/hashicorp/terraform-svchost v0.1.1 // indirect
 	github.com/hashicorp/yamux v0.1.2 // indirect

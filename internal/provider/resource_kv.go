@@ -86,7 +86,7 @@ func resourceKvSet(ctx context.Context, d *schema.ResourceData, meta interface{}
 	url := c.Url + fmt.Sprintf("%s/namespaces/%s/kv/%s", apiRoot(tenantId), namespace, key)
 
 	httpMethod := "PUT"
-	req, err := http.NewRequestWithContext(ctx, httpMethod, fmt.Sprintf(url), strings.NewReader(formattedValue))
+	req, err := http.NewRequestWithContext(ctx, httpMethod, fmt.Sprintf("%s", url), strings.NewReader(formattedValue))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -115,7 +115,7 @@ func resourceKvRead(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	url := c.Url + fmt.Sprintf("%s/namespaces/%s/kv/%s", apiRoot(tenantId), namespace, key)
 
-	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf(url), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s", url), nil)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -181,7 +181,7 @@ func resourceKvDelete(ctx context.Context, d *schema.ResourceData, meta interfac
 	url := c.Url + fmt.Sprintf("%s/namespaces/%s/kv/%s", apiRoot(tenantId), namespace, key)
 
 	httpMethod := "DELETE"
-	req, err := http.NewRequestWithContext(ctx, httpMethod, fmt.Sprintf(url), nil)
+	req, err := http.NewRequestWithContext(ctx, httpMethod, fmt.Sprintf("%s", url), nil)
 	if err != nil {
 		return diag.FromErr(err)
 	}

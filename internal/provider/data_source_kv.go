@@ -55,7 +55,7 @@ func dataSourceKvRead(ctx context.Context, d *schema.ResourceData, meta interfac
 
 	url := c.Url + fmt.Sprintf("%s/namespaces/%s/kv/%s", apiRoot(tenantId), namespace, key)
 
-	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf(url), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s", url), nil)
 	if err != nil {
 		return diag.FromErr(err)
 	}

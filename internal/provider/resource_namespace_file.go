@@ -112,7 +112,7 @@ func resourceNamespaceFileRead(ctx context.Context, d *schema.ResourceData, meta
 
 	url := c.Url + fmt.Sprintf("%s/namespaces/%s/files?path=%s", apiRoot(tenantId), namespace, filename)
 
-	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf(url), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s", url), nil)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -186,7 +186,7 @@ func addFilePartRequest(ctx context.Context, url, content string) (*http.Request
 
 	w.Close()
 
-	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf(url), &buf)
+	req, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s", url), &buf)
 	if err != nil {
 		return nil, err
 	}

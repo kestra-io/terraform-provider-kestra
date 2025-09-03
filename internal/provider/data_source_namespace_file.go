@@ -49,7 +49,7 @@ func dataSourceNamespaceFileRead(ctx context.Context, d *schema.ResourceData, me
 
 	url := c.Url + fmt.Sprintf("%s/namespaces/%s/files?path=%s", apiRoot(tenantId), namespace, filename)
 
-	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf(url), nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", fmt.Sprintf("%s", url), nil)
 	if err != nil {
 		return diag.FromErr(err)
 	}

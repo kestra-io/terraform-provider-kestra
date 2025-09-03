@@ -82,7 +82,7 @@ func (c *Client) request(method, url string, body map[string]interface{}) (inter
 		jsonReader = bytes.NewReader(jsonBody)
 	}
 
-	req, err := http.NewRequest(method, fmt.Sprintf(c.Url+url), jsonReader)
+	req, err := http.NewRequest(method, fmt.Sprintf("%s", c.Url+url), jsonReader)
 	if err != nil {
 		return nil, &RequestError{
 			StatusCode: 0,
@@ -104,7 +104,7 @@ func (c *Client) yamlRequest(method, url string, body *string) (interface{}, *Re
 		reader = bytes.NewReader([]byte(pointerToString(body)))
 	}
 
-	req, err := http.NewRequest(method, fmt.Sprintf(c.Url+url), reader)
+	req, err := http.NewRequest(method, fmt.Sprintf("%s", c.Url+url), reader)
 	if err != nil {
 		return nil, &RequestError{
 			StatusCode: 0,

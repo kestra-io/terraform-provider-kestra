@@ -55,9 +55,18 @@ func NewClient(url string, timeout int64, username *string, password *string, jw
 	}
 
 	if extraHeaders != nil {
-		m, ok := (*extraHeaders).(map[string]string)
-		if ok {
+		// Handle both map[string]string and map[string]interface{} (Terraform schema type)
+		if m, ok := (*extraHeaders).(map[string]string); ok {
 			c.ExtraHeader = &m
+		} else if m, ok := (*extraHeaders).(map[string]interface{}); ok {
+			// Convert map[string]interface{} to map[string]string
+			stringMap := make(map[string]string)
+			for k, v := range m {
+				if str, ok := v.(string); ok {
+					stringMap[k] = str
+				}
+			}
+			c.ExtraHeader = &stringMap
 		}
 	}
 

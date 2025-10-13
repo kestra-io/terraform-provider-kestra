@@ -46,7 +46,7 @@ jobs:
           cp -R * ../../docs/content/docs/13.terraform/
 
       - name: Push change to docs
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "feat(docs): update terraform docs"
           branch: develop

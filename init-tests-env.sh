@@ -27,6 +27,13 @@
 
 set -e;
 
+if [ $# -ge 1 ]; then
+  KESTRA_VERSION="$1"
+else
+  KESTRA_VERSION='develop'
+fi
+export KESTRA_VERSION=$KESTRA_VERSION
+
 echo "starting init-tests-env.sh"
 echo ""
 echo "docker compose down --volumes, need fresh databases"
@@ -44,7 +51,7 @@ docker compose -f docker-compose-ci.yml up elasticsearch kafka vault -d --wait |
 echo ""
 echo "--------------------------------------------"
 echo ""
-echo "start Kestra"
+echo "start Kestra docker image: $KESTRA_VERSION"
 docker compose -f docker-compose-ci.yml up kestra -d --wait || {
    echo "kestra Docker Compose failed. Dumping logs:";
    docker compose -f docker-compose-ci.yml logs kestra;

@@ -51,8 +51,11 @@ jobs:
         terraform:
           - '1.8.5'
           - '1.9.8'
-          - '1.10.5'
           - '1.12.2'
+        kestraVersion:
+          - 'v1.0'
+          - 'v1.1'
+          - 'develop'
 
     steps:
       - name: Check out code into the Go module directory
@@ -73,7 +76,7 @@ jobs:
         run: |
           echo $APPLICATION_SECRETS | base64 -d > .github/docker/application-secrets.yml
           
-          sh init-tests-env.sh
+          sh init-tests-env.sh ${{ matrix.kestraVersion }}
 
       - name: Set up Go
         uses: actions/setup-go@v5

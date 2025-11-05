@@ -45,7 +45,7 @@ services:
 
   kestra:
     image: ghcr.io/kestra-io/kestra-ee:develop
-    # it may be easier to use gcp registry in local
+    # it may be easier to use gcp registry in locall
 #    image: europe-west1-docker.pkg.dev/kestra-host/docker/kestra-ee:develop
     command: server standalone
     healthcheck:

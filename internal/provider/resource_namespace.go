@@ -3,10 +3,11 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"net/http"
 )
 
 func resourceNamespace() *schema.Resource {
@@ -96,9 +97,60 @@ func resourceNamespace() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"storage_isolation": {
+				Description: "Storage isolation configuration.",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Description: "Enable storage isolation.",
+							Type:        schema.TypeBool,
+							Optional:    true,
+						},
+						"denied_services": {
+							Description: "List of denied services for isolation.",
+							Type:        schema.TypeList,
+							Optional:    true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
+			"secret_isolation": {
+				Description: "Secret isolation configuration (same shape as storage_isolation).",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Description: "Enable secret isolation.",
+							Type:        schema.TypeBool,
+							Optional:    true,
+						},
+						"denied_services": {
+							Description: "List of denied services for secret isolation.",
+							Type:        schema.TypeList,
+							Optional:    true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
 			"secret_type": {
 				Description: "The secret type.",
 				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"secret_read_only": {
+				Description: "Whether secrets are read-only in this namespace.",
+				Type:        schema.TypeBool,
 				Optional:    true,
 			},
 			"secret_configuration": {
@@ -108,6 +160,11 @@ func resourceNamespace() *schema.Resource {
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+			},
+			"outputs_in_internal_storage": {
+				Description: "Whether outputs are stored in internal storage.",
+				Type:        schema.TypeBool,
+				Optional:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -139,7 +196,6 @@ func resourceNamespaceCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 	return diags
 }
-
 func resourceNamespaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*Client)
 	var diags diag.Diagnostics
@@ -169,7 +225,7 @@ func resourceNamespaceUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	if d.HasChanges("description", "variables", "plugin_defaults") {
+	if d.HasChanges("description", "variables", "plugin_defaults", "storage_configuration", "storage_isolation", "secret_type", "secret_read_only", "secret_configuration", "outputs_in_internal_storage") {
 		body, err := namespaceSchemaToApi(d)
 		if err != nil {
 			return diag.FromErr(err)
@@ -194,7 +250,6 @@ func resourceNamespaceUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	}
 }
-
 func resourceNamespaceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*Client)
 	var diags diag.Diagnostics

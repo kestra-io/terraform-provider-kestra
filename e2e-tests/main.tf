@@ -8,7 +8,7 @@ terraform {
 }
 provider "kestra" {
   # mandatory, the Kestra webserver/standalone URL
-  url = "http://localhost:8088"
+  url = "http://localhost:8080"
 
   # basic auth
   username = "root@root.com"
@@ -55,7 +55,7 @@ resource "kestra_namespace_secret" "gitlab_token" {
 #   description = "Friendly description"
 # }
 resource "kestra_worker_group" "wkggg" {
-  key = "myworkergrouP1"
+  key = "tenant-worker-group"
 }
 
 resource "kestra_flow" "ekestra_flowxample" {
@@ -85,6 +85,7 @@ resource "kestra_test" "kestra_testsuite_example" {
 resource "kestra_namespace" "kestra_namespaceexample" {
   namespace_id    = "io.kestra.terraform.e2e.data.addednamespace"
   description     = "Friendly description"
+
   variables       = <<EOT
 k1: 1
 k2:
@@ -100,6 +101,43 @@ EOT
   values:
     format: first {{flow.id}}
 EOT
+
+  allowed_namespaces {
+    namespace = "io.kestra.terraform.e2e.allowed"
+  }
+
+  worker_group {
+    key      = "tenant-worker-group"
+    fallback = "WAIT"
+  }
+
+  storage_type = "s3"
+  storage_configuration = {
+    bucket = "my-namespace-bucket"
+    region = "eu-west-1"
+  }
+
+  storage_isolation {
+    enabled = true
+    denied_services = ["EXECUTOR", "SCHEDULER"]
+  }
+
+  secret_isolation {
+    enabled = false
+    denied_services = []
+  }
+
+  secret_read_only = false
+  secret_type = "aws-secret-manager"
+  secret_configuration = {
+
+    accessKeyId = "mysuperaccesskey"
+    secretKeyId = "mysupersecretkey"
+    sessionToken = "mysupersessiontoken"
+    region = "us-east-1"
+  }
+
+  outputs_in_internal_storage = true
 }
 # resource "kestra_binding" "exgggample" {
 #   type        = "GROUP"
@@ -122,20 +160,53 @@ resource "kestra_role" "exarrrmple" {
     permissions = ["READ", "UPDATE"]
   }
 }
-resource "kestra_template" "exhhhample" {
-  namespace   = "io.kestra.terraform.e2e.data"
-  template_id = "my-template"
-  content     = <<EOT
-tasks:
-  - id: t2
-    type: io.kestra.core.tasks.log.Log
-    message: first {{task.id}}
-    level: TRACE
-EOT
-}
+# resource "kestra_template" "exhhhample" {
+#   namespace   = "io.kestra.terraform.e2e.data"
+#   template_id = "my-template"
+#   content     = <<EOT
+# tasks:
+#   - id: t2
+#     type: io.kestra.core.tasks.log.Log
+#     message: first {{task.id}}
+#     level: TRACE
+# EOT
+# }
 resource "kestra_tenant" "exahhhmple" {
   tenant_id = "my-tenant"
   name      = "My Tenant"
+
+  worker_group {
+    key      = kestra_worker_group.wkggg.key
+    fallback = "FAIL"
+  }
+
+  storage_type = "s3"
+  storage_configuration = {
+    bucket = "my-tenant-bucket"
+    region = "eu-west-1"
+  }
+
+  storage_isolation {
+    enabled = false
+    denied_services = []
+  }
+
+  secret_isolation {
+    enabled = false
+    denied_services = []
+  }
+
+  secret_type = "aws-secret-manager"
+  secret_read_only = true
+  secret_configuration = {
+    accessKeyId = "mysuperaccesskey"
+    secretKeyId = "mysupersecretkey"
+    sessionToken = "mysupersessiontoken"
+    region = "us-east-1"
+  }
+
+  require_existing_namespace = false
+  outputs_in_internal_storage = false
 }
 # resource "kestra_user_api_token" "examdfgple" {
 #   user_id = "4DPVrcZKRZnCMGMYoTDRaj"

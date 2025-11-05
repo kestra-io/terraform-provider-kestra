@@ -51,6 +51,7 @@ jobs:
         terraform:
           - '1.8.5'
           - '1.9.8'
+          - '1.10.5'
           - '1.12.2'
         kestraVersion:
           - 'v1.0'

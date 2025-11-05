@@ -27,6 +27,13 @@
 
 set -e;
 
+if [ $# -ge 1 ]; then
+  KESTRA_VERSION="$1"
+else
+  KESTRA_VERSION='develop'
+fi
+export KESTRA_VERSION=$KESTRA_VERSION
+
 echo "starting init-tests-env.sh"
 echo ""
 echo "docker compose down --volumes, need fresh databases"
@@ -44,7 +51,7 @@ docker compose -f docker-compose-ci.yml up elasticsearch kafka vault -d --wait |
 echo ""
 echo "--------------------------------------------"
 echo ""
-echo "start Kestra"
+echo "start Kestra docker image: $KESTRA_VERSION"
 docker compose -f docker-compose-ci.yml up kestra -d --wait || {
    echo "kestra Docker Compose failed. Dumping logs:";
    docker compose -f docker-compose-ci.yml logs kestra;
@@ -100,8 +107,8 @@ curl  --fail-with-body -sS -H "Content-Type: text/plain" -u 'root@root.com:Root!
 curl  --fail-with-body -sS -H "Content-Type: text/plain" -u 'root@root.com:Root!1234' -X PUT -d '2022-05-01T03:02:01Z' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/dateTime"
 curl  --fail-with-body -sS -H "Content-Type: text/plain" -u 'root@root.com:Root!1234' -X PUT -d '2022-05-01' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/date"
 curl  --fail-with-body -sS -H "Content-Type: text/plain" -u 'root@root.com:Root!1234' -X PUT -d 'P3DT3H2M1S' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/duration"
-curl  --fail-with-body -sS -H "Content-Type: application/json" -u 'root@root.com:Root!1234' -X PUT -d '{"some":"value","in":"object"}' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/object"
-curl  --fail-with-body -sS -H "Content-Type: application/json" -u 'root@root.com:Root!1234' -X PUT -d '[{"some":"value","in":"object"},{"yet":"another","array":"object"}]' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/array"
+curl  --fail-with-body -sS -H "Content-Type: text/plain" -u 'root@root.com:Root!1234' -X PUT -d '{"some":"value","in":"object"}' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/object"
+curl  --fail-with-body -sS -H "Content-Type: text/plain" -u 'root@root.com:Root!1234' -X PUT -d '[{"some":"value","in":"object"},{"yet":"another","array":"object"}]' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/array"
 
 echo ""
 echo ""

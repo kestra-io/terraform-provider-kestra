@@ -3,10 +3,11 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"net/http"
 )
 
 func resourceTenant() *schema.Resource {
@@ -64,9 +65,60 @@ func resourceTenant() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"storage_isolation": {
+				Description: "Storage isolation configuration.",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Description: "Enable storage isolation.",
+							Type:        schema.TypeBool,
+							Optional:    true,
+						},
+						"denied_services": {
+							Description: "List of denied services for isolation.",
+							Type:        schema.TypeList,
+							Optional:    true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
+			"secret_isolation": {
+				Description: "Secret isolation configuration (same shape as storage_isolation).",
+				Type:        schema.TypeList,
+				Optional:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Description: "Enable secret isolation.",
+							Type:        schema.TypeBool,
+							Optional:    true,
+						},
+						"denied_services": {
+							Description: "List of denied services for secret isolation.",
+							Type:        schema.TypeList,
+							Optional:    true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
+					},
+				},
+			},
 			"secret_type": {
 				Description: "The secret type.",
 				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"secret_read_only": {
+				Description: "Whether secrets are read-only in this tenant.",
+				Type:        schema.TypeBool,
 				Optional:    true,
 			},
 			"secret_configuration": {
@@ -77,6 +129,16 @@ func resourceTenant() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"require_existing_namespace": {
+				Description: "Whether tenant requires an existing namespace.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+			},
+			"outputs_in_internal_storage": {
+				Description: "Whether outputs are stored in internal storage.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -84,7 +146,7 @@ func resourceTenant() *schema.Resource {
 	}
 }
 
-func resourceTenantCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTenantCreate(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
@@ -106,7 +168,7 @@ func resourceTenantCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	return diags
 }
 
-func resourceTenantRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTenantRead(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
@@ -134,7 +196,7 @@ func resourceTenantUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	if d.HasChanges("name") {
+	if d.HasChanges("name", "storage_configuration", "storage_isolation", "secret_isolation", "secret_type", "secret_read_only", "secret_configuration", "require_existing_namespace", "outputs_in_internal_storage") {
 		body, err := tenantSchemaToApi(d)
 		if err != nil {
 			return diag.FromErr(err)
@@ -158,7 +220,7 @@ func resourceTenantUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 }
 
-func resourceTenantDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTenantDelete(_ context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 

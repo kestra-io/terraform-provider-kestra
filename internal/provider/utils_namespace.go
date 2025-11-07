@@ -47,12 +47,58 @@ func namespaceSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error
 		body["storageConfiguration"] = storageConfiguration
 	}
 
+	if storageIsolationList, ok := d.GetOk("storage_isolation"); ok {
+		storageIsolationArr := storageIsolationList.([]interface{})
+		if len(storageIsolationArr) > 0 {
+			storageIsolationMap := storageIsolationArr[0].(map[string]interface{})
+			storageIsolation := make(map[string]interface{})
+			if enabled, ok := storageIsolationMap["enabled"].(bool); ok {
+				storageIsolation["enabled"] = enabled
+			}
+			if deniedServices, ok := storageIsolationMap["denied_services"].([]interface{}); ok && len(deniedServices) > 0 {
+				denied := make([]string, len(deniedServices))
+				for i, s := range deniedServices {
+					denied[i] = s.(string)
+				}
+				storageIsolation["deniedServices"] = denied
+			}
+			body["storageIsolation"] = storageIsolation
+		}
+	}
+
+	if secretIsolationList, ok := d.GetOk("secret_isolation"); ok {
+		secretIsolationStorage := secretIsolationList.([]interface{})
+		if len(secretIsolationStorage) > 0 {
+			secretIsolationMap := secretIsolationStorage[0].(map[string]interface{})
+			secretIsolation := make(map[string]interface{})
+			if enabled, ok := secretIsolationMap["enabled"].(bool); ok {
+				secretIsolation["enabled"] = enabled
+			}
+			if ds, ok := secretIsolationMap["denied_services"].([]interface{}); ok && len(ds) > 0 {
+				denied := make([]string, len(ds))
+				for i, s := range ds {
+					denied[i] = s.(string)
+				}
+				secretIsolation["deniedServices"] = denied
+			}
+			body["secretIsolation"] = secretIsolation
+		}
+	}
+
 	if secretType := d.Get("secret_type").(string); secretType != "" {
 		body["secretType"] = secretType
 	}
 
+	if v, ok := d.GetOk("secret_read_only"); ok {
+		body["secretReadOnly"] = v.(bool)
+	}
+
 	if secretConfiguration := d.Get("secret_configuration").(map[string]interface{}); len(secretConfiguration) > 0 {
 		body["secretConfiguration"] = secretConfiguration
+	}
+
+	if v, ok := d.GetOk("outputs_in_internal_storage"); ok {
+		body["outputsInInternalStorage"] = v.(bool)
 	}
 
 	return body, nil
@@ -135,14 +181,73 @@ func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *C
 		}
 	}
 
+	if storageIsolation, ok := r["storageIsolation"].(map[string]interface{}); ok {
+		storageIsolationMap := make(map[string]interface{})
+		if enabled, ok := storageIsolation["enabled"].(bool); ok {
+			// only set enabled when it's true to avoid writing default false into state
+			if enabled {
+				storageIsolationMap["enabled"] = enabled
+			}
+		}
+		if deniedServices, ok := storageIsolation["deniedServices"].([]interface{}); ok {
+			if len(deniedServices) > 0 {
+				arr := make([]interface{}, len(deniedServices))
+				for i, v := range deniedServices {
+					arr[i] = v.(string)
+				}
+				storageIsolationMap["denied_services"] = arr
+			}
+		}
+		if len(storageIsolationMap) > 0 {
+			if err := d.Set("storage_isolation", []interface{}{storageIsolationMap}); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
+	if secretIsolation, ok := r["secretIsolation"].(map[string]interface{}); ok {
+		secretIsolationMap := make(map[string]interface{})
+		if enabled, ok := secretIsolation["enabled"].(bool); ok {
+			if enabled {
+				secretIsolationMap["enabled"] = enabled
+			}
+		}
+		if deniedServices, ok := secretIsolation["deniedServices"].([]interface{}); ok {
+			if len(deniedServices) > 0 {
+				arr := make([]interface{}, len(deniedServices))
+				for i, v := range deniedServices {
+					arr[i] = v.(string)
+				}
+				secretIsolationMap["denied_services"] = arr
+			}
+		}
+		if len(secretIsolationMap) > 0 {
+			if err := d.Set("secret_isolation", []interface{}{secretIsolationMap}); err != nil {
+				return diag.FromErr(err)
+			}
+		}
+	}
+
 	if secretType, ok := r["secretType"].(string); ok {
 		if err := d.Set("secret_type", secretType); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
+	if secretReadOnly, ok := r["secretReadOnly"].(bool); ok {
+		if err := d.Set("secret_read_only", secretReadOnly); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	if secretConfiguration, ok := r["secretConfiguration"].(map[string]interface{}); ok {
 		if err := d.Set("secret_configuration", secretConfiguration); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if outputs, ok := r["outputsInInternalStorage"].(bool); ok {
+		if err := d.Set("outputs_in_internal_storage", outputs); err != nil {
 			return diag.FromErr(err)
 		}
 	}

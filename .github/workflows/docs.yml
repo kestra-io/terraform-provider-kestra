@@ -12,12 +12,12 @@ jobs:
 
     steps:
       - name: Checkout provider
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: terraform-provider-kestra
 
       - name: Checkout docs
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: kestra-io/docs
           path: docs

@@ -46,7 +46,7 @@ services:
   kestra:
     image: ghcr.io/kestra-io/kestra-ee:${KESTRA_VERSION}
     # it may be easier to use gcp registry in local
-#    image: europe-west1-docker.pkg.dev/kestra-host/docker/kestra-ee:develop
+#    image: europe-west1-docker.pkg.dev/kestra-host/docker/kestra-ee:${KESTRA_VERSION}
     command: server standalone
     healthcheck:
       test: ["CMD-SHELL", "curl -fs http://localhost:8080/health"]

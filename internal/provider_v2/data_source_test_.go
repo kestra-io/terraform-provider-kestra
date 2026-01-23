@@ -78,7 +78,7 @@ func (d *testDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	read, httpResponse, err := d.providerData.Client.TestSuitesAPI.GetTestSuite(ctx, data.Namespace.ValueString(), data.TestId.ValueString(), d.providerData.TenantId).Execute()
+	read, httpResponse, err := d.providerData.Client.TestSuitesAPI.TestSuite(ctx, data.Namespace.ValueString(), data.TestId.ValueString(), d.providerData.TenantId).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read Test data source, got error: %s, full httpResponse: %v", err, httpResponse))
 		return

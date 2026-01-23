@@ -3,7 +3,7 @@ package sdk_client
 import (
 	"context"
 	"encoding/base64"
-	"github.com/kestra-io/client-sdk/go-sdk"
+	"github.com/kestra-io/client-sdk/go-sdk/kestra_api_client"
 	"net/http"
 	"time"
 )

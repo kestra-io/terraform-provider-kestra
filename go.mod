@@ -1,8 +1,6 @@
 module github.com/kestra-io/terraform-provider-kestra
 
-go 1.24.0
-
-toolchain go1.24.4
+go 1.25
 
 require (
 	github.com/hashicorp/go-cty v1.5.0
@@ -14,7 +12,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.38.1
 	github.com/hashicorp/terraform-plugin-testing v1.13.2
 	github.com/json-iterator/go v1.1.12
-	github.com/kestra-io/client-sdk/go-sdk v0.0.0-20251104165556-919599634766
+	github.com/kestra-io/client-sdk/go-sdk v0.0.0-20260204105705-98782e1f7bed
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -69,6 +67,7 @@ require (
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
+	github.com/tmaxmax/go-sse v0.11.0 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect

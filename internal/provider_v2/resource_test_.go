@@ -129,7 +129,7 @@ func (r *testResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	read, httpResponse, err := r.providerData.Client.TestSuitesAPI.GetTestSuite(ctx, plan.Namespace.ValueString(), plan.TestId.ValueString(), r.providerData.TenantId).Execute()
+	read, httpResponse, err := r.providerData.Client.TestSuitesAPI.TestSuite(ctx, plan.Namespace.ValueString(), plan.TestId.ValueString(), r.providerData.TenantId).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read Test, got error: %s, full httpResponse: %v", err, httpResponse))
 		return

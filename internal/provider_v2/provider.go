@@ -2,15 +2,16 @@ package provider_v2
 
 import (
 	"context"
+	"os"
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	kestra_api_client "github.com/kestra-io/client-sdk/go-sdk"
+	"github.com/kestra-io/client-sdk/go-sdk/kestra_api_client"
 	"github.com/kestra-io/terraform-provider-kestra/internal/provider_v2/sdk_client"
-	"os"
-	"strconv"
 )
 
 // Ensure the implementation satisfies the expected interfaces.

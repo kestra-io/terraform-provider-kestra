@@ -82,6 +82,20 @@ resource "kestra_test" "kestra_testsuite_example" {
   depends_on = [kestra_flow.ekestra_flowxample]
 }
 
+
+resource "kestra_flow" "complex-test-suite-flow" {
+  namespace = "io.kestra.terraform.e2e.data.weather"
+  flow_id   = "extract-flow"
+  content   = file("./data/complex-test-suite/extract-flow.yml")
+}
+resource "kestra_test" "complex-testsuite" {
+  namespace = "io.kestra.terraform.e2e.data.weather"
+  test_id   = "extract-testsuite"
+  content   = file("./data/complex-test-suite/extract-testsuite.yml")
+  depends_on = [kestra_flow.complex-test-suite-flow]
+}
+
+
 resource "kestra_namespace" "kestra_namespaceexample" {
   depends_on = [kestra_worker_group.wkggg]
   namespace_id    = "io.kestra.terraform.e2e.data.addednamespace"

@@ -74,7 +74,7 @@ jobs:
 
       - name: Build the docker-compose stack
         env:
-          APPLICATION_SECRETS: ${{ secrets.APPLICATION_SECRETS }}
+          APPLICATION_SECRETS: ${{ secrets.APPLICATION_SECRETS_1_3 }}
         run: |
           echo $APPLICATION_SECRETS | base64 -d > .github/docker/application-secrets.yml
           

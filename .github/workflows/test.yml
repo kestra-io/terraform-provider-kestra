@@ -72,9 +72,19 @@ jobs:
 
 
 
-      - name: Build the docker-compose stack
+      - name: Build the docker-compose stack (modern versions)
+        if: ${{ matrix.kestraVersion == 'develop' || (startsWith(matrix.kestraVersion, 'v1.') && !contains('v1.0 v1.1 v1.2', matrix.kestraVersion)) }}
         env:
-          APPLICATION_SECRETS: ${{ secrets.APPLICATION_SECRETS_1_3 }}
+          APPLICATION_SECRETS: ${{ secrets.APPLICATION_SECRETS }}
+        run: |
+          echo $APPLICATION_SECRETS | base64 -d > .github/docker/application-secrets.yml
+          
+          sh init-tests-env.sh ${{ matrix.kestraVersion }}
+
+      - name: Build the docker-compose stack (legacy versions)
+        if: ${{ ! (matrix.kestraVersion == 'develop' || (startsWith(matrix.kestraVersion, 'v1.') && !contains('v1.0 v1.1 v1.2', matrix.kestraVersion))) }}
+        env:
+          APPLICATION_SECRETS: ${{ secrets.APPLICATION_SECRETS_LEGACY }}
         run: |
           echo $APPLICATION_SECRETS | base64 -d > .github/docker/application-secrets.yml
           

@@ -83,6 +83,7 @@ resource "kestra_test" "kestra_testsuite_example" {
 }
 
 resource "kestra_namespace" "kestra_namespaceexample" {
+  depends_on = [kestra_worker_group.wkggg]
   namespace_id    = "io.kestra.terraform.e2e.data.addednamespace"
   description     = "Friendly description"
 

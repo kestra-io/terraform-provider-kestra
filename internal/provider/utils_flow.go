@@ -119,3 +119,24 @@ func flowSourceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *
 
 	return diags
 }
+
+func extractNamespaceAndIdFromContent(content string) (string, string, error) {
+	m := make(map[string]interface{})
+	if err := yaml.Unmarshal([]byte(content), &m); err != nil {
+		return "", "", err
+	}
+
+	var id, namespace string
+	if v, ok := m["id"]; ok {
+		id = fmt.Sprintf("%v", v)
+	}
+	if v, ok := m["namespace"]; ok {
+		namespace = fmt.Sprintf("%v", v)
+	}
+
+	if id == "" || namespace == "" {
+		return "", "", fmt.Errorf("unable to extract namespace and/or id from content")
+	}
+
+	return namespace, id, nil
+}

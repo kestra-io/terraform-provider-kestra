@@ -86,6 +86,10 @@ func (r *testResource) ValidateConfig(ctx context.Context, req resource.Validate
 		return
 	}
 
+	if data.Namespace.IsUnknown() || data.TestId.IsUnknown() || data.Content.IsUnknown() {
+		return
+	}
+
 	configuredNamespace := data.Namespace.ValueString()
 	configuredTestId := data.TestId.ValueString()
 	content := data.Content.ValueString()

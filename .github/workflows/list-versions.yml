@@ -1,0 +1,22 @@
+name: List Compatible Kestra Versions
+
+on:
+  workflow_call:
+    outputs:
+      versions:
+        description: Matrix of compatible Kestra versions
+        value: ${{ jobs.list-compatible-kestra-versions.outputs.versions }}
+
+jobs:
+  list-compatible-kestra-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.list_versions.outputs.versions }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build matrix from compatible versions
+        id: list_versions
+        run: |
+          versions=$(awk 'NF { gsub(/^[[:space:]]+|[[:space:]]+$/, ""); printf "%s\"%s\"", sep, $0; sep="," } END { print "" }' COMPATIBLE_KESTRA_VERSION.properties)
+          echo "versions=[${versions}]" >> "$GITHUB_OUTPUT"

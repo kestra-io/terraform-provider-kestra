@@ -2,13 +2,13 @@ resource "kestra_role" "example" {
   name        = "Friendly name"
   description = "Friendly description"
 
-  permissions {
-    type        = "FLOW"
-    permissions = ["READ", "UPDATE"]
+  resources {
+    type    = "FLOW"
+    actions = ["VIEW", "LIST", "UPDATE", "EXECUTE"]
   }
 
-  permissions {
-    type        = "EXECUTION"
-    permissions = ["READ", "UPDATE"]
+  resources {
+    type    = "EXECUTION"
+    actions = ["VIEW", "LIST", "ACCESS_LOGS"]
   }
 }

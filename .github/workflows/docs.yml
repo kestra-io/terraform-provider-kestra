@@ -17,12 +17,13 @@ jobs:
           path: terraform-provider-kestra
 
       - name: Checkout docs
-        uses: actions/checkout@v4
+        uses: kestra-io/actions/composite/checkout-and-auth@main
         with:
+          gh-app-id: ${{ secrets.GH_BOT_APP_ID }}
+          gh-app-private-key: ${{ secrets.GH_BOT_PRIVATE_KEY }}
           repository: kestra-io/docs
           path: docs
-          ref: "develop"
-          token: ${{ secrets.GH_PERSONAL_TOKEN }}
+          ref: develop
 
       - name: Transform docs for website
         run: |

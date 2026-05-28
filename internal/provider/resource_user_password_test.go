@@ -14,21 +14,21 @@ func TestAccUserPassword(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccResourceUserPassword(
-					"PassPass3",
+					"PassPass3!",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"kestra_user_password.new", "password", "PassPass3",
+						"kestra_user_password.new", "password", "PassPass3!",
 					),
 				),
 			},
 			{
 				Config: testAccResourceUserPassword(
-					"PassPass2",
+					"PassPass2!",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"kestra_user_password.new", "password", "PassPass2",
+						"kestra_user_password.new", "password", "PassPass2!",
 					),
 				),
 			},

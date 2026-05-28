@@ -3,15 +3,15 @@ namespace: io.kestra.terraform
 
 tasks:
   - id: t1
-    type: io.kestra.core.tasks.log.Log
+    type: io.kestra.plugin.core.log.Log
     message: "{{ task.id }}"
 
   - id: t2
-    type: io.kestra.core.tasks.debugs.Return
+    type: io.kestra.plugin.core.debug.Return
     format: second {{ execution.id }}
 
   - id: t3
-    type: io.kestra.core.tasks.log.Log
+    type: io.kestra.plugin.core.log.Log
     message: third all optional args {{ outputs.t2.value }}
     timeout: PT1H
     retry:

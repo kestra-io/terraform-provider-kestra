@@ -111,6 +111,26 @@ curl  --fail-with-body -sS -H "Content-Type: text/plain" -u 'root@root.com:Root!
 curl  --fail-with-body -sS -H "Content-Type: text/plain" -u 'root@root.com:Root!1234' -X PUT -d '[{"some":"value","in":"object"},{"yet":"another","array":"object"}]' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/array"
 
 echo ""
+echo "--------------------------------------------"
+echo ""
+echo "inject test suite data using Kestra API"
+curl --fail-with-body -sS -H "Content-Type: application/x-yaml" -u 'root@root.com:Root!1234' -X POST -d '
+id: test-suite-2-already-in-db
+namespace: io.kestra.terraform.data
+description: assert flow is returning the input value as output
+flowId: simple
+testCases:
+  - id: test_case_1
+    type: io.kestra.core.tests.flow.UnitTest
+    fixtures:
+      inputs:
+        inputA: "Hi there"
+    assertions:
+      - value: "{{ outputs.return.value }}"
+        equalTo: "Hi there"
+' "127.27.27.27:8080/api/v1/main/tests"
+
+echo ""
 echo ""
 echo "init-tests-env.sh finished successfully"
 echo ""

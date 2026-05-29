@@ -35,7 +35,7 @@ data "kestra_namespace" "example" {
 - `id` (String) The ID of this resource.
 - `outputs_in_internal_storage` (Boolean) Whether outputs are stored in internal storage.
 - `plugin_defaults` (String) The namespace plugin defaults.
-- `secret_configuration` (Map of String) The secret configuration.
+- `secret_configuration` (Map of String) Per-backend secret configuration, keyed by backend type. Values that the API stores as nested objects are returned as JSON-encoded strings; flat string values are returned as-is.
 - `secret_isolation` (List of Object) Secret isolation configuration (same shape as storage_isolation). (see [below for nested schema](#nestedatt--secret_isolation))
 - `secret_read_only` (Boolean) Whether secrets are read-only in this namespace.
 - `secret_type` (String) The secret type.

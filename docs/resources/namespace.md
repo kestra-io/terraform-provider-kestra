@@ -48,7 +48,7 @@ EOT
 - `description` (String) The namespace friendly description.
 - `outputs_in_internal_storage` (Boolean) Whether outputs are stored in internal storage.
 - `plugin_defaults` (String) The namespace plugin defaults in yaml string.
-- `secret_configuration` (Map of String) The secret configuration.
+- `secret_configuration` (Map of String) Per-backend secret configuration, keyed by backend type (`vault`, `aws`, `gcp`, etc.). Each value is either a plain string for simple settings or a `jsonencode(...)` expression wrapping the nested object that backend expects.
 - `secret_isolation` (Block List, Max: 1) Secret isolation configuration (same shape as storage_isolation). (see [below for nested schema](#nestedblock--secret_isolation))
 - `secret_read_only` (Boolean) Whether secrets are read-only in this namespace.
 - `secret_type` (String) The secret type.

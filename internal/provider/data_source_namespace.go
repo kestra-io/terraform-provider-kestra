@@ -141,9 +141,11 @@ func dataSourceNamespace() *schema.Resource {
 				Computed:    true,
 			},
 			"secret_configuration": {
-				Description: "The secret configuration.",
-				Type:        schema.TypeMap,
-				Computed:    true,
+				Description: "Per-backend secret configuration, keyed by backend type. " +
+					"Values that the API stores as nested objects are returned as " +
+					"JSON-encoded strings; flat string values are returned as-is.",
+				Type:     schema.TypeMap,
+				Computed: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},

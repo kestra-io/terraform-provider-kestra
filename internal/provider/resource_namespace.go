@@ -154,9 +154,12 @@ func resourceNamespace() *schema.Resource {
 				Optional:    true,
 			},
 			"secret_configuration": {
-				Description: "The secret configuration.",
-				Type:        schema.TypeMap,
-				Optional:    true,
+				Description: "Per-backend secret configuration, keyed by backend type " +
+					"(`vault`, `aws`, `gcp`, etc.). Each value is either a plain string for " +
+					"simple settings or a `jsonencode(...)` expression wrapping the nested " +
+					"object that backend expects.",
+				Type:     schema.TypeMap,
+				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
@@ -225,7 +228,7 @@ func resourceNamespaceUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	if d.HasChanges("description", "variables", "plugin_defaults", "storage_configuration", "storage_isolation", "secret_type", "secret_read_only", "secret_configuration", "outputs_in_internal_storage") {
+	if d.HasChanges("description", "variables", "plugin_defaults", "allowed_namespaces", "worker_group", "storage_type", "storage_configuration", "storage_isolation", "secret_isolation", "secret_type", "secret_read_only", "secret_configuration", "outputs_in_internal_storage") {
 		body, err := namespaceSchemaToApi(d)
 		if err != nil {
 			return diag.FromErr(err)

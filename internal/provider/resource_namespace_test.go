@@ -113,6 +113,56 @@ func TestAccResourceNamespace(t *testing.T) {
 	})
 }
 
+func TestAccResourceNamespaceNestedSecretConfigAndAllowedNamespacesDrift(t *testing.T) {
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck:          func() { testAccPreCheck(t) },
+		ProviderFactories: providerFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "kestra_namespace" "nested" {
+						namespace_id = "io.kestra.terraform.nested"
+						description  = "nested v1"
+						allowed_namespaces { namespace = "io.kestra.terraform.shared" }
+						secret_configuration = {
+							flat  = "plain"
+							vault = jsonencode({
+								address = "https://vault.example.invalid"
+								auth    = { method = "approle", role = "kestra" }
+							})
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("kestra_namespace.nested", "allowed_namespaces.#", "1"),
+					resource.TestCheckResourceAttr("kestra_namespace.nested", "secret_configuration.flat", "plain"),
+					resource.TestMatchResourceAttr("kestra_namespace.nested", "secret_configuration.vault", regexp.MustCompile("approle")),
+				),
+			},
+			{
+				Config: `
+					resource "kestra_namespace" "nested" {
+						namespace_id = "io.kestra.terraform.nested"
+						description  = "nested v2"
+						allowed_namespaces { namespace = "io.kestra.terraform.shared" }
+						allowed_namespaces { namespace = "io.kestra.terraform.shared2" }
+						secret_configuration = {
+							flat  = "plain"
+							vault = jsonencode({
+								address = "https://vault.example.invalid"
+								auth    = { method = "token" }
+							})
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("kestra_namespace.nested", "description", "nested v2"),
+					resource.TestCheckResourceAttr("kestra_namespace.nested", "allowed_namespaces.#", "2"),
+					resource.TestMatchResourceAttr("kestra_namespace.nested", "secret_configuration.vault", regexp.MustCompile("token")),
+				),
+			},
+		},
+	})
+}
+
 func testAccResourceNamespace(id, description, variables, pluginDefaults string) string {
 	return fmt.Sprintf(
 		`

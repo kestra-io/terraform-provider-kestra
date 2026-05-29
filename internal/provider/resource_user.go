@@ -49,9 +49,14 @@ func resourceUser() *schema.Resource {
 				Required:    true,
 			},
 			"groups": {
-				Description: "The user groups id.",
-				Type:        schema.TypeList,
-				Optional:    true,
+				Description: "The list of group ids the user belongs to. " +
+					"This list is sent to the API as a full replacement: any group membership " +
+					"not declared here will be removed on apply, including memberships managed " +
+					"outside Terraform or by other Terraform configurations. " +
+					"If you intend to manage group membership elsewhere, set " +
+					"`lifecycle { ignore_changes = [groups] }` on the user resource.",
+				Type:     schema.TypeList,
+				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},

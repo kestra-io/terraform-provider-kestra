@@ -1,6 +1,9 @@
 package provider
 
 import (
+	"encoding/json"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"gopkg.in/yaml.v2"
@@ -94,7 +97,7 @@ func namespaceSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error
 	}
 
 	if secretConfiguration := d.Get("secret_configuration").(map[string]interface{}); len(secretConfiguration) > 0 {
-		body["secretConfiguration"] = secretConfiguration
+		body["secretConfiguration"] = namespaceSecretConfigurationToApi(secretConfiguration)
 	}
 
 	if v, ok := d.GetOk("outputs_in_internal_storage"); ok {
@@ -241,7 +244,7 @@ func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *C
 	}
 
 	if secretConfiguration, ok := r["secretConfiguration"].(map[string]interface{}); ok {
-		if err := d.Set("secret_configuration", secretConfiguration); err != nil {
+		if err := d.Set("secret_configuration", namespaceSecretConfigurationFromApi(secretConfiguration)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -253,6 +256,54 @@ func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *C
 	}
 
 	return diags
+}
+
+// namespaceSecretConfigurationToApi walks the secret_configuration map and, for
+// any value whose string content looks like a JSON object or array, decodes it
+// into the corresponding Go structure before sending it to Kestra. This lets
+// users express nested backend configs as `jsonencode({...})` values while the
+// schema remains `map(string)` for backward compatibility.
+func namespaceSecretConfigurationToApi(in map[string]interface{}) map[string]interface{} {
+	out := make(map[string]interface{}, len(in))
+	for k, v := range in {
+		s, ok := v.(string)
+		if !ok {
+			out[k] = v
+			continue
+		}
+		trimmed := strings.TrimSpace(s)
+		if strings.HasPrefix(trimmed, "{") || strings.HasPrefix(trimmed, "[") {
+			var parsed interface{}
+			if err := json.Unmarshal([]byte(trimmed), &parsed); err == nil {
+				out[k] = parsed
+				continue
+			}
+		}
+		out[k] = s
+	}
+	return out
+}
+
+// namespaceSecretConfigurationFromApi normalises a secret_configuration map
+// returned by the API into the `map(string)` shape the Terraform schema
+// requires. Non-string values (objects, arrays, numbers, bools) are JSON-encoded
+// into a string so that nested backend configs survive the round-trip without
+// crashing the SDK type validator.
+func namespaceSecretConfigurationFromApi(in map[string]interface{}) map[string]interface{} {
+	out := make(map[string]interface{}, len(in))
+	for k, v := range in {
+		if s, ok := v.(string); ok {
+			out[k] = s
+			continue
+		}
+		b, err := json.Marshal(v)
+		if err != nil {
+			out[k] = ""
+			continue
+		}
+		out[k] = string(b)
+	}
+	return out
 }
 
 func namespaceSecretSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {

@@ -258,11 +258,8 @@ func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *C
 	return diags
 }
 
-// namespaceSecretConfigurationToApi walks the secret_configuration map and, for
-// any value whose string content looks like a JSON object or array, decodes it
-// into the corresponding Go structure before sending it to Kestra. This lets
-// users express nested backend configs as `jsonencode({...})` values while the
-// schema remains `map(string)` for backward compatibility.
+// Values that look like JSON objects/arrays are decoded before being sent,
+// so users can put `jsonencode({...})` in a map(string) field.
 func namespaceSecretConfigurationToApi(in map[string]interface{}) map[string]interface{} {
 	out := make(map[string]interface{}, len(in))
 	for k, v := range in {
@@ -284,11 +281,8 @@ func namespaceSecretConfigurationToApi(in map[string]interface{}) map[string]int
 	return out
 }
 
-// namespaceSecretConfigurationFromApi normalises a secret_configuration map
-// returned by the API into the `map(string)` shape the Terraform schema
-// requires. Non-string values (objects, arrays, numbers, bools) are JSON-encoded
-// into a string so that nested backend configs survive the round-trip without
-// crashing the SDK type validator.
+// Non-string values are JSON-encoded so the map fits the schema's
+// `map(string)` type without losing nested structure.
 func namespaceSecretConfigurationFromApi(in map[string]interface{}) map[string]interface{} {
 	out := make(map[string]interface{}, len(in))
 	for k, v := range in {

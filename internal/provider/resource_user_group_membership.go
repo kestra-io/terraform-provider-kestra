@@ -12,13 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// userMembershipLocks serialises membership writes targeting the same user.
-// Kestra's API silently loses a write when two memberships for the same user
-// are PUT in parallel: the second request returns 200 but the member index
-// stays at its prior state. Terraform happily parallelises sibling resources,
-// so without this lock a config that adds the same user to multiple groups
-// flakes intermittently. The lock is keyed by user id, so different users
-// remain independent and overall apply throughput is unaffected.
+// Serialises membership writes per user. Parallel PUTs on the same user can
+// silently drop one of the writes in Kestra.
 var (
 	userMembershipLocksMu sync.Mutex
 	userMembershipLocks   = map[string]*sync.Mutex{}
@@ -114,9 +109,7 @@ func resourceUserGroupMembershipRead(ctx context.Context, d *schema.ResourceData
 	userId := d.Get("user_id").(string)
 	groupId := d.Get("group_id").(string)
 
-	// Kestra's group-member listing is backed by an eventually-consistent
-	// index. A freshly added member can be absent for several seconds. Retry
-	// with exponential backoff before concluding the membership is gone.
+	// The member listing is eventually consistent; retry before giving up.
 	var found bool
 	var err error
 	backoffs := []time.Duration{0, 1 * time.Second, 2 * time.Second, 4 * time.Second, 8 * time.Second}
@@ -145,10 +138,6 @@ func resourceUserGroupMembershipRead(ctx context.Context, d *schema.ResourceData
 	return diags
 }
 
-// userGroupMembershipExists checks whether userId is currently a member of
-// groupId. It walks the paged /groups/{id}/members endpoint, which only
-// requires read permission on the group (not on the user), so it works for
-// callers that can manage memberships but not view user records directly.
 func userGroupMembershipExists(c *Client, groupId, userId string) (bool, error) {
 	page := 1
 	pageSize := 200

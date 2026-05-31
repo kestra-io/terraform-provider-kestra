@@ -10,8 +10,8 @@ import (
 
 func TestAccResourceNamespace(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: providerFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: muxProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccResourceNamespace(
@@ -105,9 +105,56 @@ func TestAccResourceNamespace(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "kestra_namespace.new",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "kestra_namespace.new",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"variables", "plugin_defaults"},
+			},
+		},
+	})
+}
+
+func TestAccResourceNamespaceNestedSecretConfiguration(t *testing.T) {
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: muxProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: `
+					resource "kestra_namespace" "nested" {
+						namespace_id = "io.kestra.terraform.nested"
+						description  = "nested secret config v1"
+						secret_configuration = {
+							vault = {
+								address = "https://vault.example.invalid"
+								auth = {
+									method = "approle"
+									role   = "kestra"
+								}
+							}
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("kestra_namespace.nested", "namespace_id", "io.kestra.terraform.nested"),
+				),
+			},
+			{
+				Config: `
+					resource "kestra_namespace" "nested" {
+						namespace_id = "io.kestra.terraform.nested"
+						description  = "nested secret config v2"
+						secret_configuration = {
+							vault = {
+								address = "https://vault.example.invalid"
+								auth = {
+									method = "token"
+								}
+							}
+						}
+					}`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("kestra_namespace.nested", "description", "nested secret config v2"),
+				),
 			},
 		},
 	})

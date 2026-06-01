@@ -37,7 +37,7 @@ tasks:
       Kestra.outputs(dict(flows=flow_namespace_list))
 
   - id: for_each_sanitychecks
-    type: io.kestra.plugin.core.flow.ForEach
+    type: io.kestra.plugin.core.flow.Loop
     concurrencyLimit: 5
     values: "{{ outputs.extract.vars.flows }}"
     tasks:

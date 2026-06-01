@@ -100,6 +100,11 @@ jobs:
         run: |
           go mod download
 
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ matrix.terraform }}
+
       - name: Terraform acceptance tests
         timeout-minutes: 10
         env:
@@ -110,11 +115,6 @@ jobs:
           KESTRA_PASSWORD: Root!1234
         run: |
           go test -v -cover ./internal/...
-
-      - name: Set up Terraform for E2E tests
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ matrix.terraform }}
 
       - name: Terraform E2E tests
         timeout-minutes: 10

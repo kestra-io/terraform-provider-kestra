@@ -112,6 +112,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 				"kestra_role":                      resourceRole(),
 				"kestra_template":                  resourceTemplate(),
 				"kestra_user":                      resourceUser(),
+				"kestra_user_group_membership":     resourceUserGroupMembership(),
 				"kestra_user_password":             resourceUserPassword(),
 				"kestra_tenant":                    resourceTenant(),
 				"kestra_namespace_file":            resourceNamespaceFile(),

@@ -28,12 +28,12 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
-          go-version: '1.23'
+          go-version-file: 'go.mod'
         id: go
 
       - name: Get dependencies
@@ -61,7 +61,7 @@ jobs:
 
     steps:
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
@@ -81,9 +81,9 @@ jobs:
           sh init-tests-env.sh ${{ matrix.kestraVersion }}
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
-          go-version: '1.23'
+          go-version-file: 'go.mod'
         id: go
 
       - name: Get dependencies

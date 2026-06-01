@@ -52,11 +52,19 @@ echo ""
 echo "--------------------------------------------"
 echo ""
 echo "start Kestra docker image: $KESTRA_VERSION"
-docker compose -f docker-compose-ci.yml up kestra -d --wait || {
-   echo "kestra Docker Compose failed. Dumping logs:";
-   docker compose -f docker-compose-ci.yml logs kestra;
-   exit 1;
-}
+for attempt in 1 2 3; do
+  echo "Kestra startup attempt $attempt/3"
+  docker compose -f docker-compose-ci.yml up kestra -d --wait && break
+  if [ "$attempt" -eq 3 ]; then
+    echo "kestra Docker Compose failed after 3 attempts. Dumping logs:";
+    docker compose -f docker-compose-ci.yml logs kestra;
+    exit 1;
+  fi
+  echo "Kestra failed to start, cleaning ES indices and retrying..."
+  docker compose -f docker-compose-ci.yml stop kestra
+  docker compose -f docker-compose-ci.yml rm -f kestra
+  curl -s -XDELETE "http://127.27.27.27:9200/kestra_*" || true
+done
 # all of these sleep are maybe not needed anymore
 sleep 10
 

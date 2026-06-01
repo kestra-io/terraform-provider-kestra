@@ -49,6 +49,7 @@ jobs:
     needs: [build, list-versions]
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    continue-on-error: ${{ matrix.kestraVersion == 'develop' }}
     strategy:
       fail-fast: false
       matrix:

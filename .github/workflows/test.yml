@@ -109,7 +109,6 @@ jobs:
         timeout-minutes: 10
         env:
           TF_ACC: "1"
-          TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
           KESTRA_URL: "http://127.27.27.27:8080"
           KESTRA_USERNAME: root@root.com
           KESTRA_PASSWORD: Root!1234
@@ -120,7 +119,6 @@ jobs:
         timeout-minutes: 10
         env:
           TF_ACC: "1"
-          TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
           KESTRA_URL: "http://127.27.27.27:8080"
           KESTRA_USERNAME: root@root.com
           KESTRA_PASSWORD: Root!1234

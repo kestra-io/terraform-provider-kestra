@@ -23,7 +23,7 @@ jobs:
           gh-app-private-key: ${{ secrets.GH_BOT_PRIVATE_KEY }}
           repository: kestra-io/docs
           path: docs
-          ref: develop
+          ref: main
 
       - name: Transform docs for website
         run: |
@@ -50,6 +50,6 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "feat(docs): update terraform docs"
-          branch: develop
+          branch: main
           file_pattern: 'content/docs/13.terraform/*'
           repository: "docs"

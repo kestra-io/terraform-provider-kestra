@@ -2,6 +2,7 @@ package provider
 
 import (
 	"encoding/json"
+	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -193,11 +194,16 @@ func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *C
 		}
 		if deniedServices, ok := storageIsolation["deniedServices"].([]interface{}); ok {
 			if len(deniedServices) > 0 {
-				arr := make([]interface{}, len(deniedServices))
+				arr := make([]string, len(deniedServices))
 				for i, v := range deniedServices {
 					arr[i] = v.(string)
 				}
-				storageIsolationMap["denied_services"] = arr
+				sort.Strings(arr)
+				iArr := make([]interface{}, len(arr))
+				for i, v := range arr {
+					iArr[i] = v
+				}
+				storageIsolationMap["denied_services"] = iArr
 			}
 		}
 		if len(storageIsolationMap) > 0 {
@@ -216,11 +222,16 @@ func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *C
 		}
 		if deniedServices, ok := secretIsolation["deniedServices"].([]interface{}); ok {
 			if len(deniedServices) > 0 {
-				arr := make([]interface{}, len(deniedServices))
+				arr := make([]string, len(deniedServices))
 				for i, v := range deniedServices {
 					arr[i] = v.(string)
 				}
-				secretIsolationMap["denied_services"] = arr
+				sort.Strings(arr)
+				iArr := make([]interface{}, len(arr))
+				for i, v := range arr {
+					iArr[i] = v
+				}
+				secretIsolationMap["denied_services"] = iArr
 			}
 		}
 		if len(secretIsolationMap) > 0 {

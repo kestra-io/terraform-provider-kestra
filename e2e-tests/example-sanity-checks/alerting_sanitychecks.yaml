@@ -12,11 +12,6 @@ triggers:
   - id: on_failure
     disabled: true
     type: io.kestra.plugin.core.trigger.Flow
-    conditions:
-      - type: io.kestra.plugin.core.condition.ExecutionStatus
-        in:
-          - FAILED
-          - WARNING
-      - type: io.kestra.plugin.core.condition.ExecutionNamespace
-        namespace: sanitychecks
-        prefix: true
+    states:
+      - FAILED
+      - WARNING

@@ -49,7 +49,7 @@ services:
 #    image: europe-west1-docker.pkg.dev/kestra-host/docker/kestra-ee:${KESTRA_VERSION}
     command: server standalone
     healthcheck:
-      test: ["CMD-SHELL", "curl -fs -u 'root@root.com:Root!1234' http://localhost:8080/api/v1/main/flows/search"]
+      test: ["CMD-SHELL", "curl -fs http://localhost:8081/health"]
       interval: 5s
       timeout: 10s
       retries: 60
@@ -58,7 +58,10 @@ services:
       - ./.github/docker/application.yml:/app/confs/application.yml:ro
       - ./.github/docker/application-secrets.yml:/app/secrets/application-secrets.yml:ro
     environment:
-      MICRONAUT_CONFIG_FILES: /app/confs/application.yml,/app/secrets/application-secrets.yml
+      # application.yml is loaded LAST so its config (notably super-admin) wins over
+      # application-secrets.yml. Micronaut gives files later in the list higher precedence
+      # and config files outrank environment variables, so ordering is the only reliable lever.
+      MICRONAUT_CONFIG_FILES: /app/secrets/application-secrets.yml,/app/confs/application.yml
 
     ports:
       - 127.27.27.27:8080:8080

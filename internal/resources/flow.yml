@@ -3,16 +3,11 @@ namespace: io.kestra.terraform
 tasks:
   - id: project-iam-extract
     description: Extract all iam at the project level
-    type: io.kestra.core.tasks.storages.LocalFiles
-    inputs:
-      main.py: |
-        ${indent(8, file("/tmp/unit-test/flow.py"))}
+    type: io.kestra.plugin.core.log.Log
+    message: "Running project IAM extract"
 
 triggers:
   - id: schedule
-    type: io.kestra.core.models.triggers.types.Schedule
-    conditions:
-      - type: io.kestra.core.models.conditions.types.VariableCondition
-        expression: '{{ eq "prd" globals.env }}'
+    type: io.kestra.plugin.core.trigger.Schedule
+    when: '{{ eq "prd" globals.env }}'
     cron: 0 4 * * 1
-

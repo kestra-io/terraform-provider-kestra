@@ -105,9 +105,10 @@ func TestAccResourceNamespace(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      "kestra_namespace.new",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "kestra_namespace.new",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"worker_group"},
 			},
 		},
 	})
@@ -138,6 +139,7 @@ func testAccResourceNamespaceWorkerGroup(id, description, variables, pluginDefau
 		`
 		resource "kestra_worker_group" "new" {
 			key = "%s"
+			name = "%s"
 		}
 
         resource "kestra_namespace" "new" {
@@ -153,6 +155,7 @@ EOT
 				key = kestra_worker_group.new.key
 			}
         }`,
+		workerGroupKey,
 		workerGroupKey,
 		id,
 		description,

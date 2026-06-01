@@ -9,7 +9,5 @@ tasks:
 triggers:
   - id: schedule
     type: io.kestra.plugin.core.trigger.Schedule
-    when:
-      - type: io.kestra.plugin.core.condition.Expression
-        expression: '{{ eq "prd" globals.env }}'
+    when: '{{ eq "prd" globals.env }}'
     cron: 0 4 * * 1

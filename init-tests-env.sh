@@ -78,7 +78,24 @@ echo "--------------------------------------------"
 echo ""
 echo "do some basic healthchecks"
 curl --fail-with-body -sS "127.27.27.27:9200"
-curl --fail-with-body -sS -u 'root@root.com:Root!1234' "127.27.27.27:8080/api/v1/main/flows/search"
+
+echo ""
+echo "waiting for Kestra API authentication to be ready..."
+for i in $(seq 1 30); do
+  if curl --fail-with-body -sS -u 'root@root.com:Root!1234' "127.27.27.27:8080/api/v1/main/flows/search" > /dev/null 2>&1; then
+    echo "Kestra API is ready"
+    break
+  fi
+  if [ "$i" -eq 30 ]; then
+    echo "Kestra API authentication failed after 30 attempts"
+    echo "super-admin users in ES:"
+    curl -sS "127.27.27.27:9200/kestra_users/_search?pretty" 2>/dev/null | head -40
+    docker compose -f docker-compose-ci.yml logs kestra | tail -50
+    exit 1
+  fi
+  echo "  attempt $i/30 failed, retrying in 2s..."
+  sleep 2
+done
 
 echo ""
 echo "--------------------------------------------"
@@ -109,6 +126,12 @@ curl  --fail-with-body -sS -H "Content-Type: text/plain" -u 'root@root.com:Root!
 curl  --fail-with-body -sS -H "Content-Type: text/plain" -u 'root@root.com:Root!1234' -X PUT -d 'P3DT3H2M1S' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/duration"
 curl  --fail-with-body -sS -H "Content-Type: text/plain" -u 'root@root.com:Root!1234' -X PUT -d '{"some":"value","in":"object"}' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/object"
 curl  --fail-with-body -sS -H "Content-Type: text/plain" -u 'root@root.com:Root!1234' -X PUT -d '[{"some":"value","in":"object"},{"yet":"another","array":"object"}]' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/array"
+
+echo ""
+echo "--------------------------------------------"
+echo ""
+echo "create worker group using Kestra API"
+curl --fail-with-body -sS -H "Content-Type: application/json" -u 'root@root.com:Root!1234' -X POST -d '{"id":"worker-group-data-1","name":"Worker Group Data 1","description":"my worker group desc","subscriptions":[]}' "127.27.27.27:8080/api/v1/instance/worker-groups"
 
 echo ""
 echo "--------------------------------------------"

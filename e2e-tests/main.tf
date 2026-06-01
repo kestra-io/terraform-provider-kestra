@@ -55,7 +55,8 @@ resource "kestra_namespace_secret" "gitlab_token" {
 #   description = "Friendly description"
 # }
 resource "kestra_worker_group" "wkggg" {
-  key = "tenant-worker-group"
+  key  = "tenant-worker-group"
+  name = "Tenant Worker Group"
 }
 
 resource "kestra_flow" "ekestra_flowxample" {

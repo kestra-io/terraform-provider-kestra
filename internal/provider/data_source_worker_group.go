@@ -22,15 +22,15 @@ func dataSourceWorkerGroup() *schema.Resource {
 			"key": {
 				Description: "The worker group key.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Computed:    true,
 			},
-			"description": {
-				Description: "The worker group description.",
+			"name": {
+				Description: "The worker group display name.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"allowed_tenants": {
-				Description: "The list of tenants allowed to use the worker group.",
+			"description": {
+				Description: "The worker group description.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},

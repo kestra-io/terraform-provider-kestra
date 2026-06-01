@@ -65,7 +65,7 @@ func TestExtraHeadersWithTerraformType(t *testing.T) {
 	// Debug: Print captured headers
 	t.Logf("Captured headers: %+v", capturedHeaders)
 	t.Logf("Client ExtraHeader: %+v", client.ExtraHeader)
-	
+
 	// Verify header was sent
 	if capturedHeaders.Get("X-Terraform-Header") != "terraform-value" {
 		t.Error("Terraform extra header was not sent")

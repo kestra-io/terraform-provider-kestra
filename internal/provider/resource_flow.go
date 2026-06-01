@@ -3,10 +3,11 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"net/http"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 type ResourceFlow struct{}
@@ -28,13 +29,13 @@ func resourceFlow() *schema.Resource {
 			"namespace": {
 				Description: "The flow namespace.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 			},
 			"flow_id": {
 				Description: "The flow id.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 			},
 			"revision": {
@@ -67,6 +68,16 @@ func resourceFlowCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	diags = validateFlow(c, d.Get("content").(string), diags)
 
 	if yamlSourceCode == true {
+		// if namespace or flow_id not provided, extract them from content
+		if d.Get("namespace").(string) == "" || d.Get("flow_id").(string) == "" {
+			ns, id, err := extractNamespaceAndIdFromContent(d.Get("content").(string))
+			if err != nil {
+				return append(diags, diag.FromErr(err)...)
+			}
+			_ = d.Set("namespace", ns)
+			_ = d.Set("flow_id", id)
+		}
+
 		r, reqErr := c.yamlRequest("POST", fmt.Sprintf("%s/flows", apiRoot(tenantId)), stringToPointer(d.Get("content").(string)))
 		if reqErr != nil {
 			return append(diags, diag.FromErr(reqErr.Err)...)
@@ -162,6 +173,16 @@ func resourceFlowUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 		tenantId := c.TenantId
 
 		if yamlSourceCode == true {
+			// ensure namespace/flow_id exist by extracting from content if missing
+			if d.Get("namespace").(string) == "" || d.Get("flow_id").(string) == "" {
+				ns, id, err := extractNamespaceAndIdFromContent(d.Get("content").(string))
+				if err != nil {
+					return append(diags, diag.FromErr(err)...)
+				}
+				_ = d.Set("namespace", ns)
+				_ = d.Set("flow_id", id)
+			}
+
 			r, reqErr := c.yamlRequest(
 				"PUT",
 				fmt.Sprintf(

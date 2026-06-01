@@ -3,6 +3,9 @@ package provider_v2
 import (
 	"fmt"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"testing"
 )
 
@@ -37,6 +40,74 @@ testCases:
 		},
 	})
 }
+func TestUnitKestraTestLocals(t *testing.T) {
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccKestraTestWithLocals(),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(
+						`kestra_test.tests["solutions.team/tests/test-1.yaml"]`,
+						tfjsonpath.New("namespace"),
+						knownvalue.StringExact("solutions.team"),
+					),
+					statecheck.ExpectKnownValue(
+						`kestra_test.tests["solutions.team/tests/test-1.yaml"]`,
+						tfjsonpath.New("test_id"),
+						knownvalue.StringExact("test-1"),
+					),
+					statecheck.ExpectKnownValue(
+						`kestra_test.tests["solutions.team/tests/test-2.yaml"]`,
+						tfjsonpath.New("namespace"),
+						knownvalue.StringExact("solutions.team"),
+					),
+					statecheck.ExpectKnownValue(
+						`kestra_test.tests["solutions.team/tests/test-2.yaml"]`,
+						tfjsonpath.New("test_id"),
+						knownvalue.StringExact("test-2"),
+					),
+				},
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+func testAccKestraTestWithLocals() string {
+	return `
+provider "kestra" {
+  url = "http://localhost:8088"
+}
+
+locals {
+  test_files = toset([
+    "solutions.team/tests/test-1.yaml",
+    "solutions.team/tests/test-2.yaml",
+  ])
+
+  unit_tests = {
+    for f in local.test_files : f => {
+      namespace = regex("^(.+)/tests", f)[0]
+      test_id   = trimsuffix(basename(f), ".yaml")
+      content   = join("\n", [
+        format("id: %s", trimsuffix(basename(f), ".yaml")),
+        format("namespace: %s", regex("^(.+)/tests", f)[0]),
+        "testCases: []",
+      ])
+    }
+  }
+}
+
+resource "kestra_test" "tests" {
+  for_each  = local.unit_tests
+  namespace = each.value.namespace
+  test_id   = each.value.test_id
+  content   = each.value.content
+}`
+}
+
 func testAccResourceTestSuite(namespace string, testid string, content string) string {
 	return fmt.Sprintf(
 		`

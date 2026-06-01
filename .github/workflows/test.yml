@@ -18,6 +18,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  list-versions:
+    name: List Compatible Kestra Versions
+    uses: ./.github/workflows/list-versions.yml
+
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -42,7 +46,7 @@ jobs:
 
   test:
     name: Matrix Test
-    needs: build
+    needs: [build, list-versions]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -53,6 +57,7 @@ jobs:
           - '1.9.8'
           - '1.10.5'
           - '1.12.2'
+        kestraVersion: ${{ fromJSON(needs.list-versions.outputs.versions) }}
 
     steps:
       - name: Check out code into the Go module directory
@@ -67,13 +72,24 @@ jobs:
 
 
 
-      - name: Build the docker-compose stack
+      - name: Build the docker-compose stack (modern versions)
+        if: ${{ matrix.kestraVersion == 'develop' || (startsWith(matrix.kestraVersion, 'v1.') && !contains('v1.0 v1.1 v1.2', matrix.kestraVersion)) }}
+        continue-on-error: ${{ matrix.kestraVersion == 'develop' }}
         env:
           APPLICATION_SECRETS: ${{ secrets.APPLICATION_SECRETS }}
         run: |
           echo $APPLICATION_SECRETS | base64 -d > .github/docker/application-secrets.yml
-          
-          sh init-tests-env.sh
+
+          sh init-tests-env.sh ${{ matrix.kestraVersion }}
+
+      - name: Build the docker-compose stack (legacy versions)
+        if: ${{ ! (matrix.kestraVersion == 'develop' || (startsWith(matrix.kestraVersion, 'v1.') && !contains('v1.0 v1.1 v1.2', matrix.kestraVersion))) }}
+        env:
+          APPLICATION_SECRETS: ${{ secrets.APPLICATION_SECRETS_LEGACY }}
+        run: |
+          echo $APPLICATION_SECRETS | base64 -d > .github/docker/application-secrets.yml
+
+          sh init-tests-env.sh ${{ matrix.kestraVersion }}
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -85,27 +101,28 @@ jobs:
         run: |
           go mod download
 
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+
       - name: Terraform acceptance tests
+        continue-on-error: ${{ matrix.kestraVersion == 'develop' }}
         timeout-minutes: 10
         env:
           TF_ACC: "1"
-          TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
           KESTRA_URL: "http://127.27.27.27:8080"
           KESTRA_USERNAME: root@root.com
           KESTRA_PASSWORD: Root!1234
         run: |
           go test -v -cover ./internal/...
 
-      - name: Set up Terraform for E2E tests
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ matrix.terraform }}
-
       - name: Terraform E2E tests
+        continue-on-error: ${{ matrix.kestraVersion == 'develop' }}
         timeout-minutes: 10
         env:
           TF_ACC: "1"
-          TF_ACC_TERRAFORM_VERSION: ${{ matrix.terraform }}
           KESTRA_URL: "http://127.27.27.27:8080"
           KESTRA_USERNAME: root@root.com
           KESTRA_PASSWORD: Root!1234

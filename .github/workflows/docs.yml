@@ -54,3 +54,4 @@ jobs:
           branch: main
           file_pattern: 'content/docs/13.terraform/*'
           repository: "docs"
+          pull_before_commit: true

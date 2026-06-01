@@ -67,7 +67,7 @@ type workerGroup struct {
 
 type isolation struct {
 	Enabled        types.Bool `tfsdk:"enabled"`
-	DeniedServices types.List `tfsdk:"denied_services"`
+	DeniedServices types.Set `tfsdk:"denied_services"`
 }
 
 func (r *namespaceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -183,10 +183,10 @@ func isolationNestedObject() schema.NestedBlockObject {
 				Optional:            true,
 				MarkdownDescription: "Whether isolation is enabled.",
 			},
-			"denied_services": schema.ListAttribute{
+			"denied_services": schema.SetAttribute{
 				Optional:            true,
 				ElementType:         types.StringType,
-				MarkdownDescription: "List of denied services.",
+				MarkdownDescription: "Set of denied services.",
 			},
 		},
 	}
@@ -594,7 +594,7 @@ func bodyToNamespaceModel(ctx context.Context, body map[string]interface{}, tena
 // matching the SDK v2 behaviour where an empty isolation object never appeared
 // in state.
 func isolationFromBodyIfMeaningful(_ context.Context, in map[string]interface{}) (isolation, bool) {
-	out := isolation{Enabled: types.BoolNull(), DeniedServices: types.ListNull(types.StringType)}
+	out := isolation{Enabled: types.BoolNull(), DeniedServices: types.SetNull(types.StringType)}
 	meaningful := false
 	if en, ok := in["enabled"].(bool); ok && en {
 		out.Enabled = types.BoolValue(en)
@@ -607,9 +607,9 @@ func isolationFromBodyIfMeaningful(_ context.Context, in map[string]interface{})
 				strs = append(strs, types.StringValue(s))
 			}
 		}
-		lv, diags := basetypes.NewListValue(types.StringType, strs)
+		sv, diags := basetypes.NewSetValue(types.StringType, strs)
 		if !diags.HasError() {
-			out.DeniedServices = lv
+			out.DeniedServices = sv
 			meaningful = true
 		}
 	}

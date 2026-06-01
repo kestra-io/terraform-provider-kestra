@@ -50,10 +50,10 @@ services:
     command: server standalone
     healthcheck:
       test: ["CMD-SHELL", "curl -fs http://localhost:8080/health"]
-      interval: 2s
-      timeout: 30s
-      retries: 30
-      start_period: 5s
+      interval: 5s
+      timeout: 10s
+      retries: 60
+      start_period: 60s
     volumes:
       - ./.github/docker/application.yml:/app/confs/application.yml:ro
       - ./.github/docker/application-secrets.yml:/app/secrets/application-secrets.yml:ro

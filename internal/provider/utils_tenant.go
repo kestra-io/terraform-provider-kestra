@@ -1,6 +1,8 @@
 package provider
 
 import (
+	"sort"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -128,11 +130,16 @@ func tenantApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Di
 		}
 		if ds, ok := storageIsolation["deniedServices"].([]interface{}); ok {
 			if len(ds) > 0 {
-				arr := make([]interface{}, len(ds))
+				arr := make([]string, len(ds))
 				for i, v := range ds {
 					arr[i] = v.(string)
 				}
-				storageIsolationMap["denied_services"] = arr
+				sort.Strings(arr)
+				iArr := make([]interface{}, len(arr))
+				for i, v := range arr {
+					iArr[i] = v
+				}
+				storageIsolationMap["denied_services"] = iArr
 			}
 		}
 		if len(storageIsolationMap) > 0 {
@@ -151,11 +158,16 @@ func tenantApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Di
 		}
 		if ds, ok := secretIsolation["deniedServices"].([]interface{}); ok {
 			if len(ds) > 0 {
-				arr := make([]interface{}, len(ds))
+				arr := make([]string, len(ds))
 				for i, v := range ds {
 					arr[i] = v.(string)
 				}
-				secretIsolationMap["denied_services"] = arr
+				sort.Strings(arr)
+				iArr := make([]interface{}, len(arr))
+				for i, v := range arr {
+					iArr[i] = v
+				}
+				secretIsolationMap["denied_services"] = iArr
 			}
 		}
 		if len(secretIsolationMap) > 0 {

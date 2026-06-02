@@ -302,17 +302,116 @@ func (r *namespaceResource) UpgradeState(_ context.Context) map[int64]resource.S
 	}
 }
 
-// upgradeNamespaceStateV0 carries SDK v2 state across to the framework's v1
-// schema. All non-secret_configuration fields share the same wire format, so
-// only secret_configuration values need re-wrapping (Map[String] -> Map[Dynamic]).
 func upgradeNamespaceStateV0(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
-	rawState := map[string]interface{}{}
-	if err := json.Unmarshal(req.RawState.JSON, &rawState); err != nil {
+	raw := map[string]interface{}{}
+	if err := json.Unmarshal(req.RawState.JSON, &raw); err != nil {
 		resp.Diagnostics.AddError("Failed to read prior state", err.Error())
 		return
 	}
-	// String values are wire-compatible with Dynamic; leave as-is.
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Empty(), rawState)...)
+
+	m := namespaceModel{
+		Id:                       optString(raw["id"]),
+		TenantId:                 optString(raw["tenant_id"]),
+		NamespaceId:              optString(raw["namespace_id"]),
+		Description:              optString(raw["description"]),
+		Variables:                optString(raw["variables"]),
+		PluginDefaults:           optString(raw["plugin_defaults"]),
+		StorageType:              optString(raw["storage_type"]),
+		SecretType:               optString(raw["secret_type"]),
+		SecretReadOnly:           optBool(raw["secret_read_only"]),
+		OutputsInInternalStorage: optBool(raw["outputs_in_internal_storage"]),
+		StorageConfiguration:     types.MapNull(types.StringType),
+		SecretConfiguration:      types.DynamicNull(),
+	}
+
+	if an, ok := raw["allowed_namespaces"].([]interface{}); ok {
+		out := make([]allowedNS, 0, len(an))
+		for _, item := range an {
+			if mp, ok := item.(map[string]interface{}); ok {
+				if ns, ok := mp["namespace"].(string); ok {
+					out = append(out, allowedNS{Namespace: types.StringValue(ns)})
+				}
+			}
+		}
+		m.AllowedNamespaces = out
+	}
+
+	if wg, ok := raw["worker_group"].([]interface{}); ok && len(wg) > 0 {
+		if mp, ok := wg[0].(map[string]interface{}); ok {
+			one := workerGroup{Fallback: types.StringNull()}
+			if k, ok := mp["key"].(string); ok {
+				one.Key = types.StringValue(k)
+			}
+			if fb, ok := mp["fallback"].(string); ok && fb != "" {
+				one.Fallback = types.StringValue(fb)
+			}
+			m.WorkerGroup = []workerGroup{one}
+		}
+	}
+
+	if sc, ok := raw["storage_configuration"].(map[string]interface{}); ok && len(sc) > 0 {
+		els := map[string]attr.Value{}
+		for k, v := range sc {
+			if s, ok := v.(string); ok {
+				els[k] = types.StringValue(s)
+			}
+		}
+		if mv, diags := basetypes.NewMapValue(types.StringType, els); !diags.HasError() {
+			m.StorageConfiguration = mv
+		}
+	}
+
+	if si, ok := raw["storage_isolation"].([]interface{}); ok && len(si) > 0 {
+		if mp, ok := si[0].(map[string]interface{}); ok {
+			m.StorageIsolation = []isolation{isolationFromV0(mp)}
+		}
+	}
+	if si, ok := raw["secret_isolation"].([]interface{}); ok && len(si) > 0 {
+		if mp, ok := si[0].(map[string]interface{}); ok {
+			m.SecretIsolation = []isolation{isolationFromV0(mp)}
+		}
+	}
+
+	if sc, ok := raw["secret_configuration"].(map[string]interface{}); ok && len(sc) > 0 {
+		if dv, err := goValueToDynamic(sc); err == nil {
+			m.SecretConfiguration = dv
+		}
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &m)...)
+}
+
+func optString(v interface{}) types.String {
+	if s, ok := v.(string); ok {
+		return types.StringValue(s)
+	}
+	return types.StringNull()
+}
+
+func optBool(v interface{}) types.Bool {
+	if b, ok := v.(bool); ok {
+		return types.BoolValue(b)
+	}
+	return types.BoolNull()
+}
+
+func isolationFromV0(in map[string]interface{}) isolation {
+	out := isolation{Enabled: types.BoolNull(), DeniedServices: types.SetNull(types.StringType)}
+	if en, ok := in["enabled"].(bool); ok {
+		out.Enabled = types.BoolValue(en)
+	}
+	if ds, ok := in["denied_services"].([]interface{}); ok && len(ds) > 0 {
+		vals := make([]attr.Value, 0, len(ds))
+		for _, v := range ds {
+			if s, ok := v.(string); ok {
+				vals = append(vals, types.StringValue(s))
+			}
+		}
+		if sv, diags := basetypes.NewSetValue(types.StringType, vals); !diags.HasError() {
+			out.DeniedServices = sv
+		}
+	}
+	return out
 }
 
 // -----------------------------------------------------------------------------

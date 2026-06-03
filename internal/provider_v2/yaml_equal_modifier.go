@@ -8,10 +8,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// yamlEqualModifier keeps the prior state value when the planned and state
-// YAML strings are semantically equal. Mirrors the SDK v2 DiffSuppressFunc
-// `isYamlEquals` so the namespace's `variables` and `plugin_defaults` fields
-// do not show spurious diffs after a round-trip through the API.
 type yamlEqualModifier struct{}
 
 func YamlEqualPlanModifier() planmodifier.String {

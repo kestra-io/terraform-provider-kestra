@@ -414,10 +414,6 @@ func isolationFromV0(in map[string]interface{}) isolation {
 	return out
 }
 
-// -----------------------------------------------------------------------------
-// model <-> body conversion
-// -----------------------------------------------------------------------------
-
 func namespaceModelToBody(ctx context.Context, m *namespaceModel) (map[string]interface{}, diag.Diagnostics) {
 	body := map[string]interface{}{
 		"id": m.NamespaceId.ValueString(),
@@ -426,7 +422,6 @@ func namespaceModelToBody(ctx context.Context, m *namespaceModel) (map[string]in
 		body["description"] = m.Description.ValueString()
 	}
 
-	// variables (YAML string) -> map[string]interface{}
 	if !m.Variables.IsNull() && m.Variables.ValueString() != "" {
 		var v interface{}
 		if err := yaml.Unmarshal([]byte(m.Variables.ValueString()), &v); err == nil {
@@ -516,9 +511,6 @@ func isolationToBody(ctx context.Context, iso isolation) map[string]interface{} 
 	return out
 }
 
-// normalizeYAML converts the map[interface{}]interface{} that gopkg.in/yaml.v2
-// produces for nested maps into map[string]interface{} so the result can be
-// JSON-marshalled.
 func normalizeYAML(in interface{}) interface{} {
 	switch x := in.(type) {
 	case map[interface{}]interface{}:
@@ -688,10 +680,6 @@ func bodyToNamespaceModel(ctx context.Context, body map[string]interface{}, tena
 	return nil
 }
 
-// isolationFromBodyIfMeaningful returns an isolation block only when the API
-// payload has a non-default value (enabled=true or non-empty deniedServices),
-// matching the SDK v2 behaviour where an empty isolation object never appeared
-// in state.
 func isolationFromBodyIfMeaningful(_ context.Context, in map[string]interface{}) (isolation, bool) {
 	out := isolation{Enabled: types.BoolNull(), DeniedServices: types.SetNull(types.StringType)}
 	meaningful := false

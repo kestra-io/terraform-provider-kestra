@@ -11,9 +11,6 @@ import (
 	"github.com/kestra-io/client-sdk/go-sdk/kestra_api_client"
 )
 
-// RawRequest performs a JSON HTTP call reusing the SDK client's server URL and
-// default headers (auth, extra headers). It returns the decoded JSON body or an
-// httpStatus on non-2xx responses so callers can react to 404s.
 func RawRequest(ctx context.Context, c *kestra_api_client.APIClient, method, relPath string, body interface{}) (map[string]interface{}, int, error) {
 	cfg := c.GetConfig()
 	if len(cfg.Servers) == 0 {

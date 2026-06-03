@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -550,11 +551,15 @@ func tfTypeValueToGo(v tftypes.Value) (interface{}, error) {
 		}
 		return s, nil
 	case ty.Is(tftypes.Number):
-		var n string
-		if err := v.As(&n); err != nil {
+		bf := new(big.Float)
+		if err := v.As(&bf); err != nil {
 			return nil, err
 		}
-		return n, nil
+		if i, acc := bf.Int64(); acc == big.Exact {
+			return i, nil
+		}
+		f, _ := bf.Float64()
+		return f, nil
 	case ty.Is(tftypes.Bool):
 		var b bool
 		if err := v.As(&b); err != nil {
@@ -652,14 +657,14 @@ func bodyToNamespaceModel(ctx context.Context, body map[string]interface{}, tena
 			m.StorageConfiguration = mv
 		}
 	}
-	if si, ok := body["storageIsolation"].(map[string]interface{}); ok {
-		if iso, ok := isolationFromBodyIfMeaningful(ctx, si); ok {
-			m.StorageIsolation = []isolation{iso}
+	if len(m.StorageIsolation) > 0 {
+		if si, ok := body["storageIsolation"].(map[string]interface{}); ok {
+			m.StorageIsolation = []isolation{isolationFromBody(ctx, si)}
 		}
 	}
-	if si, ok := body["secretIsolation"].(map[string]interface{}); ok {
-		if iso, ok := isolationFromBodyIfMeaningful(ctx, si); ok {
-			m.SecretIsolation = []isolation{iso}
+	if len(m.SecretIsolation) > 0 {
+		if si, ok := body["secretIsolation"].(map[string]interface{}); ok {
+			m.SecretIsolation = []isolation{isolationFromBody(ctx, si)}
 		}
 	}
 	if st, ok := body["secretType"].(string); ok {
@@ -680,12 +685,10 @@ func bodyToNamespaceModel(ctx context.Context, body map[string]interface{}, tena
 	return nil
 }
 
-func isolationFromBodyIfMeaningful(_ context.Context, in map[string]interface{}) (isolation, bool) {
+func isolationFromBody(_ context.Context, in map[string]interface{}) isolation {
 	out := isolation{Enabled: types.BoolNull(), DeniedServices: types.SetNull(types.StringType)}
-	meaningful := false
-	if en, ok := in["enabled"].(bool); ok && en {
+	if en, ok := in["enabled"].(bool); ok {
 		out.Enabled = types.BoolValue(en)
-		meaningful = true
 	}
 	if ds, ok := in["deniedServices"].([]interface{}); ok && len(ds) > 0 {
 		strs := make([]attr.Value, 0, len(ds))
@@ -694,13 +697,11 @@ func isolationFromBodyIfMeaningful(_ context.Context, in map[string]interface{})
 				strs = append(strs, types.StringValue(s))
 			}
 		}
-		sv, diags := basetypes.NewSetValue(types.StringType, strs)
-		if !diags.HasError() {
+		if sv, diags := basetypes.NewSetValue(types.StringType, strs); !diags.HasError() {
 			out.DeniedServices = sv
-			meaningful = true
 		}
 	}
-	return out, meaningful
+	return out
 }
 
 func goValueToDynamic(v interface{}) (types.Dynamic, error) {

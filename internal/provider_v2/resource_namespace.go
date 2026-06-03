@@ -604,8 +604,10 @@ func bodyToNamespaceModel(ctx context.Context, body map[string]interface{}, tena
 		m.Id = types.StringValue(id)
 	}
 	m.TenantId = types.StringValue(tenantId)
-	if d, ok := body["description"].(string); ok {
+	if d, ok := body["description"].(string); ok && d != "" {
 		m.Description = types.StringValue(d)
+	} else {
+		m.Description = types.StringNull()
 	}
 	if vars, ok := body["variables"].(map[string]interface{}); ok && len(vars) > 0 {
 		if m.Variables.IsNull() || m.Variables.IsUnknown() {

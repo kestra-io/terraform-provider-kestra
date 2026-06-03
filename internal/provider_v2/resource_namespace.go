@@ -383,7 +383,7 @@ func upgradeNamespaceStateV0(ctx context.Context, req resource.UpgradeStateReque
 }
 
 func optString(v interface{}) types.String {
-	if s, ok := v.(string); ok {
+	if s, ok := v.(string); ok && s != "" {
 		return types.StringValue(s)
 	}
 	return types.StringNull()

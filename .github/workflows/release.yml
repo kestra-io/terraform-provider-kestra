@@ -33,7 +33,7 @@ jobs:
           passphrase: ${{ secrets.SONATYPE_GPG_PASSWORD }}
 
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@v7
         with:
           args: release --clean
 

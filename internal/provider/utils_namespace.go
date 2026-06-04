@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"encoding/json"
 	"sort"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -253,7 +254,20 @@ func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *C
 	}
 
 	if secretConfiguration, ok := r["secretConfiguration"].(map[string]interface{}); ok {
-		if err := d.Set("secret_configuration", secretConfiguration); err != nil {
+		// The data source schema declares secret_configuration as map(string),
+		// so nested object values from the API are JSON-encoded here to avoid
+		// crashing the SDK's type check.
+		flat := make(map[string]interface{}, len(secretConfiguration))
+		for k, v := range secretConfiguration {
+			if s, ok := v.(string); ok {
+				flat[k] = s
+				continue
+			}
+			if b, err := json.Marshal(v); err == nil {
+				flat[k] = string(b)
+			}
+		}
+		if err := d.Set("secret_configuration", flat); err != nil {
 			return diag.FromErr(err)
 		}
 	}

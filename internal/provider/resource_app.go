@@ -17,6 +17,9 @@ func resourceApp() *schema.Resource {
 		ReadContext:   resourceAppRead,
 		UpdateContext: resourceAppUpdate,
 		DeleteContext: resourceAppDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"source": {
 				Description: "The source text.",

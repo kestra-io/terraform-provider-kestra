@@ -661,12 +661,12 @@ func bodyToNamespaceModel(ctx context.Context, body map[string]interface{}, tena
 	}
 	if len(m.StorageIsolation) > 0 {
 		if si, ok := body["storageIsolation"].(map[string]interface{}); ok {
-			m.StorageIsolation = []isolation{isolationFromBody(ctx, si)}
+			m.StorageIsolation = []isolation{isolationFromBody(ctx, si, m.StorageIsolation[0])}
 		}
 	}
 	if len(m.SecretIsolation) > 0 {
 		if si, ok := body["secretIsolation"].(map[string]interface{}); ok {
-			m.SecretIsolation = []isolation{isolationFromBody(ctx, si)}
+			m.SecretIsolation = []isolation{isolationFromBody(ctx, si, m.SecretIsolation[0])}
 		}
 	}
 	if st, ok := body["secretType"].(string); ok {
@@ -687,8 +687,8 @@ func bodyToNamespaceModel(ctx context.Context, body map[string]interface{}, tena
 	return nil
 }
 
-func isolationFromBody(_ context.Context, in map[string]interface{}) isolation {
-	out := isolation{Enabled: types.BoolNull(), DeniedServices: types.SetNull(types.StringType)}
+func isolationFromBody(_ context.Context, in map[string]interface{}, prior isolation) isolation {
+	out := isolation{Enabled: prior.Enabled, DeniedServices: prior.DeniedServices}
 	if en, ok := in["enabled"].(bool); ok {
 		out.Enabled = types.BoolValue(en)
 	}

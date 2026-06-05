@@ -5,7 +5,7 @@ namespace: io.kestra.terraform
 tasks:
   - id: first
     # even inside task
-    type: io.kestra.plugin.core.debug.Return
+    type: io.kestra.core.tasks.debugs.Return
     format: first {{ execution.id }}
 
 # only comment

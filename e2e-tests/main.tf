@@ -55,8 +55,7 @@ resource "kestra_namespace_secret" "gitlab_token" {
 #   description = "Friendly description"
 # }
 resource "kestra_worker_group" "wkggg" {
-  key  = "tenant-worker-group"
-  name = "Tenant Worker Group"
+  key = "tenant-worker-group"
 }
 
 resource "kestra_flow" "ekestra_flowxample" {
@@ -94,11 +93,11 @@ k2:
     v1: 1
 EOT
   plugin_defaults = <<EOT
-- type: io.kestra.plugin.core.log.Log
+- type: io.kestra.core.tasks.log.Log
   forced: false
   values:
     message: first {{flow.id}}
-- type: io.kestra.plugin.core.debug.Return
+- type: io.kestra.core.tasks.debugs.Return
   forced: false
   values:
     format: first {{flow.id}}
@@ -152,9 +151,14 @@ resource "kestra_role" "exarrrmple" {
   name        = "Friendly name"
   description = "Friendly description"
 
-  resources {
-    type    = "FLOW"
-    actions = ["VIEW", "LIST", "UPDATE"]
+  permissions {
+    type        = "FLOW"
+    permissions = ["READ", "UPDATE"]
+  }
+
+  permissions {
+    type        = "TEMPLATE"
+    permissions = ["READ", "UPDATE"]
   }
 }
 # resource "kestra_template" "exhhhample" {

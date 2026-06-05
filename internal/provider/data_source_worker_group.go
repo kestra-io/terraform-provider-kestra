@@ -22,15 +22,15 @@ func dataSourceWorkerGroup() *schema.Resource {
 			"key": {
 				Description: "The worker group key.",
 				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"name": {
-				Description: "The worker group display name.",
-				Type:        schema.TypeString,
-				Computed:    true,
+				Required:    true,
 			},
 			"description": {
 				Description: "The worker group description.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"allowed_tenants": {
+				Description: "The list of tenants allowed to use the worker group.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -44,7 +44,7 @@ func dataSourceWorkerGroupRead(ctx context.Context, d *schema.ResourceData, meta
 
 	id := d.Get("id").(string)
 
-	r, reqErr := c.request("GET", fmt.Sprintf("%s/instance/worker-groups/%s", apiRoot(nil), id), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/instance/workergroups/%s", apiRoot(nil), id), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

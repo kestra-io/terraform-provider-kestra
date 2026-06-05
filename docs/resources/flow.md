@@ -46,6 +46,9 @@ EOT
 ### Required
 
 - `content` (String) The flow full content in yaml string.
+
+### Optional
+
 - `flow_id` (String) The flow id.
 - `namespace` (String) The flow namespace.
 

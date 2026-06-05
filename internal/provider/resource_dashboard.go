@@ -16,6 +16,9 @@ func resourceDashboard() *schema.Resource {
 		ReadContext:   resourceDashboardRead,
 		UpdateContext: resourceDashboardUpdate,
 		DeleteContext: resourceDashboardDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"source_code": {
 				Description: "The source code text.",

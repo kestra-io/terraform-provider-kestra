@@ -18,6 +18,11 @@ func TestAccResourceDashboard(t *testing.T) {
 					resource.TestCheckResourceAttrSet("kestra_dashboard.new", "id"),
 				),
 			},
+			{
+				ResourceName:      "kestra_dashboard.new",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

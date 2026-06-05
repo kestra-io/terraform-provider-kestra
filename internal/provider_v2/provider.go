@@ -247,6 +247,7 @@ func (p *kestraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 func (p *kestraProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewTestResource,
+		NewNamespaceResource,
 	}
 }
 

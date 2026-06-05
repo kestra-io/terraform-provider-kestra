@@ -131,7 +131,7 @@ go mod tidy
 Then commit the changes to `go.mod` and `go.sum`.
 
 ### Release The Provider
-- make sure the generated documentation is up to date, otherwhise, commit it: `go generate`
+- make sure the generated documentation is up to date, otherwise, commit it: `go generate`
 - create a new tag on main branch and push it
 
 

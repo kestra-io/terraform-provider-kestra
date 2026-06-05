@@ -12,3 +12,6 @@ triggers:
   - id: daily
     disabled: true
     type: io.kestra.plugin.core.trigger.Flow
+    conditions:
+      - type: io.kestra.plugin.core.condition.ExecutionNamespace
+        namespace: sanitychecks

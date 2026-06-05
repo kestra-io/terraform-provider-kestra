@@ -60,17 +60,17 @@ func testAccResourceGroup(name, description, namespace string) string {
 		`
         resource "kestra_role" "new" {
             name = "my group role"
-			resources {
+			permissions {
 			    type = "FLOW"
-			    actions = ["VIEW", "LIST", "UPDATE"]
+			    permissions = ["READ", "UPDATE"]
 			}
         }
 
         resource "kestra_role" "new2" {
             name = "my group role 2"
-			resources {
+			permissions {
 			    type = "FLOW"
-			    actions = ["VIEW", "LIST", "UPDATE"]
+			    permissions = ["READ", "UPDATE"]
 			}
         }
 

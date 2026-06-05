@@ -8,55 +8,55 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 )
 
-func TestAccNamespaceFile(t *testing.T) {
+func TestAccTemplate(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:          func() { testAccPreCheck(t) },
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccResourceNamespaceFile(
+				Config: testAccResourceTemplate(
 					"io.kestra.terraform",
-					"/path/simple.yml",
+					"simple",
 					concat(
 						"tasks:",
 						"  - id: t1",
-						"    type: io.kestra.core.tasks.debugs.Echo",
-						"    format: first {{task.id}}",
+						"    type: io.kestra.core.tasks.log.Log",
+						"    message: first {{task.id}}",
 						"    level: TRACE",
 					),
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"kestra_namespace_file.new", "id", "io.kestra.terraform//path/simple.yml",
+						"kestra_template.new", "id", "io.kestra.terraform/simple",
 					),
 					resource.TestCheckResourceAttr(
-						"kestra_namespace_file.new", "filename", "/path/simple.yml",
+						"kestra_template.new", "namespace", "io.kestra.terraform",
 					),
-					resource.TestMatchResourceAttr(
-						"kestra_namespace_file.new", "content", regexp.MustCompile(".*id: t1\n.*"),
+					resource.TestCheckResourceAttr(
+						"kestra_template.new", "template_id", "simple",
 					),
 				),
 			},
 			{
-				Config: testAccResourceNamespaceFile(
+				Config: testAccResourceTemplate(
 					"io.kestra.terraform",
-					"/path/simple.yml",
+					"simple",
 					concat(
 						"tasks:",
 						"  - id: t2",
-						"    type: io.kestra.core.tasks.debugs.Echo",
-						"    format: first {{task.id}}",
+						"    type: io.kestra.core.tasks.log.Log",
+						"    message: first {{task.id}}",
 						"    level: TRACE",
 					),
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestMatchResourceAttr(
-						"kestra_namespace_file.new", "content", regexp.MustCompile(".*id: t2\n.*"),
+						"kestra_template.new", "content", regexp.MustCompile(".*id: t2\n.*"),
 					),
 				),
 			},
 			{
-				ResourceName:      "kestra_namespace_file.new",
+				ResourceName:      "kestra_template.new",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -64,18 +64,18 @@ func TestAccNamespaceFile(t *testing.T) {
 	})
 }
 
-func testAccResourceNamespaceFile(namespace, fileName, content string) string {
+func testAccResourceTemplate(id, name, content string) string {
 	return fmt.Sprintf(
 		`
-        resource "kestra_namespace_file" "new" {
+        resource "kestra_template" "new" {
             namespace = "%s"
-			filename = "%s"
+            template_id = "%s"
             content = <<EOT
 %s
 EOT
         }`,
-		namespace,
-		fileName,
+		id,
+		name,
 		content,
 	)
 }

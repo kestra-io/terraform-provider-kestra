@@ -80,9 +80,9 @@ func testAccResourceUser(tfstateid, email, groups string) string {
 		`
         resource "kestra_role" "new" {
             name = "my user role"
-			resources {
+			permissions {
 			    type = "FLOW"
-			    actions = ["VIEW", "LIST", "UPDATE"]
+			    permissions = ["READ", "UPDATE"]
 			}
         }
 

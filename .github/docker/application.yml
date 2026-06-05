@@ -1,12 +1,3 @@
-# Force basic-auth on. This file is loaded LAST in MICRONAUT_CONFIG_FILES (see
-# docker-compose-ci.yml) so these keys win over application-secrets.yml, which in CI
-# may otherwise disable basic-auth and break the test credentials.
-micronaut:
-  security:
-    enabled: true
-    basic-auth:
-      enabled: true
-
 kestra:
   security:
      super-admin:
@@ -37,6 +28,8 @@ kestra:
       password:
         user: john
         password: foo
+  templates:
+    enabled: true
   ee:
     tenants:
       enabled: true

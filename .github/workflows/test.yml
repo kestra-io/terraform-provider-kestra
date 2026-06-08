@@ -158,18 +158,32 @@ jobs:
         run: |
           sh e2e-test.sh
 
-      # Slack
+  notify-failure:
+    name: Notify CI failure
+    needs: [list-versions, build, docs, test]
+    if: always() && github.event_name != 'pull_request' && contains(needs.*.result, 'failure')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Collect failed jobs
+        id: failed
+        run: |
+          failed=""
+          [ "${{ needs.list-versions.result }}" = "failure" ] && failed="$failed list-versions"
+          [ "${{ needs.build.result }}" = "failure" ] && failed="$failed build"
+          [ "${{ needs.docs.result }}" = "failure" ] && failed="$failed docs"
+          [ "${{ needs.test.result }}" = "failure" ] && failed="$failed test"
+          echo "list=${failed# }" >> "$GITHUB_OUTPUT"
+
       - name: Slack notification
         uses: 8398a7/action-slack@v3
-        if: failure() && github.event_name != 'pull_request'
         with:
-          status: ${{ job.status }}
-          job_name: Matrix Test
-          fields: repo,commit,action,ref,job,took
+          status: failure
+          job_name: CI
+          text: 'CI failed. Failed jobs: ${{ steps.failed.outputs.list }}'
+          fields: repo,commit,ref,took
           username: GitHub Actions
           icon_emoji: ':github-actions:'
-          channel: 'C02DQ1A7JLR'
+          channel: 'C09FE0QCN2E'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          MATRIX_CONTEXT: ${{ toJson(matrix) }}

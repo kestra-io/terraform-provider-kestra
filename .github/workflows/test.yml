@@ -164,22 +164,34 @@ jobs:
     if: always() && github.event_name != 'pull_request' && contains(needs.*.result, 'failure')
     runs-on: ubuntu-latest
     steps:
-      - name: Collect failed jobs
+      - name: Build failure message
         id: failed
+        env:
+          USERS_MAP: ${{ vars.GITHUB_TO_SLACK_MAP }}
+          LOGIN: ${{ github.event.head_commit.author.username || github.actor }}
         run: |
           failed=""
           [ "${{ needs.list-versions.result }}" = "failure" ] && failed="$failed list-versions"
           [ "${{ needs.build.result }}" = "failure" ] && failed="$failed build"
           [ "${{ needs.docs.result }}" = "failure" ] && failed="$failed docs"
           [ "${{ needs.test.result }}" = "failure" ] && failed="$failed test"
-          echo "list=${failed# }" >> "$GITHUB_OUTPUT"
+          failed="${failed# }"
+
+          # @-mention the responsible committer if mapped in the org variable
+          mention=""
+          if [ -n "$USERS_MAP" ] && [ -n "$LOGIN" ]; then
+            slack_id="$(printf '%s' "$USERS_MAP" | jq -r --arg l "$LOGIN" '.[$l] // ""')"
+            [ -n "$slack_id" ] && mention="<@${slack_id}> "
+          fi
+
+          echo "text=${mention}CI failed. Failed jobs: ${failed}" >> "$GITHUB_OUTPUT"
 
       - name: Slack notification
         uses: 8398a7/action-slack@v3
         with:
           status: failure
           job_name: CI
-          text: 'CI failed. Failed jobs: ${{ steps.failed.outputs.list }}'
+          text: '${{ steps.failed.outputs.text }}'
           fields: repo,commit,ref,took
           username: GitHub Actions
           icon_emoji: ':github-actions:'

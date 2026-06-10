@@ -15,36 +15,36 @@ func TestAccWorkerGroup(t *testing.T) {
 			{
 				Config: testAccResourceWorkerGroup(
 					"test-key",
+					"Test Worker Group",
 					"test-description",
-					"[\"test-tenant\"]",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"kestra_worker_group.new", "key", "test-key",
 					),
 					resource.TestCheckResourceAttr(
-						"kestra_worker_group.new", "description", "test-description",
+						"kestra_worker_group.new", "name", "Test Worker Group",
 					),
 					resource.TestCheckResourceAttr(
-						"kestra_worker_group.new", "allowed_tenants.#", "1",
+						"kestra_worker_group.new", "description", "test-description",
 					),
 				),
 			},
 			{
 				Config: testAccResourceWorkerGroup(
 					"test-key",
-					"test-description",
-					"[]",
+					"Test Worker Group Updated",
+					"test-description-2",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"kestra_worker_group.new", "key", "test-key",
 					),
 					resource.TestCheckResourceAttr(
-						"kestra_worker_group.new", "description", "test-description",
+						"kestra_worker_group.new", "name", "Test Worker Group Updated",
 					),
 					resource.TestCheckResourceAttr(
-						"kestra_worker_group.new", "allowed_tenants.#", "0",
+						"kestra_worker_group.new", "description", "test-description-2",
 					),
 				),
 			},
@@ -57,17 +57,17 @@ func TestAccWorkerGroup(t *testing.T) {
 	})
 }
 
-func testAccResourceWorkerGroup(key, description, tenants string) string {
+func testAccResourceWorkerGroup(key, name, description string) string {
 	return fmt.Sprintf(
 		`
         resource "kestra_worker_group" "new" {
             key = "%s"
+            name = "%s"
             description = "%s"
-			allowed_tenants = %s
         }`,
 		key,
+		name,
 		description,
-		tenants,
 	)
 
 }

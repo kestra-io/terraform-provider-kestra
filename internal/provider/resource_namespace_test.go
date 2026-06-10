@@ -23,11 +23,11 @@ func TestAccResourceNamespace(t *testing.T) {
 						"    v1: 1",
 					),
 					concat(
-						"- type: io.kestra.core.tasks.log.Log",
+						"- type: io.kestra.plugin.core.log.Log",
 						"  forced: false",
 						"  values:",
 						"    message: first {{flow.id}}",
-						"- type: io.kestra.core.tasks.debugs.Return",
+						"- type: io.kestra.plugin.core.debug.Return",
 						"  forced: false",
 						"  values:",
 						"    format: first {{flow.id}}",
@@ -52,11 +52,11 @@ func TestAccResourceNamespace(t *testing.T) {
 						"k1: 1",
 					),
 					concat(
-						"- type: io.kestra.core.tasks.log.Log",
+						"- type: io.kestra.plugin.core.log.Log",
 						"  forced: false",
 						"  values:",
 						"    message: first {{flow.id}}",
-						"- type: io.kestra.core.tasks.debugs.Return",
+						"- type: io.kestra.plugin.core.debug.Return",
 						"  forced: false",
 						"  values:",
 						"    format: second {{flow.id}}",
@@ -84,11 +84,11 @@ func TestAccResourceNamespace(t *testing.T) {
 						"k1: 1",
 					),
 					concat(
-						"- type: io.kestra.core.tasks.log.Log",
+						"- type: io.kestra.plugin.core.log.Log",
 						"  forced: false",
 						"  values:",
 						"    message: first {{flow.id}}",
-						"- type: io.kestra.core.tasks.debugs.Return",
+						"- type: io.kestra.plugin.core.debug.Return",
 						"  forced: false",
 						"  values:",
 						"    format: second {{flow.id}}",
@@ -108,7 +108,7 @@ func TestAccResourceNamespace(t *testing.T) {
 				ResourceName:            "kestra_namespace.new",
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"variables", "plugin_defaults"},
+				ImportStateVerifyIgnore: []string{"variables", "plugin_defaults", "worker_group"},
 			},
 		},
 	})
@@ -185,6 +185,7 @@ func testAccResourceNamespaceWorkerGroup(id, description, variables, pluginDefau
 		`
 		resource "kestra_worker_group" "new" {
 			key = "%s"
+			name = "%s"
 		}
 
         resource "kestra_namespace" "new" {
@@ -200,6 +201,7 @@ EOT
 				key = kestra_worker_group.new.key
 			}
         }`,
+		workerGroupKey,
 		workerGroupKey,
 		id,
 		description,

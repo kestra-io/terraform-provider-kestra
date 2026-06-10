@@ -8,13 +8,17 @@ import (
 func workerGroupSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
 	body := make(map[string]interface{}, 0)
 
-	if d.Id() != "" {
-		body["id"] = d.Id()
-	}
+	key := d.Get("key").(string)
+	body["id"] = key
 
-	body["key"] = d.Get("key").(string)
+	name := d.Get("name").(string)
+	if name == "" {
+		name = key
+	}
+	body["name"] = name
+
 	body["description"] = d.Get("description").(string)
-	body["allowedTenants"] = d.Get("allowed_tenants").([]interface{})
+	body["subscriptions"] = []interface{}{}
 
 	return body, nil
 }
@@ -22,25 +26,22 @@ func workerGroupSchemaToApi(d *schema.ResourceData) (map[string]interface{}, err
 func workerGroupApiToSchema(r map[string]interface{}, d *schema.ResourceData) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	d.SetId(r["id"].(string))
+	id := r["id"].(string)
+	d.SetId(id)
 
-	if err := d.Set("key", r["key"].(string)); err != nil {
+	if err := d.Set("key", id); err != nil {
 		return diag.FromErr(err)
 	}
 
-	if _, ok := r["description"]; ok {
-		if r["description"].(string) != "" {
-			if err := d.Set("description", r["description"].(string)); err != nil {
-				return diag.FromErr(err)
-			}
+	if name, ok := r["name"]; ok && name != nil {
+		if err := d.Set("name", name.(string)); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 
-	if _, ok := r["allowedTenants"]; ok {
-		if len(r["allowedTenants"].([]interface{})) > 0 {
-			if err := d.Set("allowed_tenants", r["allowedTenants"].([]interface{})); err != nil {
-				return diag.FromErr(err)
-			}
+	if desc, ok := r["description"]; ok && desc != nil {
+		if err := d.Set("description", desc.(string)); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 

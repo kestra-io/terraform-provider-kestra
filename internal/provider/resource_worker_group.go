@@ -19,22 +19,20 @@ func resourceWorkerGroup() *schema.Resource {
 		DeleteContext: resourceWorkerGroupDelete,
 		Schema: map[string]*schema.Schema{
 			"key": {
-				Description: "The worker group key.",
+				Description: "The worker group identifier.",
 				Type:        schema.TypeString,
 				Required:    true,
+			},
+			"name": {
+				Description: "The worker group display name.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
 			},
 			"description": {
 				Description: "The worker group description.",
 				Type:        schema.TypeString,
 				Optional:    true,
-			},
-			"allowed_tenants": {
-				Description: "The list of tenants allowed to use the worker group.",
-				Type:        schema.TypeList,
-				Optional:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -52,7 +50,7 @@ func resourceWorkerGroupCreate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	r, reqErr := c.request("POST", fmt.Sprintf("%s/instance/workergroups", apiRoot(nil)), body)
+	r, reqErr := c.request("POST", fmt.Sprintf("%s/instance/worker-groups", apiRoot(nil)), body)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
@@ -71,7 +69,7 @@ func resourceWorkerGroupRead(ctx context.Context, d *schema.ResourceData, meta i
 
 	workerGroupId := d.Id()
 
-	r, reqErr := c.request("GET", fmt.Sprintf("%s/instance/workergroups/%s", apiRoot(nil), workerGroupId), nil)
+	r, reqErr := c.request("GET", fmt.Sprintf("%s/instance/worker-groups/%s", apiRoot(nil), workerGroupId), nil)
 	if reqErr != nil {
 		if reqErr.StatusCode == http.StatusNotFound {
 			d.SetId("")
@@ -93,7 +91,7 @@ func resourceWorkerGroupUpdate(ctx context.Context, d *schema.ResourceData, meta
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
-	if d.HasChanges("key", "description", "allowed_tenants") {
+	if d.HasChanges("key", "name", "description") {
 		body, err := workerGroupSchemaToApi(d)
 		if err != nil {
 			return diag.FromErr(err)
@@ -101,7 +99,7 @@ func resourceWorkerGroupUpdate(ctx context.Context, d *schema.ResourceData, meta
 
 		workerGroupId := d.Id()
 
-		r, reqErr := c.request("PUT", fmt.Sprintf("%s/instance/workergroups/%s", apiRoot(nil), workerGroupId), body)
+		r, reqErr := c.request("PUT", fmt.Sprintf("%s/instance/worker-groups/%s", apiRoot(nil), workerGroupId), body)
 		if reqErr != nil {
 			return diag.FromErr(reqErr.Err)
 		}
@@ -123,7 +121,7 @@ func resourceWorkerGroupDelete(ctx context.Context, d *schema.ResourceData, meta
 
 	workerGroupId := d.Id()
 
-	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/instance/workergroups/%s", apiRoot(nil), workerGroupId), nil)
+	_, reqErr := c.request("DELETE", fmt.Sprintf("%s/instance/worker-groups/%s", apiRoot(nil), workerGroupId), nil)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}

@@ -16,11 +16,11 @@ func roleSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
 	body["name"] = d.Get("name").(string)
 	body["description"] = d.Get("description").(string)
 
-	permissions := make(map[string]interface{}, 0)
-	statePermissions := d.Get("permissions").(*schema.Set)
-	for _, value := range statePermissions.List() {
+	permissions := make(map[string]interface{})
+	stateResources := d.Get("resources").(*schema.Set)
+	for _, value := range stateResources.List() {
 		item := value.(map[string]interface{})
-		permissions[item["type"].(string)] = item["permissions"]
+		permissions[item["type"].(string)] = item["actions"]
 	}
 	body["permissions"] = permissions
 	body["isDefault"] = d.Get("is_default").(bool)
@@ -56,15 +56,15 @@ func roleApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *Client
 
 	if _, ok := r["permissions"]; ok {
 		apiPermissions := r["permissions"].(map[string]interface{})
-		var permissions []map[string]interface{}
-		for typeApi, value := range apiPermissions {
-			permissions = append(permissions, map[string]interface{}{
-				"type":        typeApi,
-				"permissions": value,
+		var resources []map[string]interface{}
+		for resType, actions := range apiPermissions {
+			resources = append(resources, map[string]interface{}{
+				"type":    resType,
+				"actions": actions,
 			})
 		}
 
-		if err := d.Set("permissions", permissions); err != nil {
+		if err := d.Set("resources", resources); err != nil {
 			return diag.FromErr(err)
 		}
 	}

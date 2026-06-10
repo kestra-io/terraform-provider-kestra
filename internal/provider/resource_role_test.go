@@ -17,13 +17,13 @@ func TestAccRole(t *testing.T) {
 					"admin",
 					"My admin role",
 					concat(
-						"permissions {",
+						"resources {",
 						"  type = \"FLOW\"",
-						"  permissions = [\"READ\", \"UPDATE\"]",
+						"  actions = [\"VIEW\", \"LIST\", \"UPDATE\"]",
 						"}",
-						"permissions {",
-						"  type = \"TEMPLATE\"",
-						"  permissions = [\"READ\", \"UPDATE\"]",
+						"resources {",
+						"  type = \"NAMESPACE\"",
+						"  actions = [\"VIEW\", \"LIST\"]",
 						"}",
 					),
 				),
@@ -34,15 +34,6 @@ func TestAccRole(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"kestra_role.new", "description", "My admin role",
 					),
-					resource.TestCheckResourceAttr(
-						"kestra_role.new", "permissions.0.type", "FLOW",
-					),
-					resource.TestCheckResourceAttr(
-						"kestra_role.new", "permissions.0.permissions.0", "READ",
-					),
-					resource.TestCheckResourceAttr(
-						"kestra_role.new", "permissions.0.permissions.1", "UPDATE",
-					),
 				),
 			},
 			{
@@ -50,9 +41,9 @@ func TestAccRole(t *testing.T) {
 					"admin 2",
 					"My admin role 2",
 					concat(
-						"permissions {",
+						"resources {",
 						"  type = \"FLOW\"",
-						"  permissions = [\"READ\"]",
+						"  actions = [\"VIEW\", \"LIST\"]",
 						"}",
 					),
 				),
@@ -62,15 +53,6 @@ func TestAccRole(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						"kestra_role.new", "description", "My admin role 2",
-					),
-					resource.TestCheckResourceAttr(
-						"kestra_role.new", "permissions.0.type", "FLOW",
-					),
-					resource.TestCheckResourceAttr(
-						"kestra_role.new", "permissions.0.permissions.0", "READ",
-					),
-					resource.TestCheckNoResourceAttr(
-						"kestra_role.new", "permissions.1.permissions.0",
 					),
 				),
 			},
@@ -83,7 +65,7 @@ func TestAccRole(t *testing.T) {
 	})
 }
 
-func testAccResourceRole(name, description, permissions string) string {
+func testAccResourceRole(name, description, resources string) string {
 	return fmt.Sprintf(
 		`
         resource "kestra_role" "new" {
@@ -94,6 +76,6 @@ func testAccResourceRole(name, description, permissions string) string {
         }`,
 		name,
 		description,
-		permissions,
+		resources,
 	)
 }

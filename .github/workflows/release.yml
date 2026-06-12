@@ -48,6 +48,7 @@ jobs:
         with:
           status: ${{ job.status }}
           job_name: Release
+          text: 'Release ${{ github.ref_name }}'
           fields: repo,commit,action,ref,job,took
           username: GitHub Actions
           icon_emoji: ':github-actions:'

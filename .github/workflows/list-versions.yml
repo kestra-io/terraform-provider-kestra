@@ -17,7 +17,7 @@ jobs:
       versions: ${{ steps.list_versions.outputs.versions }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Build matrix from compatible versions
         id: list_versions
         run: |

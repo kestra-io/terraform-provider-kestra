@@ -41,12 +41,12 @@ jobs:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Slack
+      # Slack - announce a successful release to the releases channel
       - name: Slack notification
         uses: 8398a7/action-slack@v3
-        if: always()
+        if: success()
         with:
-          status: ${{ job.status }}
+          status: success
           job_name: Release
           text: 'Release ${{ github.ref_name }}'
           fields: repo,commit,action,ref,job,took
@@ -55,3 +55,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_RELEASES_WEBHOOK_URL }}
+
+      # Slack - send release failures to the build alert channel
+      - name: Slack - Notify release failure
+        uses: 8398a7/action-slack@v3
+        if: failure()
+        with:
+          status: failure
+          job_name: Release
+          text: 'Release ${{ github.ref_name }} failed.'
+          fields: repo,commit,ref,took
+          username: GitHub Actions
+          icon_emoji: ':github-actions:'
+          channel: 'C09FE0QCN2E'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

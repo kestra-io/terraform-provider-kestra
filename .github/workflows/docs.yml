@@ -6,6 +6,9 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -55,3 +58,12 @@ jobs:
           file_pattern: 'content/docs/13.terraform/*'
           repository: "docs"
           pull_before_commit: true
+
+      - name: Slack - Notify CI failure
+        if: failure()
+        uses: kestra-io/actions/composite/slack-status@main
+        with:
+          channel: 'C09FE0QCN2E'
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          users-map: ${{ vars.GITHUB_TO_SLACK_MAP }}
+          extra-text: 'Docs workflow failed.'

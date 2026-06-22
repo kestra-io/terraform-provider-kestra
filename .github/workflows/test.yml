@@ -17,6 +17,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   list-versions:
     name: List Compatible Kestra Versions
@@ -147,18 +151,28 @@ jobs:
         run: |
           sh e2e-test.sh
 
-      # Slack
-      - name: Slack notification
-        uses: 8398a7/action-slack@v3
-        if: failure() && github.event_name != 'pull_request'
+  notify-failure:
+    name: Notify CI failure
+    needs: [list-versions, build, docs, test]
+    if: always() && github.event_name != 'pull_request' && contains(needs.*.result, 'failure')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Collect failed jobs
+        id: failed
+        run: |
+          failed=""
+          [ "${{ needs.list-versions.result }}" = "failure" ] && failed="$failed list-versions"
+          [ "${{ needs.build.result }}" = "failure" ] && failed="$failed build"
+          [ "${{ needs.docs.result }}" = "failure" ] && failed="$failed docs"
+          [ "${{ needs.test.result }}" = "failure" ] && failed="$failed test"
+          echo "list=${failed# }" >> "$GITHUB_OUTPUT"
+          exit 1
+
+      - name: Slack - Notify CI failure
+        if: always()
+        uses: kestra-io/actions/composite/slack-status@main
         with:
-          status: ${{ job.status }}
-          job_name: Matrix Test
-          fields: repo,commit,action,ref,job,took
-          username: GitHub Actions
-          icon_emoji: ':github-actions:'
-          channel: 'C02DQ1A7JLR'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          MATRIX_CONTEXT: ${{ toJson(matrix) }}
+          channel: 'C09FE0QCN2E'
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          users-map: ${{ vars.GITHUB_TO_SLACK_MAP }}
+          extra-text: 'Failed jobs: ${{ steps.failed.outputs.list }}'

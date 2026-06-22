@@ -66,4 +66,3 @@ jobs:
           channel: 'C09FE0QCN2E'
           webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
           users-map: ${{ vars.GITHUB_TO_SLACK_MAP }}
-          extra-text: 'Docs workflow failed.'

@@ -56,17 +56,11 @@ jobs:
           repository: "docs"
           pull_before_commit: true
 
-      - name: Notify CI failure
+      - name: Slack - Notify CI failure
         if: failure()
-        uses: 8398a7/action-slack@v3
+        uses: kestra-io/actions/composite/slack-status@main
         with:
-          status: failure
-          job_name: Docs
-          text: 'Docs workflow failed.'
-          fields: repo,commit,ref,took
-          username: GitHub Actions
-          icon_emoji: ':github-actions:'
           channel: 'C09FE0QCN2E'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          users-map: ${{ vars.GITHUB_TO_SLACK_MAP }}
+          extra-text: 'Docs workflow failed.'

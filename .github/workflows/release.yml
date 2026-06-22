@@ -56,18 +56,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_RELEASES_WEBHOOK_URL }}
 
-      # Slack - send release failures to the build alert channel
       - name: Slack - Notify release failure
-        uses: 8398a7/action-slack@v3
         if: failure()
+        uses: kestra-io/actions/composite/slack-status@main
         with:
-          status: failure
-          job_name: Release
-          text: 'Release ${{ github.ref_name }} failed.'
-          fields: repo,commit,ref,took
-          username: GitHub Actions
-          icon_emoji: ':github-actions:'
           channel: 'C09FE0QCN2E'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          users-map: ${{ vars.GITHUB_TO_SLACK_MAP }}
+          suffix: ${{ github.ref_name }}

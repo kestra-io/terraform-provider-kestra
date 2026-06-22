@@ -46,19 +46,21 @@ func dataSourceRole() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
-			"permissions": {
-				Description: "The role permissions.",
+			"resources": {
+				Description: "The role resource permissions.",
 				Type:        schema.TypeSet,
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"type": {
-							Type:     schema.TypeString,
-							Required: true,
+							Description: "The resource type (e.g., FLOW, EXECUTION, NAMESPACE).",
+							Type:        schema.TypeString,
+							Required:    true,
 						},
-						"permissions": {
-							Type:     schema.TypeList,
-							Required: true,
+						"actions": {
+							Description: "The allowed actions for this resource type (e.g., VIEW, LIST, CREATE, UPDATE, DELETE).",
+							Type:        schema.TypeList,
+							Required:    true,
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},

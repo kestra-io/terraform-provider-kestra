@@ -20,7 +20,7 @@ func TestAccNamespaceFile(t *testing.T) {
 					concat(
 						"tasks:",
 						"  - id: t1",
-						"    type: io.kestra.core.tasks.debugs.Echo",
+						"    type: io.kestra.plugin.core.debug.Echo",
 						"    format: first {{task.id}}",
 						"    level: TRACE",
 					),
@@ -44,7 +44,7 @@ func TestAccNamespaceFile(t *testing.T) {
 					concat(
 						"tasks:",
 						"  - id: t2",
-						"    type: io.kestra.core.tasks.debugs.Echo",
+						"    type: io.kestra.plugin.core.debug.Echo",
 						"    format: first {{task.id}}",
 						"    level: TRACE",
 					),

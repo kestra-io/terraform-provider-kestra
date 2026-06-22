@@ -46,7 +46,6 @@ jobs:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Slack - announce a successful release to the releases channel
       - name: Slack notification
         uses: 8398a7/action-slack@v3
         if: success()

@@ -3,6 +3,11 @@ on:
   push:
     tags:
       - 'v*'
+
+permissions:
+  contents: write
+  packages: read
+
 jobs:
   tests:
     name: tests
@@ -41,16 +46,25 @@ jobs:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Slack
       - name: Slack notification
         uses: 8398a7/action-slack@v3
-        if: always()
+        if: success()
         with:
-          status: ${{ job.status }}
+          status: success
           job_name: Release
+          text: 'Release ${{ github.ref_name }}'
           fields: repo,commit,action,ref,job,took
           username: GitHub Actions
           icon_emoji: ':github-actions:'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_RELEASES_WEBHOOK_URL }}
+
+      - name: Slack - Notify release failure
+        if: failure()
+        uses: kestra-io/actions/composite/slack-status@main
+        with:
+          channel: 'C09FE0QCN2E'
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          users-map: ${{ vars.GITHUB_TO_SLACK_MAP }}
+          suffix: ${{ github.ref_name }}

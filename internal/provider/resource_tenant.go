@@ -205,7 +205,7 @@ func resourceTenantUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 		tenantId := d.Id()
 
 		r, reqErr := c.request("PUT", fmt.Sprintf("%s/tenants/%s", apiRoot(nil), tenantId), body)
-		if err != nil {
+		if reqErr != nil {
 			return diag.FromErr(reqErr.Err)
 		}
 

@@ -136,7 +136,7 @@ func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 		tenantId := c.TenantId
 
 		r, reqErr := c.request("PUT", fmt.Sprintf("%s/roles/%s", apiRoot(tenantId), roleId), body)
-		if err != nil {
+		if reqErr != nil {
 			return diag.FromErr(reqErr.Err)
 		}
 

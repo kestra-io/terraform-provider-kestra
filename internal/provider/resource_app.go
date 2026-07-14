@@ -21,6 +21,13 @@ func resourceApp() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
+			"tenant_id": {
+				Description: "The tenant id. Defaults to the provider tenant when omitted.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				ForceNew:    true,
+			},
 			"source": {
 				Description: "The source text.",
 				Type:        schema.TypeString,
@@ -35,18 +42,33 @@ func resourceApp() *schema.Resource {
 	}
 }
 
+func appTenantId(d *schema.ResourceData, c *Client) *string {
+	if v, ok := d.GetOk("tenant_id"); ok {
+		if s := v.(string); s != "" {
+			return &s
+		}
+	}
+	return c.TenantId
+}
+
 func resourceAppCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*Client)
 	var diags diag.Diagnostics
 
 	source := d.Get("source").(string)
+	tenantId := appTenantId(d, c)
 
-	req, reqErr := c.yamlRequest("POST", fmt.Sprintf("%s/apps", apiRoot(c.TenantId)), &source)
+	req, reqErr := c.yamlRequest("POST", fmt.Sprintf("%s/apps", apiRoot(tenantId)), &source)
 	if reqErr != nil {
 		return diag.FromErr(reqErr.Err)
 	}
 
 	d.SetId(req.(map[string]interface{})["uid"].(string))
+	if tenantId != nil && *tenantId != "" {
+		if err := d.Set("tenant_id", *tenantId); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 	return diags
 }
 
@@ -55,7 +77,8 @@ func resourceAppRead(ctx context.Context, d *schema.ResourceData, meta interface
 	var diags diag.Diagnostics
 
 	id := d.Id()
-	url := fmt.Sprintf("%s/apps/%s", apiRoot(c.TenantId), id)
+	tenantId := appTenantId(d, c)
+	url := fmt.Sprintf("%s/apps/%s", apiRoot(tenantId), id)
 
 	req, reqErr := c.yamlRequest("GET", url, nil)
 	if reqErr != nil {
@@ -73,6 +96,11 @@ func resourceAppRead(ctx context.Context, d *schema.ResourceData, meta interface
 	if err := d.Set("uid", response["uid"].(string)); err != nil {
 		return diag.FromErr(err)
 	}
+	if tenantId != nil && *tenantId != "" {
+		if err := d.Set("tenant_id", *tenantId); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
 	return diags
 }
@@ -84,7 +112,7 @@ func resourceAppUpdate(ctx context.Context, d *schema.ResourceData, meta interfa
 	if d.HasChanges("source") {
 		uid := d.Id()
 		source := d.Get("source").(string)
-		url := fmt.Sprintf("%s/apps/%s", apiRoot(c.TenantId), uid)
+		url := fmt.Sprintf("%s/apps/%s", apiRoot(appTenantId(d, c)), uid)
 
 		_, reqErr := c.yamlRequest("PUT", url, &source)
 		if reqErr != nil {
@@ -101,7 +129,7 @@ func resourceAppDelete(ctx context.Context, d *schema.ResourceData, meta interfa
 	var diags diag.Diagnostics
 
 	uid := d.Id()
-	url := fmt.Sprintf("%s/apps/%s", apiRoot(c.TenantId), uid)
+	url := fmt.Sprintf("%s/apps/%s", apiRoot(appTenantId(d, c)), uid)
 
 	_, reqErr := c.request("DELETE", url, nil)
 	if reqErr != nil {

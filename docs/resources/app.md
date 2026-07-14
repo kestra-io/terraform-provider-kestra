@@ -22,6 +22,10 @@ Manages an App resource.
 
 - `source` (String) The source text.
 
+### Optional
+
+- `tenant_id` (String) The tenant id. Defaults to the provider tenant when omitted.
+
 ### Read-Only
 
 - `id` (String) The ID of this resource.

@@ -27,6 +27,7 @@ type testResource struct {
 
 // testResourceModel describes the resource data model.
 type testResourceModel struct {
+	TenantId  types.String `tfsdk:"tenant_id"`
 	TestId    types.String `tfsdk:"test_id"`
 	Namespace types.String `tfsdk:"namespace"`
 	Content   types.String `tfsdk:"content"`
@@ -36,12 +37,28 @@ func (r *testResource) Metadata(ctx context.Context, req resource.MetadataReques
 	resp.TypeName = req.ProviderTypeName + "_test"
 }
 
+func (r *testResource) tenantId(data testResourceModel) string {
+	if !data.TenantId.IsNull() && !data.TenantId.IsUnknown() && data.TenantId.ValueString() != "" {
+		return data.TenantId.ValueString()
+	}
+	return r.providerData.TenantId
+}
+
 func (r *testResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		// This description is used by the documentation generator and the language server.
 		MarkdownDescription: "Test resource",
 
 		Attributes: map[string]schema.Attribute{
+			"tenant_id": schema.StringAttribute{
+				MarkdownDescription: "The tenant id. Defaults to the provider tenant when omitted.",
+				Optional:            true,
+				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"test_id": schema.StringAttribute{
 				MarkdownDescription: "The Test id",
 				Required:            true,
@@ -109,12 +126,14 @@ func (r *testResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	created, httpResponse, err := r.providerData.Client.TestSuitesAPI.CreateTestSuite(ctx, r.providerData.TenantId).Body(plan.Content.ValueString()).Execute()
+	tenantId := r.tenantId(plan)
+	created, httpResponse, err := r.providerData.Client.TestSuitesAPI.CreateTestSuite(ctx, tenantId).Body(plan.Content.ValueString()).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to create test, got error: %s, full httpResponse: %v", err, httpResponse))
 		return
 	}
 	tflog.Trace(ctx, fmt.Sprintf("created a test resource, res: %+v", created))
+	plan.TenantId = types.StringValue(tenantId)
 	plan.Namespace = types.StringValue(created.Namespace)
 	plan.TestId = types.StringValue(created.Id)
 	plan.Content = types.StringValue(*created.Source)
@@ -133,12 +152,14 @@ func (r *testResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	read, httpResponse, err := r.providerData.Client.TestSuitesAPI.TestSuite(ctx, plan.Namespace.ValueString(), plan.TestId.ValueString(), r.providerData.TenantId).Execute()
+	tenantId := r.tenantId(plan)
+	read, httpResponse, err := r.providerData.Client.TestSuitesAPI.TestSuite(ctx, plan.Namespace.ValueString(), plan.TestId.ValueString(), tenantId).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read Test, got error: %s, full httpResponse: %v", err, httpResponse))
 		return
 	}
 	tflog.Trace(ctx, fmt.Sprintf("read a test resource, res: %v", read))
+	plan.TenantId = types.StringValue(tenantId)
 	plan.Namespace = types.StringValue(read.Namespace)
 	plan.TestId = types.StringValue(read.Id)
 	plan.Content = types.StringValue(*read.Source)
@@ -157,12 +178,14 @@ func (r *testResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	updated, httpResponse, err := r.providerData.Client.TestSuitesAPI.UpdateTestSuite(ctx, plan.Namespace.ValueString(), plan.TestId.ValueString(), r.providerData.TenantId).Execute()
+	tenantId := r.tenantId(plan)
+	updated, httpResponse, err := r.providerData.Client.TestSuitesAPI.UpdateTestSuite(ctx, plan.Namespace.ValueString(), plan.TestId.ValueString(), tenantId).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to update Test, got error: %s, full httpResponse: %v", err, httpResponse))
 		return
 	}
 	tflog.Trace(ctx, fmt.Sprintf("updated a test resource, res: %v", updated))
+	plan.TenantId = types.StringValue(tenantId)
 	plan.Namespace = types.StringValue(updated.Namespace)
 	plan.TestId = types.StringValue(updated.Id)
 	plan.Content = types.StringValue(*updated.Source)
@@ -181,7 +204,7 @@ func (r *testResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 
-	_, httpResponse, err := r.providerData.Client.TestSuitesAPI.DeleteTestSuite(ctx, plan.Namespace.ValueString(), plan.TestId.ValueString(), r.providerData.TenantId).Execute()
+	_, httpResponse, err := r.providerData.Client.TestSuitesAPI.DeleteTestSuite(ctx, plan.Namespace.ValueString(), plan.TestId.ValueString(), r.tenantId(plan)).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to delete Test, got error: %s, full httpResponse: %v", err, httpResponse))
 		return

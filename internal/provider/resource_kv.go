@@ -13,7 +13,7 @@ import (
 
 func resourceKv() *schema.Resource {
 	return &schema.Resource{
-		Description: "Manages a Kestra Namespace File.",
+		Description: "Manages a Kestra Key-Value pair.",
 
 		CreateContext: resourceKvSet,
 		UpdateContext: resourceKvSet,

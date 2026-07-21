@@ -3,12 +3,12 @@
 page_title: "kestra_kv Resource - terraform-provider-kestra"
 subcategory: ""
 description: |-
-  Manages a Kestra Namespace File.
+  Manages a Kestra Key-Value pair.
 ---
 
 # kestra_kv (Resource)
 
-Manages a Kestra Namespace File.
+Manages a Kestra Key-Value pair.
 
 
 

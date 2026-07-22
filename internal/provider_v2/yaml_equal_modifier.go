@@ -2,10 +2,12 @@ package provider_v2
 
 import (
 	"context"
-	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"gopkg.in/yaml.v2"
+	// yaml.v3 follows YAML 1.2, matching what providers send to the API: unquoted scalars
+	// and keys like `on`, `yes` or `12:30` stay strings instead of resolving to YAML 1.1
+	// booleans/sexagesimals, so a real change between them is never suppressed.
+	yaml "gopkg.in/yaml.v3"
 )
 
 type yamlEqualModifier struct{}
@@ -26,14 +28,15 @@ func (m *yamlEqualModifier) PlanModifyString(_ context.Context, req planmodifier
 	if req.StateValue.IsNull() || req.PlanValue.IsNull() || req.PlanValue.IsUnknown() {
 		return
 	}
-	var a, b interface{}
-	if err := yaml.Unmarshal([]byte(req.StateValue.ValueString()), &a); err != nil {
+	var state, plan interface{}
+	if err := yaml.Unmarshal([]byte(req.StateValue.ValueString()), &state); err != nil {
 		return
 	}
-	if err := yaml.Unmarshal([]byte(req.PlanValue.ValueString()), &b); err != nil {
+	if err := yaml.Unmarshal([]byte(req.PlanValue.ValueString()), &plan); err != nil {
 		return
 	}
-	if reflect.DeepEqual(a, b) {
+	// JSON round-trip comparison so numeric typing never causes a spurious diff
+	if jsonSemanticallyEqual(yamlToJSONCompatible(state), yamlToJSONCompatible(plan)) {
 		resp.PlanValue = req.StateValue
 	}
 }

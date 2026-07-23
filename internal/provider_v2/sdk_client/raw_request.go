@@ -12,12 +12,6 @@ import (
 )
 
 func RawRequest(ctx context.Context, c *kestra_api_client.APIClient, method, relPath string, body interface{}) (map[string]interface{}, int, error) {
-	cfg := c.GetConfig()
-	if len(cfg.Servers) == 0 {
-		return nil, 0, fmt.Errorf("no server configured")
-	}
-	url := cfg.Servers[0].URL + relPath
-
 	var bodyReader io.Reader
 	if body != nil {
 		buf, err := json.Marshal(body)
@@ -26,6 +20,21 @@ func RawRequest(ctx context.Context, c *kestra_api_client.APIClient, method, rel
 		}
 		bodyReader = bytes.NewReader(buf)
 	}
+	return doRawRequest(ctx, c, method, relPath, bodyReader, "application/json")
+}
+
+// RawYamlRequest sends a raw YAML document as the request body, for endpoints consuming
+// application/x-yaml (e.g. the policies create/update endpoints).
+func RawYamlRequest(ctx context.Context, c *kestra_api_client.APIClient, method, relPath, source string) (map[string]interface{}, int, error) {
+	return doRawRequest(ctx, c, method, relPath, bytes.NewReader([]byte(source)), "application/x-yaml")
+}
+
+func doRawRequest(ctx context.Context, c *kestra_api_client.APIClient, method, relPath string, bodyReader io.Reader, contentType string) (map[string]interface{}, int, error) {
+	cfg := c.GetConfig()
+	if len(cfg.Servers) == 0 {
+		return nil, 0, fmt.Errorf("no server configured")
+	}
+	url := cfg.Servers[0].URL + relPath
 
 	req, err := http.NewRequestWithContext(ctx, method, url, bodyReader)
 	if err != nil {
@@ -34,8 +43,8 @@ func RawRequest(ctx context.Context, c *kestra_api_client.APIClient, method, rel
 	for k, v := range cfg.DefaultHeader {
 		req.Header.Set(k, v)
 	}
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
+	if bodyReader != nil {
+		req.Header.Set("Content-Type", contentType)
 	}
 
 	resp, err := cfg.HTTPClient.Do(req)

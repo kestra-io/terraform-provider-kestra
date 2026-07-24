@@ -38,11 +38,9 @@ func testAccPreCheck(t *testing.T) {
 		t.Fatal("KESTRA_URL must be set for acceptance tests")
 	}
 
-	if os.Getenv("KESTRA_USERNAME") == "" {
-		t.Fatal("KESTRA_USERNAME must be set for acceptance tests")
-	}
-
-	if os.Getenv("KESTRA_PASSWORD") == "" {
-		t.Fatal("KESTRA_PASSWORD must be set for acceptance tests")
+	hasBasicAuth := os.Getenv("KESTRA_USERNAME") != "" && os.Getenv("KESTRA_PASSWORD") != ""
+	hasTokenAuth := os.Getenv("KESTRA_API_TOKEN") != "" || os.Getenv("KESTRA_JWT") != ""
+	if !hasBasicAuth && !hasTokenAuth {
+		t.Fatal("KESTRA_USERNAME/KESTRA_PASSWORD or KESTRA_API_TOKEN (or KESTRA_JWT) must be set for acceptance tests")
 	}
 }

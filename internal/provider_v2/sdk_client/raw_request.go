@@ -8,7 +8,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/kestra-io/client-sdk/go-sdk/kestra_api_client"
+	"github.com/kestra-io/client-sdk/go-sdk/v2/kestra_api_client"
 )
 
 func RawRequest(ctx context.Context, c *kestra_api_client.APIClient, method, relPath string, body interface{}) (map[string]interface{}, int, error) {

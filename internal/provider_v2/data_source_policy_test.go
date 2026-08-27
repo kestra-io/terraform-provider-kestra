@@ -10,7 +10,7 @@ import (
 func TestAccDataSourcePolicy(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		PreCheck:                 func() { testAccPreCheck(t) },
+		PreCheck:                 func() { testAccPreCheckPolicies(t) },
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourcePolicyConfig(),

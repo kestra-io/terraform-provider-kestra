@@ -84,7 +84,7 @@ EOT
 
 ### Required
 
-- `content` (String) The policy YAML source: `id`, optional `displayName`, `description`, `enforcement` (defaults to `ACTIVE`) and `target`, and the non-empty `rules` list mixing mutate rules (`io.kestra.plugin.ee.rules.Add`, `Delete`) and validate rules (`Deny`, `Require`, `Restrict`). The scope, tenant and namespace are carried by the resource attributes, never by the content.
+- `content` (String) The policy YAML source: `id`, optional `displayName`, `description`, `enforcement` (defaults to `ACTIVE`) and `target`, and the non-empty `rules` list mixing mutate rules (`io.kestra.plugin.ee.rules.Add`, `Delete`) and validate rules (`Deny`, `Require`, `Restrict`). The scope, tenant and namespace are carried by the resource attributes, never by the content. Diffs are compared semantically, so a change that only reindents, reorders keys or edits comments produces no plan and the source persisted by the API keeps its previous formatting; change a value to push a reformatted source.
 - `policy_id` (String) The policy id — a lowercase RFC 1123 label, unique per (scope, tenant, namespace). Must match the `id` of the YAML content.
 - `scope` (String) The policy scope: `INSTANCE` (deployment-wide, super-admin only), `TENANT` or `NAMESPACE`.
 

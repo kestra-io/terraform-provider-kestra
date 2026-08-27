@@ -2,6 +2,7 @@ package provider_v2
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	// yaml.v3 follows YAML 1.2, matching what providers send to the API: unquoted scalars
@@ -35,8 +36,11 @@ func (m *yamlEqualModifier) PlanModifyString(_ context.Context, req planmodifier
 	if err := yaml.Unmarshal([]byte(req.PlanValue.ValueString()), &plan); err != nil {
 		return
 	}
-	// JSON round-trip comparison so numeric typing never causes a spurious diff
-	if jsonSemanticallyEqual(yamlToJSONCompatible(state), yamlToJSONCompatible(plan)) {
+	// Both sides come out of the same yaml.v3 decoder, so a YAML `3` can never meet a JSON
+	// `3.0` here and the JSON normalization used against API payloads would only cost
+	// precision: it decodes every number as float64, collapsing integers above 2^53 and
+	// silently dropping a real change from the plan.
+	if reflect.DeepEqual(yamlToJSONCompatible(state), yamlToJSONCompatible(plan)) {
 		resp.PlanValue = req.StateValue
 	}
 }

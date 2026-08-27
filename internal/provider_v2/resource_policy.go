@@ -119,8 +119,9 @@ func (r *policyResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				},
 			},
 			"content": schema.StringAttribute{
-				MarkdownDescription: "The policy YAML source: `id`, optional `displayName`, `description`, `enforcement` (defaults to `ACTIVE`) and `target`, and the non-empty `rules` list mixing mutate rules (`io.kestra.plugin.ee.rules.Add`, `Delete`) and validate rules (`Deny`, `Require`, `Restrict`). The scope, tenant and namespace are carried by the resource attributes, never by the content.",
-				Required:            true,
+				MarkdownDescription: "The policy YAML source: `id`, optional `displayName`, `description`, `enforcement` (defaults to `ACTIVE`) and `target`, and the non-empty `rules` list mixing mutate rules (`io.kestra.plugin.ee.rules.Add`, `Delete`) and validate rules (`Deny`, `Require`, `Restrict`). The scope, tenant and namespace are carried by the resource attributes, never by the content. " +
+					"Diffs are compared semantically, so a change that only reindents, reorders keys or edits comments produces no plan and the source persisted by the API keeps its previous formatting; change a value to push a reformatted source.",
+				Required: true,
 				PlanModifiers: []planmodifier.String{
 					YamlEqualPlanModifier(),
 				},
@@ -257,6 +258,10 @@ func (r *policyResource) Read(ctx context.Context, req resource.ReadRequest, res
 		resp.Diagnostics.AddError("Client Error", fmt.Sprintf("Unable to read policy, got error: %s", err))
 		return
 	}
+	if read == nil {
+		resp.Diagnostics.AddError("Client Error", "Unable to read policy: the API returned an empty response")
+		return
+	}
 	tflog.Trace(ctx, fmt.Sprintf("read a policy resource, res: %+v", read))
 
 	populatePolicyModel(ctx, &state, read, &resp.Diagnostics)
@@ -306,49 +311,75 @@ func (r *policyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	tflog.Trace(ctx, fmt.Sprintf("deleted a policy resource: %s %s", state.Scope.ValueString(), state.PolicyId.ValueString()))
 }
 
+// policyImportId is the parsed form of an import id.
+type policyImportId struct {
+	Scope     string
+	TenantId  string
+	Namespace string
+	PolicyId  string
+}
+
+// parsePolicyImportId parses the scope-shaped import ids:
+//   - INSTANCE/policy_id
+//   - TENANT/tenant_id/policy_id
+//   - NAMESPACE/tenant_id/namespace/policy_id
+//
+// Every segment must be non-empty: the arity alone would accept `TENANT//my-policy`,
+// which builds a request against `/api/v1//policies/my-policy`.
+func parsePolicyImportId(id string) (policyImportId, error) {
+	parts := strings.Split(id, "/")
+	invalidFormat := fmt.Errorf(
+		"Expected INSTANCE/policy_id, TENANT/tenant_id/policy_id or NAMESPACE/tenant_id/namespace/policy_id, got: %s",
+		id,
+	)
+
+	arity := map[string]int{
+		policyScopeInstance:  2,
+		policyScopeTenant:    3,
+		policyScopeNamespace: 4,
+	}
+	expected, known := arity[parts[0]]
+	if !known || len(parts) != expected {
+		return policyImportId{}, invalidFormat
+	}
+	for _, part := range parts {
+		if part == "" {
+			return policyImportId{}, invalidFormat
+		}
+	}
+
+	parsed := policyImportId{Scope: parts[0]}
+	switch parsed.Scope {
+	case policyScopeInstance:
+		parsed.PolicyId = parts[1]
+	case policyScopeTenant:
+		parsed.TenantId = parts[1]
+		parsed.PolicyId = parts[2]
+	case policyScopeNamespace:
+		parsed.TenantId = parts[1]
+		parsed.Namespace = parts[2]
+		parsed.PolicyId = parts[3]
+	}
+	return parsed, nil
+}
+
 // ImportState accepts scope-shaped ids:
 //   - INSTANCE/policy_id
 //   - TENANT/tenant_id/policy_id
 //   - NAMESPACE/tenant_id/namespace/policy_id
 func (r *policyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.Split(req.ID, "/")
-	scope := ""
-	if len(parts) > 0 {
-		scope = parts[0]
-	}
-
-	invalidFormat := func() {
-		resp.Diagnostics.AddError(
-			"Invalid import id",
-			fmt.Sprintf("Expected INSTANCE/policy_id, TENANT/tenant_id/policy_id or NAMESPACE/tenant_id/namespace/policy_id, got: %s", req.ID),
-		)
-	}
-
-	switch scope {
-	case policyScopeInstance:
-		if len(parts) != 2 {
-			invalidFormat()
-			return
-		}
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("policy_id"), parts[1])...)
-	case policyScopeTenant:
-		if len(parts) != 3 {
-			invalidFormat()
-			return
-		}
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("tenant_id"), parts[1])...)
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("policy_id"), parts[2])...)
-	case policyScopeNamespace:
-		if len(parts) != 4 {
-			invalidFormat()
-			return
-		}
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("tenant_id"), parts[1])...)
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("namespace"), parts[2])...)
-		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("policy_id"), parts[3])...)
-	default:
-		invalidFormat()
+	parsed, err := parsePolicyImportId(req.ID)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid import id", err.Error())
 		return
 	}
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scope"), scope)...)
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("scope"), parsed.Scope)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("policy_id"), parsed.PolicyId)...)
+	if parsed.TenantId != "" {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("tenant_id"), parsed.TenantId)...)
+	}
+	if parsed.Namespace != "" {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("namespace"), parsed.Namespace)...)
+	}
 }

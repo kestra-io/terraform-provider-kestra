@@ -47,3 +47,23 @@ func TestUnitYamlEqualModifierKeepsRealChanges(t *testing.T) {
 		})
 	}
 }
+
+// Regression: a JSON round-trip in the modifier decoded every number as float64, so
+// integers above 2^53 collapsed to the same value and a genuine change was silently
+// dropped from the plan. Both sides are decoded by the same yaml.v3 decoder here, so the
+// normalization bought nothing and only cost precision. The modifier is shared with
+// kestra_namespace (`variables`, `plugin_defaults`), where big integers do flow.
+func TestUnitYamlEqualModifierKeepsLargeIntegerChanges(t *testing.T) {
+	state := "value: 9007199254740993\n"
+	plan := "value: 9007199254740992\n"
+	if got := runYamlEqualModifier(t, state, plan); got.ValueString() != plan {
+		t.Errorf("expected the plan value to be kept for a large integer change, got: %q", got.ValueString())
+	}
+}
+
+func TestUnitYamlEqualModifierSuppressesEqualLargeIntegers(t *testing.T) {
+	yaml := "value: 9007199254740993\n"
+	if got := runYamlEqualModifier(t, yaml, yaml); got.ValueString() != yaml {
+		t.Errorf("expected identical documents to be equal, got: %q", got.ValueString())
+	}
+}

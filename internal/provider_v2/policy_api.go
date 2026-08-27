@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"reflect"
 
-	"github.com/kestra-io/client-sdk/go-sdk/kestra_api_client"
+	"github.com/kestra-io/client-sdk/go-sdk/v2/kestra_api_client"
 	"github.com/kestra-io/terraform-provider-kestra/internal/provider_v2/sdk_client"
 	// yaml.v3 follows YAML 1.2: an unquoted `on:` key — used by every policy rule — stays
 	// a string, while yaml.v2 (YAML 1.1) would resolve it to a boolean key.

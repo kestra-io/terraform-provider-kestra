@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/kestra-io/client-sdk/go-sdk/kestra_api_client"
+	"github.com/kestra-io/client-sdk/go-sdk/v2/kestra_api_client"
 	"github.com/kestra-io/terraform-provider-kestra/internal/provider_v2/sdk_client"
 )
 

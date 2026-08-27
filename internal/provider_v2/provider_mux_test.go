@@ -73,3 +73,63 @@ func TestMuxServesWorkerGroupFromFrameworkProvider(t *testing.T) {
 		t.Errorf("expected kestra_worker_group schema version 1 for the state upgrader, got %d", workerGroup.Version)
 	}
 }
+
+// TestMuxServesTenantAndNamespaceFromFrameworkProvider pins the provider that
+// serves the tenant and namespace types. Both moved off the SDK provider so they
+// could expose the Kestra 2.0 concurrency limit and quotas; registering either on
+// both providers fails the mux outright.
+func TestMuxServesTenantAndNamespaceFromFrameworkProvider(t *testing.T) {
+	ctx := context.Background()
+
+	mux, err := tf5muxserver.NewMuxServer(ctx, []func() tfprotov5.ProviderServer{
+		providerserver.NewProtocol5(provider_v2.New("test")()),
+		provider.New("test", nil)().GRPCProvider,
+	}...)
+	if err != nil {
+		t.Fatalf("unexpected mux server error: %v", err)
+	}
+
+	resp, err := mux.ProviderServer().GetProviderSchema(ctx, &tfprotov5.GetProviderSchemaRequest{})
+	if err != nil {
+		t.Fatalf("unexpected provider schema error: %v", err)
+	}
+	for _, d := range resp.Diagnostics {
+		if d.Severity == tfprotov5.DiagnosticSeverityError {
+			t.Fatalf("unexpected provider schema diagnostic: %s: %s", d.Summary, d.Detail)
+		}
+	}
+
+	for _, name := range []string{"kestra_tenant", "kestra_namespace"} {
+		res, ok := resp.ResourceSchemas[name]
+		if !ok {
+			t.Errorf("expected the mux server to serve the %q resource", name)
+			continue
+		}
+		// The framework implementation is the one being served: the SDK schema
+		// knew nothing of concurrency limits or quotas.
+		blocks := make(map[string]bool, len(res.Block.BlockTypes))
+		for _, block := range res.Block.BlockTypes {
+			blocks[block.TypeName] = true
+		}
+		if !blocks["concurrency"] || !blocks["quotas"] {
+			t.Errorf("expected the %q resource to expose concurrency and quotas blocks, got %v", name, blocks)
+		}
+
+		ds, ok := resp.DataSourceSchemas[name]
+		if !ok {
+			t.Errorf("expected the mux server to serve the %q data source", name)
+			continue
+		}
+		attributes := make(map[string]bool, len(ds.Block.Attributes))
+		for _, attribute := range ds.Block.Attributes {
+			attributes[attribute.Name] = true
+		}
+		if !attributes["concurrency"] || !attributes["quotas"] {
+			t.Errorf("expected the %q data source to expose concurrency and quotas, got %v", name, attributes)
+		}
+	}
+
+	if v := resp.ResourceSchemas["kestra_tenant"].Version; v != 1 {
+		t.Errorf("expected kestra_tenant schema version 1 for the state upgrader, got %d", v)
+	}
+}

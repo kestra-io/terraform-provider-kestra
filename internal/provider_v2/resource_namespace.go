@@ -56,6 +56,8 @@ type namespaceModel struct {
 	SecretReadOnly           types.Bool       `tfsdk:"secret_read_only"`
 	SecretConfiguration      types.Dynamic    `tfsdk:"secret_configuration"`
 	OutputsInInternalStorage types.Bool       `tfsdk:"outputs_in_internal_storage"`
+	Concurrency              []concurrency    `tfsdk:"concurrency"`
+	Quotas                   []quota          `tfsdk:"quotas"`
 }
 
 type allowedNS struct {
@@ -171,6 +173,8 @@ func (r *namespaceResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 					},
 				},
 			},
+			"concurrency": concurrencyNestedBlock(),
+			"quotas":      quotasNestedBlock(),
 			"storage_isolation": schema.ListNestedBlock{
 				MarkdownDescription: "Storage isolation configuration.",
 				Validators:          []validator.List{listvalidator.SizeAtMost(1)},
@@ -594,6 +598,12 @@ func namespaceModelToBody(ctx context.Context, m *namespaceModel) (map[string]in
 	if !m.OutputsInInternalStorage.IsNull() {
 		body["outputsInInternalStorage"] = m.OutputsInInternalStorage.ValueBool()
 	}
+	if c := concurrencyToBody(m.Concurrency); c != nil {
+		body["concurrency"] = c
+	}
+	if q := quotasToBody(m.Quotas); q != nil {
+		body["quotas"] = q
+	}
 	return body, diags
 }
 
@@ -734,25 +744,7 @@ func bodyToNamespaceModel(ctx context.Context, body map[string]interface{}, tena
 	// unlike the other optional fields, an absent selector clears the model: the API omits
 	// null fields, so absence means it is genuinely unset and must show up as drift
 	if ws, ok := body["defaultWorkerSelector"].(map[string]interface{}); ok {
-		one := workerSelector{Tags: types.SetNull(types.StringType), Match: types.StringNull(), Fallback: types.StringNull()}
-		if raw, ok := ws["tags"].([]interface{}); ok {
-			vals := make([]attr.Value, 0, len(raw))
-			for _, v := range raw {
-				if t, ok := v.(string); ok {
-					vals = append(vals, types.StringValue(t))
-				}
-			}
-			if sv, d := basetypes.NewSetValue(types.StringType, vals); !d.HasError() {
-				one.Tags = sv
-			}
-		}
-		if match, ok := ws["match"].(string); ok && match != "" {
-			one.Match = types.StringValue(match)
-		}
-		if fb, ok := ws["fallback"].(string); ok && fb != "" {
-			one.Fallback = types.StringValue(fb)
-		}
-		m.DefaultWorkerSelector = []workerSelector{one}
+		m.DefaultWorkerSelector = []workerSelector{workerSelectorFromBody(ws)}
 	} else {
 		m.DefaultWorkerSelector = nil
 	}
@@ -796,6 +788,8 @@ func bodyToNamespaceModel(ctx context.Context, body map[string]interface{}, tena
 	if oi, ok := body["outputsInInternalStorage"].(bool); ok {
 		m.OutputsInInternalStorage = types.BoolValue(oi)
 	}
+	m.Concurrency = concurrencyFromBody(body)
+	m.Quotas = quotasFromBody(body)
 	return nil
 }
 

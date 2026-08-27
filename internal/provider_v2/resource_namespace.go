@@ -244,7 +244,14 @@ func (r *namespaceResource) Create(ctx context.Context, req resource.CreateReque
 		resp.Diagnostics.AddError("Create namespace failed", err.Error())
 		return
 	}
+	plannedConcurrency, plannedQuotas := plan.Concurrency, plan.Quotas
 	resp.Diagnostics.Append(bodyToNamespaceModel(ctx, out, r.providerData.TenantId, &plan)...)
+	// A server that predates these fields (2.0.0-rc1) accepts the write but omits
+	// them from the response. They are pure configuration, so the framework
+	// requires the post-write state to match the plan; letting the response clear
+	// them fails the apply outright. Read still treats an absent key as drift, so
+	// a server that ignores them shows up as a diff on the next plan.
+	plan.Concurrency, plan.Quotas = plannedConcurrency, plannedQuotas
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -286,7 +293,14 @@ func (r *namespaceResource) Update(ctx context.Context, req resource.UpdateReque
 		resp.Diagnostics.AddError("Update namespace failed", err.Error())
 		return
 	}
+	plannedConcurrency, plannedQuotas := plan.Concurrency, plan.Quotas
 	resp.Diagnostics.Append(bodyToNamespaceModel(ctx, out, r.providerData.TenantId, &plan)...)
+	// A server that predates these fields (2.0.0-rc1) accepts the write but omits
+	// them from the response. They are pure configuration, so the framework
+	// requires the post-write state to match the plan; letting the response clear
+	// them fails the apply outright. Read still treats an absent key as drift, so
+	// a server that ignores them shows up as a diff on the next plan.
+	plan.Concurrency, plan.Quotas = plannedConcurrency, plannedQuotas
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

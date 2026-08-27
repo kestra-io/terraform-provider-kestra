@@ -53,7 +53,7 @@ func testAccResourceTenant(id, name string) string {
 // leaving the previous values in place.
 func TestAccTenantConcurrencyAndQuotas(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
+		PreCheck:                 func() { testAccPreCheckConcurrency(t) },
 		ProtoV5ProviderFactories: muxProviderFactories,
 		Steps: []resource.TestStep{
 			{

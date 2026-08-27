@@ -187,7 +187,7 @@ EOT
 // than leaving the previous values in place.
 func TestAccNamespaceConcurrencyAndQuotas(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:                 func() { testAccPreCheck(t) },
+		PreCheck:                 func() { testAccPreCheckConcurrency(t) },
 		ProtoV5ProviderFactories: muxProviderFactories,
 		Steps: []resource.TestStep{
 			{

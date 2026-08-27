@@ -31,6 +31,7 @@ resource "kestra_tenant" "example" {
 
 ### Optional
 
+- `default_worker_selector` (Block List, Max: 1) The default routing applied to every task of the tenant that does not define its own. Tasks are routed to a `kestra_worker_queue` whose tag set matches. (see [below for nested schema](#nestedblock--default_worker_selector))
 - `name` (String) The tenant name.
 - `outputs_in_internal_storage` (Boolean) Whether outputs are stored in internal storage.
 - `require_existing_namespace` (Boolean) Whether tenant requires an existing namespace.
@@ -41,11 +42,23 @@ resource "kestra_tenant" "example" {
 - `storage_configuration` (Map of String) The storage configuration.
 - `storage_isolation` (Block List, Max: 1) Storage isolation configuration. (see [below for nested schema](#nestedblock--storage_isolation))
 - `storage_type` (String) The storage type.
-- `worker_group` (Block List, Max: 1) The worker group. (see [below for nested schema](#nestedblock--worker_group))
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+<a id="nestedblock--default_worker_selector"></a>
+### Nested Schema for `default_worker_selector`
+
+Required:
+
+- `tags` (List of String) The tags used to route to a matching Worker Queue (each tag is an RFC 1123 label). The API rejects `match` and `fallback` without a non-empty tag set.
+
+Optional:
+
+- `fallback` (String) The strategy when no worker is available: `FAIL` (default), `WAIT`, `CANCEL` or `IGNORE`.
+- `match` (String) How the tags are matched against a Worker Queue tag set: `ALL` (default, the queue tags must be a superset) or `ANY` (they must intersect).
+
 
 <a id="nestedblock--secret_isolation"></a>
 ### Nested Schema for `secret_isolation`
@@ -63,15 +76,6 @@ Optional:
 
 - `denied_services` (List of String) List of denied services for isolation.
 - `enabled` (Boolean) Enable storage isolation.
-
-
-<a id="nestedblock--worker_group"></a>
-### Nested Schema for `worker_group`
-
-Required:
-
-- `fallback` (String) The fallback strategy.
-- `key` (String) The worker group key.
 
 ## Import
 

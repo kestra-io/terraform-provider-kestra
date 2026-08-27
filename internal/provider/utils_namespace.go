@@ -6,106 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"gopkg.in/yaml.v2"
 )
-
-func namespaceSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
-	body := make(map[string]interface{}, 0)
-	body["id"] = d.Get("namespace_id").(string)
-	body["description"] = d.Get("description").(string)
-
-	variables := make(map[string]interface{}, 0)
-	err := yaml.Unmarshal([]byte(d.Get("variables").(string)), &variables)
-	if err != nil {
-		return nil, err
-	}
-	body["variables"] = variables
-
-	var pluginDefaults interface{}
-	err = yaml.Unmarshal([]byte(d.Get("plugin_defaults").(string)), &pluginDefaults)
-	if err != nil {
-		return nil, err
-	}
-	body["pluginDefaults"] = pluginDefaults
-
-	allowedNamespaces := d.Get("allowed_namespaces").([]interface{})
-	allowedNamespacesList := make([]map[string]interface{}, len(allowedNamespaces))
-	for i, ns := range allowedNamespaces {
-		nsMap := ns.(map[string]interface{})
-		allowedNamespacesList[i] = map[string]interface{}{
-			"namespace": nsMap["namespace"].(string),
-		}
-	}
-	body["allowedNamespaces"] = allowedNamespacesList
-
-	if workerGroup, ok := d.GetOk("worker_group"); ok {
-		body["workerGroup"] = includedWorkerGroupSchemaToApi(workerGroup.([]interface{}))
-	}
-
-	if storageType := d.Get("storage_type").(string); storageType != "" {
-		body["storageType"] = storageType
-	}
-
-	if storageConfiguration := d.Get("storage_configuration").(map[string]interface{}); len(storageConfiguration) > 0 {
-		body["storageConfiguration"] = storageConfiguration
-	}
-
-	if storageIsolationList, ok := d.GetOk("storage_isolation"); ok {
-		storageIsolationArr := storageIsolationList.([]interface{})
-		if len(storageIsolationArr) > 0 {
-			storageIsolationMap := storageIsolationArr[0].(map[string]interface{})
-			storageIsolation := make(map[string]interface{})
-			if enabled, ok := storageIsolationMap["enabled"].(bool); ok {
-				storageIsolation["enabled"] = enabled
-			}
-			if deniedServices, ok := storageIsolationMap["denied_services"].([]interface{}); ok && len(deniedServices) > 0 {
-				denied := make([]string, len(deniedServices))
-				for i, s := range deniedServices {
-					denied[i] = s.(string)
-				}
-				storageIsolation["deniedServices"] = denied
-			}
-			body["storageIsolation"] = storageIsolation
-		}
-	}
-
-	if secretIsolationList, ok := d.GetOk("secret_isolation"); ok {
-		secretIsolationStorage := secretIsolationList.([]interface{})
-		if len(secretIsolationStorage) > 0 {
-			secretIsolationMap := secretIsolationStorage[0].(map[string]interface{})
-			secretIsolation := make(map[string]interface{})
-			if enabled, ok := secretIsolationMap["enabled"].(bool); ok {
-				secretIsolation["enabled"] = enabled
-			}
-			if ds, ok := secretIsolationMap["denied_services"].([]interface{}); ok && len(ds) > 0 {
-				denied := make([]string, len(ds))
-				for i, s := range ds {
-					denied[i] = s.(string)
-				}
-				secretIsolation["deniedServices"] = denied
-			}
-			body["secretIsolation"] = secretIsolation
-		}
-	}
-
-	if secretType := d.Get("secret_type").(string); secretType != "" {
-		body["secretType"] = secretType
-	}
-
-	if v, ok := d.GetOk("secret_read_only"); ok {
-		body["secretReadOnly"] = v.(bool)
-	}
-
-	if secretConfiguration := d.Get("secret_configuration").(map[string]interface{}); len(secretConfiguration) > 0 {
-		body["secretConfiguration"] = secretConfiguration
-	}
-
-	if v, ok := d.GetOk("outputs_in_internal_storage"); ok {
-		body["outputsInInternalStorage"] = v.(bool)
-	}
-
-	return body, nil
-}
 
 func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *Client) diag.Diagnostics {
 	var diags diag.Diagnostics
@@ -140,17 +41,6 @@ func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *C
 		}
 	}
 
-	if pluginDefaults, ok := r["pluginDefaults"].(interface{}); ok {
-		toYaml, err := toYaml(pluginDefaults)
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		if err := d.Set("plugin_defaults", toYaml); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
 	if allowedNamespaces, ok := r["allowedNamespaces"].([]interface{}); ok {
 		allowedNamespacesList := make([]map[string]interface{}, len(allowedNamespaces))
 		for i, ns := range allowedNamespaces {
@@ -164,10 +54,10 @@ func namespaceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *C
 		}
 	}
 
-	if workerGroup, ok := r["workerGroup"].(map[string]interface{}); ok {
-		workerGroupDataList := includedWorkerGroupApiToList(workerGroup)
+	if workerSelector, ok := r["defaultWorkerSelector"].(map[string]interface{}); ok {
+		workerSelectorDataList := includedWorkerSelectorApiToList(workerSelector)
 
-		if err := d.Set("worker_group", workerGroupDataList); err != nil {
+		if err := d.Set("default_worker_selector", workerSelectorDataList); err != nil {
 			return diag.FromErr(err)
 		}
 	}

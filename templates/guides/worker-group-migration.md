@@ -79,19 +79,26 @@ data "kestra_worker_group" "gpu" {
 }
 ```
 
-References to the renamed attribute must be updated too — including the `worker_group` blocks of the `kestra_namespace` and `kestra_tenant` resources, whose own `key` argument is unchanged:
+References to the renamed attribute must be updated too.
+
+The `worker_group` blocks of the `kestra_namespace` and `kestra_tenant` resources are a special case: they are gone, replaced by `default_worker_selector`. A namespace or tenant no longer points at one worker group by key — it declares the tags its tasks route with, and the Worker Queue whose tag set matches picks the work up:
 
 ```terraform
 # Before
 worker_group {
-  key = kestra_worker_group.gpu.key
+  key      = kestra_worker_group.gpu.key
+  fallback = "WAIT"
 }
 
 # After
-worker_group {
-  key = kestra_worker_group.gpu.group_id
+default_worker_selector {
+  tags     = kestra_worker_queue.gpu.tags
+  match    = "ALL"
+  fallback = "WAIT"
 }
 ```
+
+There is no automatic translation for this one: a worker group key is not a tag set, so the state upgrader drops the old block and the refresh repopulates `default_worker_selector` from the instance. `match` accepts `ALL` (default — the queue tags must be a superset of yours) or `ANY`, and `fallback` gained `IGNORE` alongside `FAIL`, `WAIT` and `CANCEL`. See the [Namespace Migration Guide](namespace-migration.md) for the rest of the namespace changes.
 
 ### 4. Verify
 
@@ -105,6 +112,7 @@ The state upgrade is not optional even though the worker groups themselves are r
 
 ## Notes
 
-- Because the worker groups are recreated rather than migrated, they come back with exactly what your configuration declares — including no Worker Queue subscription at all unless you add `subscriptions` blocks. The ids are preserved, so the `worker_group` blocks of `kestra_namespace` and `kestra_tenant`, and any worker started with that group id, stay valid.
+- Because the worker groups are recreated rather than migrated, they come back with exactly what your configuration declares — including no Worker Queue subscription at all unless you add `subscriptions` blocks. The ids are preserved, so any worker started with that group id stays valid.
+- Routing from a namespace or tenant no longer names a worker group at all: `default_worker_selector` names tags, which a Worker Queue matches, which a worker group subscribes to. Declare the `kestra_worker_queue` before the namespaces and tenants that select its tags.
 - Worker groups and Worker Queues are instance-level resources managed by a SuperAdmin: they are not tenant-scoped, and the provider's `tenant_id` does not apply to them.
 - Both are only available on the [Enterprise Edition](https://kestra.io/enterprise), and Worker Queues additionally require Kestra 2.0 or later.

@@ -16,22 +16,26 @@ Manages a Kestra Namespace.
 ## Example Usage
 
 ```terraform
+resource "kestra_worker_queue" "gpu" {
+  queue_id = "gpu"
+  tags     = ["gpu", "linux"]
+}
+
 resource "kestra_namespace" "example" {
-  namespace_id    = "company.team"
-  description     = "Friendly description"
-  variables       = <<EOT
+  namespace_id = "company.team"
+  description  = "Friendly description"
+  variables    = <<EOT
 k1: 1
 k2:
     v1: 1
 EOT
-  plugin_defaults = <<EOT
-- type: io.kestra.plugin.core.log.Log
-  values:
-    message: first {{flow.id}}
-- type: io.kestra.plugin.core.debug.Return
-  values:
-    format: first {{flow.id}}
-EOT
+
+  # route every task of the namespace to a Worker Queue matching these tags
+  default_worker_selector {
+    tags     = kestra_worker_queue.gpu.tags
+    match    = "ALL"
+    fallback = "WAIT"
+  }
 }
 ```
 
@@ -45,9 +49,9 @@ EOT
 ### Optional
 
 - `allowed_namespaces` (Block List) The allowed namespaces. (see [below for nested schema](#nestedblock--allowed_namespaces))
+- `default_worker_selector` (Block List) The default routing applied to every task of the namespace that does not define its own. Tasks are routed to a `kestra_worker_queue` whose tag set matches. (see [below for nested schema](#nestedblock--default_worker_selector))
 - `description` (String) The namespace friendly description.
 - `outputs_in_internal_storage` (Boolean) Whether outputs are stored in internal storage.
-- `plugin_defaults` (String) The namespace plugin defaults in yaml string.
 - `secret_configuration` (Dynamic) Per-backend secret configuration. The whole value is a free-form map keyed by backend type (e.g. `vault`, `aws`, `gcp`), where each value is either a string or a nested object describing that backend's config.
 - `secret_isolation` (Block List) Secret isolation configuration. (see [below for nested schema](#nestedblock--secret_isolation))
 - `secret_read_only` (Boolean) Whether secrets are read-only in this namespace.
@@ -56,7 +60,6 @@ EOT
 - `storage_isolation` (Block List) Storage isolation configuration. (see [below for nested schema](#nestedblock--storage_isolation))
 - `storage_type` (String) The storage type.
 - `variables` (String) The namespace variables in yaml string.
-- `worker_group` (Block List) The worker group. (see [below for nested schema](#nestedblock--worker_group))
 
 ### Read-Only
 
@@ -69,6 +72,19 @@ EOT
 Required:
 
 - `namespace` (String) The namespace.
+
+
+<a id="nestedblock--default_worker_selector"></a>
+### Nested Schema for `default_worker_selector`
+
+Required:
+
+- `tags` (Set of String) The tags used to route to a matching Worker Queue (each tag is an RFC 1123 label). Required: the API rejects `match` and `fallback` without a non-empty tag set.
+
+Optional:
+
+- `fallback` (String) The strategy when no worker is available: `FAIL` (default), `WAIT`, `CANCEL` or `IGNORE`.
+- `match` (String) How the tags are matched against a Worker Queue tag set: `ALL` (default, the queue tags must be a superset) or `ANY` (they must intersect).
 
 
 <a id="nestedblock--secret_isolation"></a>
@@ -87,18 +103,6 @@ Optional:
 
 - `denied_services` (Set of String) Set of denied services.
 - `enabled` (Boolean) Whether isolation is enabled.
-
-
-<a id="nestedblock--worker_group"></a>
-### Nested Schema for `worker_group`
-
-Required:
-
-- `key` (String) The worker group key.
-
-Optional:
-
-- `fallback` (String) The fallback strategy.
 
 ## Import
 

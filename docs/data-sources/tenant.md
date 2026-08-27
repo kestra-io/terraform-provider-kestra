@@ -30,6 +30,7 @@ data "kestra_tenant" "example" {
 
 ### Read-Only
 
+- `default_worker_selector` (List of Object) The default routing applied to every task of the tenant that does not define its own. (see [below for nested schema](#nestedatt--default_worker_selector))
 - `id` (String) The ID of this resource.
 - `name` (String) The tenant name.
 - `outputs_in_internal_storage` (Boolean) Whether outputs are stored in internal storage.
@@ -41,7 +42,16 @@ data "kestra_tenant" "example" {
 - `storage_configuration` (Map of String) The storage configuration.
 - `storage_isolation` (List of Object) Storage isolation configuration. (see [below for nested schema](#nestedatt--storage_isolation))
 - `storage_type` (String) The storage type.
-- `worker_group` (List of Object) The worker group. (see [below for nested schema](#nestedatt--worker_group))
+
+<a id="nestedatt--default_worker_selector"></a>
+### Nested Schema for `default_worker_selector`
+
+Read-Only:
+
+- `fallback` (String)
+- `match` (String)
+- `tags` (List of String)
+
 
 <a id="nestedatt--secret_isolation"></a>
 ### Nested Schema for `secret_isolation`
@@ -59,12 +69,3 @@ Read-Only:
 
 - `denied_services` (List of String)
 - `enabled` (Boolean)
-
-
-<a id="nestedatt--worker_group"></a>
-### Nested Schema for `worker_group`
-
-Read-Only:
-
-- `fallback` (String)
-- `key` (String)

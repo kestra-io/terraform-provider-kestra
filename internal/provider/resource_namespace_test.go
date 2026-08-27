@@ -184,7 +184,7 @@ func testAccResourceNamespaceWorkerGroup(id, description, variables, pluginDefau
 	return fmt.Sprintf(
 		`
 		resource "kestra_worker_group" "new" {
-			key = "%s"
+			group_id = "%s"
 			name = "%s"
 		}
 
@@ -198,7 +198,7 @@ EOT
 %s
 EOT
 			worker_group {
-				key = kestra_worker_group.new.key
+				key = kestra_worker_group.new.group_id
 			}
         }`,
 		workerGroupKey,

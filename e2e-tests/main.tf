@@ -55,8 +55,8 @@ resource "kestra_namespace_secret" "gitlab_token" {
 #   description = "Friendly description"
 # }
 resource "kestra_worker_group" "wkggg" {
-  key  = "tenant-worker-group"
-  name = "Tenant Worker Group"
+  group_id = "tenant-worker-group"
+  name     = "Tenant Worker Group"
 }
 
 resource "kestra_flow" "ekestra_flowxample" {
@@ -173,7 +173,7 @@ resource "kestra_tenant" "exahhhmple" {
   name      = "My Tenant"
 
   worker_group {
-    key      = kestra_worker_group.wkggg.key
+    key      = kestra_worker_group.wkggg.group_id
     fallback = "FAIL"
   }
 

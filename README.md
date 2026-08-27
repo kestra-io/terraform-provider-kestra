@@ -40,6 +40,8 @@ This repository defines Kestra resources so that they can be deployed using Infr
 > [!IMPORTANT]  
 > Kestra Terraform provider 1.0.x is only compatible with Kestra 1.0.x and above.
 > Additionally, if you want to terraform Kestra 1.0.x you need to use Kestra Terraform provider 1.0.x
+>
+> The provider's 1.3.x releases are the ones compatible with the Kestra 1.x line, and keep receiving fixes on their own release branch. Newer releases target Kestra 2.0 and above: pin `version = "~> 1.3.0"` until you upgrade your instance to 2.0.
 
 ## Documentation
 

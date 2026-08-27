@@ -22,16 +22,6 @@ func TestAccResourceNamespace(t *testing.T) {
 						"k2:",
 						"    v1: 1",
 					),
-					concat(
-						"- type: io.kestra.plugin.core.log.Log",
-						"  forced: false",
-						"  values:",
-						"    message: first {{flow.id}}",
-						"- type: io.kestra.plugin.core.debug.Return",
-						"  forced: false",
-						"  values:",
-						"    format: first {{flow.id}}",
-					),
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
@@ -51,16 +41,6 @@ func TestAccResourceNamespace(t *testing.T) {
 						"    v1: 1",
 						"k1: 1",
 					),
-					concat(
-						"- type: io.kestra.plugin.core.log.Log",
-						"  forced: false",
-						"  values:",
-						"    message: first {{flow.id}}",
-						"- type: io.kestra.plugin.core.debug.Return",
-						"  forced: false",
-						"  values:",
-						"    format: second {{flow.id}}",
-					),
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
@@ -70,12 +50,12 @@ func TestAccResourceNamespace(t *testing.T) {
 						"kestra_namespace.new", "description", "My Kestra Namespace 2",
 					),
 					resource.TestMatchResourceAttr(
-						"kestra_namespace.new", "plugin_defaults", regexp.MustCompile(".*format: second.*"),
+						"kestra_namespace.new", "variables", regexp.MustCompile(".*k1: 1.*"),
 					),
 				),
 			},
 			{
-				Config: testAccResourceNamespaceWorkerGroup(
+				Config: testAccResourceNamespaceWorkerSelector(
 					"io.kestra.terraform",
 					"My Kestra Namespace 3",
 					concat(
@@ -83,17 +63,7 @@ func TestAccResourceNamespace(t *testing.T) {
 						"    v1: 1",
 						"k1: 1",
 					),
-					concat(
-						"- type: io.kestra.plugin.core.log.Log",
-						"  forced: false",
-						"  values:",
-						"    message: first {{flow.id}}",
-						"- type: io.kestra.plugin.core.debug.Return",
-						"  forced: false",
-						"  values:",
-						"    format: second {{flow.id}}",
-					),
-					"my-worker-group",
+					"tf-acc-ns-queue",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
@@ -102,13 +72,19 @@ func TestAccResourceNamespace(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"kestra_namespace.new", "description", "My Kestra Namespace 3",
 					),
+					resource.TestCheckResourceAttr(
+						"kestra_namespace.new", "default_worker_selector.0.tags.#", "1",
+					),
+					resource.TestCheckResourceAttr(
+						"kestra_namespace.new", "default_worker_selector.0.fallback", "WAIT",
+					),
 				),
 			},
 			{
 				ResourceName:            "kestra_namespace.new",
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"variables", "plugin_defaults", "worker_group"},
+				ImportStateVerifyIgnore: []string{"variables"},
 			},
 		},
 	})
@@ -160,7 +136,7 @@ func TestAccResourceNamespaceNestedSecretConfiguration(t *testing.T) {
 	})
 }
 
-func testAccResourceNamespace(id, description, variables, pluginDefaults string) string {
+func testAccResourceNamespace(id, description, variables string) string {
 	return fmt.Sprintf(
 		`
         resource "kestra_namespace" "new" {
@@ -169,23 +145,21 @@ func testAccResourceNamespace(id, description, variables, pluginDefaults string)
             variables = <<EOT
 %s
 EOT
-            plugin_defaults = <<EOT
-%s
-EOT
         }`,
 		id,
 		description,
 		variables,
-		pluginDefaults,
 	)
 }
 
-func testAccResourceNamespaceWorkerGroup(id, description, variables, pluginDefaults string, workerGroupKey string) string {
+// The 2.0 namespace routes tasks through a tag set matched against Worker Queues, so the
+// selector is exercised against a real kestra_worker_queue rather than a worker group key.
+func testAccResourceNamespaceWorkerSelector(id, description, variables string, queueId string) string {
 	return fmt.Sprintf(
 		`
-		resource "kestra_worker_group" "new" {
-			group_id = "%s"
-			name = "%s"
+		resource "kestra_worker_queue" "new" {
+			queue_id = "%s"
+			tags     = ["%s"]
 		}
 
         resource "kestra_namespace" "new" {
@@ -194,18 +168,15 @@ func testAccResourceNamespaceWorkerGroup(id, description, variables, pluginDefau
             variables = <<EOT
 %s
 EOT
-            plugin_defaults = <<EOT
-%s
-EOT
-			worker_group {
-				key = kestra_worker_group.new.group_id
+			default_worker_selector {
+				tags     = kestra_worker_queue.new.tags
+				fallback = "WAIT"
 			}
         }`,
-		workerGroupKey,
-		workerGroupKey,
+		queueId,
+		queueId,
 		id,
 		description,
 		variables,
-		pluginDefaults,
 	)
 }

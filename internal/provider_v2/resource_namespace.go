@@ -7,6 +7,9 @@ import (
 	"math/big"
 	"net/http"
 
+	listvalidator "github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	setvalidator "github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	stringvalidator "github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -15,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	listvalidator "github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -24,10 +26,10 @@ import (
 )
 
 var (
-	_ resource.Resource                   = &namespaceResource{}
-	_ resource.ResourceWithImportState    = &namespaceResource{}
-	_ resource.ResourceWithConfigure      = &namespaceResource{}
-	_ resource.ResourceWithUpgradeState   = &namespaceResource{}
+	_ resource.Resource                 = &namespaceResource{}
+	_ resource.ResourceWithImportState  = &namespaceResource{}
+	_ resource.ResourceWithConfigure    = &namespaceResource{}
+	_ resource.ResourceWithUpgradeState = &namespaceResource{}
 )
 
 func NewNamespaceResource() resource.Resource {
@@ -39,36 +41,39 @@ type namespaceResource struct {
 }
 
 type namespaceModel struct {
-	Id                       types.String  `tfsdk:"id"`
-	TenantId                 types.String  `tfsdk:"tenant_id"`
-	NamespaceId              types.String  `tfsdk:"namespace_id"`
-	Description              types.String  `tfsdk:"description"`
-	Variables                types.String  `tfsdk:"variables"`
-	PluginDefaults           types.String  `tfsdk:"plugin_defaults"`
-	AllowedNamespaces        []allowedNS   `tfsdk:"allowed_namespaces"`
-	WorkerGroup              []workerGroup `tfsdk:"worker_group"`
-	StorageType              types.String  `tfsdk:"storage_type"`
-	StorageConfiguration     types.Map     `tfsdk:"storage_configuration"`
-	StorageIsolation         []isolation   `tfsdk:"storage_isolation"`
-	SecretIsolation          []isolation   `tfsdk:"secret_isolation"`
-	SecretType               types.String  `tfsdk:"secret_type"`
-	SecretReadOnly           types.Bool    `tfsdk:"secret_read_only"`
-	SecretConfiguration      types.Dynamic `tfsdk:"secret_configuration"`
-	OutputsInInternalStorage types.Bool    `tfsdk:"outputs_in_internal_storage"`
+	Id                       types.String     `tfsdk:"id"`
+	TenantId                 types.String     `tfsdk:"tenant_id"`
+	NamespaceId              types.String     `tfsdk:"namespace_id"`
+	Description              types.String     `tfsdk:"description"`
+	Variables                types.String     `tfsdk:"variables"`
+	AllowedNamespaces        []allowedNS      `tfsdk:"allowed_namespaces"`
+	DefaultWorkerSelector    []workerSelector `tfsdk:"default_worker_selector"`
+	StorageType              types.String     `tfsdk:"storage_type"`
+	StorageConfiguration     types.Map        `tfsdk:"storage_configuration"`
+	StorageIsolation         []isolation      `tfsdk:"storage_isolation"`
+	SecretIsolation          []isolation      `tfsdk:"secret_isolation"`
+	SecretType               types.String     `tfsdk:"secret_type"`
+	SecretReadOnly           types.Bool       `tfsdk:"secret_read_only"`
+	SecretConfiguration      types.Dynamic    `tfsdk:"secret_configuration"`
+	OutputsInInternalStorage types.Bool       `tfsdk:"outputs_in_internal_storage"`
 }
 
 type allowedNS struct {
 	Namespace types.String `tfsdk:"namespace"`
 }
 
-type workerGroup struct {
-	Key      types.String `tfsdk:"key"`
+// workerSelector mirrors the API WorkerSelector: a tag set routing to Worker Queues,
+// with a matching strategy and a fallback when no worker is available. It replaces the
+// pre-2.0 worker group reference, which pointed at a single group by key.
+type workerSelector struct {
+	Tags     types.Set    `tfsdk:"tags"`
+	Match    types.String `tfsdk:"match"`
 	Fallback types.String `tfsdk:"fallback"`
 }
 
 type isolation struct {
 	Enabled        types.Bool `tfsdk:"enabled"`
-	DeniedServices types.Set `tfsdk:"denied_services"`
+	DeniedServices types.Set  `tfsdk:"denied_services"`
 }
 
 func (r *namespaceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -78,7 +83,7 @@ func (r *namespaceResource) Metadata(_ context.Context, req resource.MetadataReq
 func (r *namespaceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a Kestra Namespace.\n\n-> This resource is only available on the [Enterprise Edition](https://kestra.io/enterprise)",
-		Version:             1,
+		Version:             2,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -102,11 +107,6 @@ func (r *namespaceResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 			"variables": schema.StringAttribute{
 				Optional:            true,
 				MarkdownDescription: "The namespace variables in yaml string.",
-				PlanModifiers:       []planmodifier.String{YamlEqualPlanModifier()},
-			},
-			"plugin_defaults": schema.StringAttribute{
-				Optional:            true,
-				MarkdownDescription: "The namespace plugin defaults in yaml string.",
 				PlanModifiers:       []planmodifier.String{YamlEqualPlanModifier()},
 			},
 			"storage_type": schema.StringAttribute{
@@ -147,18 +147,26 @@ func (r *namespaceResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 					},
 				},
 			},
-			"worker_group": schema.ListNestedBlock{
-				MarkdownDescription: "The worker group.",
+			"default_worker_selector": schema.ListNestedBlock{
+				MarkdownDescription: "The default routing applied to every task of the namespace that does not define its own. Tasks are routed to a `kestra_worker_queue` whose tag set matches.",
 				Validators:          []validator.List{listvalidator.SizeAtMost(1)},
 				NestedObject: schema.NestedBlockObject{
 					Attributes: map[string]schema.Attribute{
-						"key": schema.StringAttribute{
+						"tags": schema.SetAttribute{
 							Required:            true,
-							MarkdownDescription: "The worker group key.",
+							ElementType:         types.StringType,
+							MarkdownDescription: "The tags used to route to a matching Worker Queue (each tag is an RFC 1123 label). Required: the API rejects `match` and `fallback` without a non-empty tag set.",
+							Validators:          []validator.Set{setvalidator.SizeAtLeast(1), setvalidator.SizeAtMost(20)},
+						},
+						"match": schema.StringAttribute{
+							Optional:            true,
+							MarkdownDescription: "How the tags are matched against a Worker Queue tag set: `ALL` (default, the queue tags must be a superset) or `ANY` (they must intersect).",
+							Validators:          []validator.String{stringvalidator.OneOf("ALL", "ANY")},
 						},
 						"fallback": schema.StringAttribute{
 							Optional:            true,
-							MarkdownDescription: "The fallback strategy.",
+							MarkdownDescription: "The strategy when no worker is available: `FAIL` (default), `WAIT`, `CANCEL` or `IGNORE`.",
+							Validators:          []validator.String{stringvalidator.OneOf("FAIL", "WAIT", "CANCEL", "IGNORE")},
 						},
 					},
 				},
@@ -300,6 +308,10 @@ func (r *namespaceResource) UpgradeState(_ context.Context) map[int64]resource.S
 		0: {
 			StateUpgrader: upgradeNamespaceStateV0,
 		},
+		1: {
+			PriorSchema:   namespaceSchemaV1(),
+			StateUpgrader: upgradeNamespaceStateV1,
+		},
 	}
 }
 
@@ -316,7 +328,6 @@ func upgradeNamespaceStateV0(ctx context.Context, req resource.UpgradeStateReque
 		NamespaceId:              optString(raw["namespace_id"]),
 		Description:              optString(raw["description"]),
 		Variables:                optString(raw["variables"]),
-		PluginDefaults:           optString(raw["plugin_defaults"]),
 		StorageType:              optString(raw["storage_type"]),
 		SecretType:               optString(raw["secret_type"]),
 		SecretReadOnly:           optBool(raw["secret_read_only"]),
@@ -335,19 +346,6 @@ func upgradeNamespaceStateV0(ctx context.Context, req resource.UpgradeStateReque
 			}
 		}
 		m.AllowedNamespaces = out
-	}
-
-	if wg, ok := raw["worker_group"].([]interface{}); ok && len(wg) > 0 {
-		if mp, ok := wg[0].(map[string]interface{}); ok {
-			one := workerGroup{Fallback: types.StringNull()}
-			if k, ok := mp["key"].(string); ok {
-				one.Key = types.StringValue(k)
-			}
-			if fb, ok := mp["fallback"].(string); ok && fb != "" {
-				one.Fallback = types.StringValue(fb)
-			}
-			m.WorkerGroup = []workerGroup{one}
-		}
 	}
 
 	if sc, ok := raw["storage_configuration"].(map[string]interface{}); ok && len(sc) > 0 {
@@ -380,6 +378,112 @@ func upgradeNamespaceStateV0(ctx context.Context, req resource.UpgradeStateReque
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &m)...)
+}
+
+// namespaceSchemaV1 is the schema as published before Kestra 2.0 removed `plugin_defaults`
+// and replaced `worker_group` with `default_worker_selector`. It exists only so the prior
+// state can be decoded through the framework types instead of raw JSON.
+func namespaceSchemaV1() *schema.Schema {
+	return &schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"id":                          schema.StringAttribute{Computed: true},
+			"tenant_id":                   schema.StringAttribute{Computed: true},
+			"namespace_id":                schema.StringAttribute{Required: true},
+			"description":                 schema.StringAttribute{Optional: true},
+			"variables":                   schema.StringAttribute{Optional: true},
+			"plugin_defaults":             schema.StringAttribute{Optional: true},
+			"storage_type":                schema.StringAttribute{Optional: true},
+			"storage_configuration":       schema.MapAttribute{Optional: true, ElementType: types.StringType},
+			"secret_type":                 schema.StringAttribute{Optional: true},
+			"secret_read_only":            schema.BoolAttribute{Optional: true},
+			"secret_configuration":        schema.DynamicAttribute{Optional: true},
+			"outputs_in_internal_storage": schema.BoolAttribute{Optional: true},
+		},
+		Blocks: map[string]schema.Block{
+			"allowed_namespaces": schema.ListNestedBlock{
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"namespace": schema.StringAttribute{Required: true},
+					},
+				},
+			},
+			"worker_group": schema.ListNestedBlock{
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"key":      schema.StringAttribute{Required: true},
+						"fallback": schema.StringAttribute{Optional: true},
+					},
+				},
+			},
+			"storage_isolation": schema.ListNestedBlock{NestedObject: isolationNestedObject()},
+			"secret_isolation":  schema.ListNestedBlock{NestedObject: isolationNestedObject()},
+		},
+	}
+}
+
+// namespaceModelV1 mirrors namespaceSchemaV1.
+type namespaceModelV1 struct {
+	Id                       types.String    `tfsdk:"id"`
+	TenantId                 types.String    `tfsdk:"tenant_id"`
+	NamespaceId              types.String    `tfsdk:"namespace_id"`
+	Description              types.String    `tfsdk:"description"`
+	Variables                types.String    `tfsdk:"variables"`
+	PluginDefaults           types.String    `tfsdk:"plugin_defaults"`
+	AllowedNamespaces        []allowedNS     `tfsdk:"allowed_namespaces"`
+	WorkerGroup              []workerGroupV1 `tfsdk:"worker_group"`
+	StorageType              types.String    `tfsdk:"storage_type"`
+	StorageConfiguration     types.Map       `tfsdk:"storage_configuration"`
+	StorageIsolation         []isolation     `tfsdk:"storage_isolation"`
+	SecretIsolation          []isolation     `tfsdk:"secret_isolation"`
+	SecretType               types.String    `tfsdk:"secret_type"`
+	SecretReadOnly           types.Bool      `tfsdk:"secret_read_only"`
+	SecretConfiguration      types.Dynamic   `tfsdk:"secret_configuration"`
+	OutputsInInternalStorage types.Bool      `tfsdk:"outputs_in_internal_storage"`
+}
+
+type workerGroupV1 struct {
+	Key      types.String `tfsdk:"key"`
+	Fallback types.String `tfsdk:"fallback"`
+}
+
+// upgradeNamespaceStateV1 drops the two attributes Kestra 2.0 removed from the namespace
+// API. Neither can be carried over:
+//
+//   - `plugin_defaults` no longer exists on a namespace. The 2.0 upgrade migrates the
+//     stored value into a NAMESPACE-scope Policy with the id `plugin-defaults`, which is
+//     managed with kestra_policy and has to be imported.
+//   - `worker_group` referenced one worker group by key; routing is now a tag set matched
+//     against Worker Queues, so there is no key to translate. The refresh that follows the
+//     upgrade populates `default_worker_selector` from the API.
+//
+// Both attributes are also gone from the schema, so a configuration still setting them
+// fails at plan time rather than silently applying nothing — which is what the 2.0 API
+// does with them, since it ignores unknown fields.
+func upgradeNamespaceStateV1(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
+	var prior namespaceModelV1
+	resp.Diagnostics.Append(req.State.Get(ctx, &prior)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	upgraded := namespaceModel{
+		Id:                       prior.Id,
+		TenantId:                 prior.TenantId,
+		NamespaceId:              prior.NamespaceId,
+		Description:              prior.Description,
+		Variables:                prior.Variables,
+		AllowedNamespaces:        prior.AllowedNamespaces,
+		StorageType:              prior.StorageType,
+		StorageConfiguration:     prior.StorageConfiguration,
+		StorageIsolation:         prior.StorageIsolation,
+		SecretIsolation:          prior.SecretIsolation,
+		SecretType:               prior.SecretType,
+		SecretReadOnly:           prior.SecretReadOnly,
+		SecretConfiguration:      prior.SecretConfiguration,
+		OutputsInInternalStorage: prior.OutputsInInternalStorage,
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &upgraded)...)
 }
 
 func optString(v interface{}) types.String {
@@ -416,6 +520,7 @@ func isolationFromV0(in map[string]interface{}) isolation {
 }
 
 func namespaceModelToBody(ctx context.Context, m *namespaceModel) (map[string]interface{}, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	body := map[string]interface{}{
 		"id": m.NamespaceId.ValueString(),
 	}
@@ -430,25 +535,24 @@ func namespaceModelToBody(ctx context.Context, m *namespaceModel) (map[string]in
 		}
 	}
 
-	if !m.PluginDefaults.IsNull() && m.PluginDefaults.ValueString() != "" {
-		var v interface{}
-		if err := yaml.Unmarshal([]byte(m.PluginDefaults.ValueString()), &v); err == nil {
-			body["pluginDefaults"] = normalizeYAML(v)
-		}
-	}
-
 	allowed := make([]map[string]interface{}, len(m.AllowedNamespaces))
 	for i, an := range m.AllowedNamespaces {
 		allowed[i] = map[string]interface{}{"namespace": an.Namespace.ValueString()}
 	}
 	body["allowedNamespaces"] = allowed
 
-	if len(m.WorkerGroup) > 0 {
-		wg := map[string]interface{}{"key": m.WorkerGroup[0].Key.ValueString()}
-		if !m.WorkerGroup[0].Fallback.IsNull() && m.WorkerGroup[0].Fallback.ValueString() != "" {
-			wg["fallback"] = m.WorkerGroup[0].Fallback.ValueString()
+	if len(m.DefaultWorkerSelector) > 0 {
+		sel := m.DefaultWorkerSelector[0]
+		tags := make([]string, 0)
+		diags.Append(sel.Tags.ElementsAs(ctx, &tags, false)...)
+		ws := map[string]interface{}{"tags": tags}
+		if !sel.Match.IsNull() && sel.Match.ValueString() != "" {
+			ws["match"] = sel.Match.ValueString()
 		}
-		body["workerGroup"] = wg
+		if !sel.Fallback.IsNull() && sel.Fallback.ValueString() != "" {
+			ws["fallback"] = sel.Fallback.ValueString()
+		}
+		body["defaultWorkerSelector"] = ws
 	}
 	if !m.StorageType.IsNull() && m.StorageType.ValueString() != "" {
 		body["storageType"] = m.StorageType.ValueString()
@@ -490,7 +594,7 @@ func namespaceModelToBody(ctx context.Context, m *namespaceModel) (map[string]in
 	if !m.OutputsInInternalStorage.IsNull() {
 		body["outputsInInternalStorage"] = m.OutputsInInternalStorage.ValueBool()
 	}
-	return body, nil
+	return body, diags
 }
 
 func isolationToBody(ctx context.Context, iso isolation) map[string]interface{} {
@@ -616,13 +720,6 @@ func bodyToNamespaceModel(ctx context.Context, body map[string]interface{}, tena
 			}
 		}
 	}
-	if pd, ok := body["pluginDefaults"]; ok && pd != nil {
-		if m.PluginDefaults.IsNull() || m.PluginDefaults.IsUnknown() {
-			if b, err := yaml.Marshal(pd); err == nil {
-				m.PluginDefaults = types.StringValue(string(b))
-			}
-		}
-	}
 	if an, ok := body["allowedNamespaces"].([]interface{}); ok {
 		out := make([]allowedNS, 0, len(an))
 		for _, item := range an {
@@ -634,15 +731,30 @@ func bodyToNamespaceModel(ctx context.Context, body map[string]interface{}, tena
 		}
 		m.AllowedNamespaces = out
 	}
-	if wg, ok := body["workerGroup"].(map[string]interface{}); ok {
-		one := workerGroup{Fallback: types.StringNull()}
-		if k, ok := wg["key"].(string); ok {
-			one.Key = types.StringValue(k)
+	// unlike the other optional fields, an absent selector clears the model: the API omits
+	// null fields, so absence means it is genuinely unset and must show up as drift
+	if ws, ok := body["defaultWorkerSelector"].(map[string]interface{}); ok {
+		one := workerSelector{Tags: types.SetNull(types.StringType), Match: types.StringNull(), Fallback: types.StringNull()}
+		if raw, ok := ws["tags"].([]interface{}); ok {
+			vals := make([]attr.Value, 0, len(raw))
+			for _, v := range raw {
+				if t, ok := v.(string); ok {
+					vals = append(vals, types.StringValue(t))
+				}
+			}
+			if sv, d := basetypes.NewSetValue(types.StringType, vals); !d.HasError() {
+				one.Tags = sv
+			}
 		}
-		if fb, ok := wg["fallback"].(string); ok && fb != "" {
+		if match, ok := ws["match"].(string); ok && match != "" {
+			one.Match = types.StringValue(match)
+		}
+		if fb, ok := ws["fallback"].(string); ok && fb != "" {
 			one.Fallback = types.StringValue(fb)
 		}
-		m.WorkerGroup = []workerGroup{one}
+		m.DefaultWorkerSelector = []workerSelector{one}
+	} else {
+		m.DefaultWorkerSelector = nil
 	}
 	if st, ok := body["storageType"].(string); ok {
 		m.StorageType = types.StringValue(st)

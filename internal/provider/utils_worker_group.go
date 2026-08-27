@@ -1,35 +1,63 @@
 package provider
 
-func includedWorkerGroupSchemaToApi(workerGroupList []interface{}) map[string]interface{} {
-	var workerGroupData = make(map[string]interface{})
+// Kestra 2.0 replaced the namespace and tenant `workerGroup` reference — a single worker
+// group addressed by key — with a `defaultWorkerSelector`: a tag set routed to matching
+// Worker Queues, plus a matching strategy and a fallback. These helpers are shared by the
+// namespace and tenant mappings.
 
-	if len(workerGroupList) > 0 {
-		workerGroupMap := workerGroupList[0].(map[string]interface{})
-		workerGroupData["key"] = workerGroupMap["key"].(string)
+func includedWorkerSelectorSchemaToApi(workerSelectorList []interface{}) map[string]interface{} {
+	var workerSelectorData = make(map[string]interface{})
 
-		if workerGroupMap["fallback"] != "" {
-			workerGroupData["fallback"] = workerGroupMap["fallback"].(string)
+	if len(workerSelectorList) > 0 {
+		workerSelectorMap := workerSelectorList[0].(map[string]interface{})
+
+		tags := make([]string, 0)
+		if rawTags, ok := workerSelectorMap["tags"].([]interface{}); ok {
+			for _, tag := range rawTags {
+				if s, ok := tag.(string); ok {
+					tags = append(tags, s)
+				}
+			}
+		}
+		workerSelectorData["tags"] = tags
+
+		if match, ok := workerSelectorMap["match"].(string); ok && match != "" {
+			workerSelectorData["match"] = match
+		}
+
+		if fallback, ok := workerSelectorMap["fallback"].(string); ok && fallback != "" {
+			workerSelectorData["fallback"] = fallback
 		}
 	}
 
-	return workerGroupData
+	return workerSelectorData
 }
 
-func includedWorkerGroupApiToList(workerGroup map[string]interface{}) []map[string]interface{} {
-	var workerGroupData = make(map[string]interface{})
+func includedWorkerSelectorApiToList(workerSelector map[string]interface{}) []map[string]interface{} {
+	var workerSelectorData = make(map[string]interface{})
 
-	if key, ok := workerGroup["key"].(string); ok {
-		workerGroupData["key"] = key
-	} else {
+	rawTags, ok := workerSelector["tags"].([]interface{})
+	if !ok {
 		return nil
 	}
+	tags := make([]string, 0, len(rawTags))
+	for _, tag := range rawTags {
+		if s, ok := tag.(string); ok {
+			tags = append(tags, s)
+		}
+	}
+	workerSelectorData["tags"] = tags
 
-	if workerGroup["fallback"] != nil {
-		workerGroupData["fallback"] = workerGroup["fallback"].(string)
+	if match, ok := workerSelector["match"].(string); ok {
+		workerSelectorData["match"] = match
 	}
 
-	var workerGroupDataList []map[string]interface{}
-	workerGroupDataList = append(workerGroupDataList, workerGroupData)
+	if fallback, ok := workerSelector["fallback"].(string); ok {
+		workerSelectorData["fallback"] = fallback
+	}
 
-	return workerGroupDataList
+	var workerSelectorDataList []map[string]interface{}
+	workerSelectorDataList = append(workerSelectorDataList, workerSelectorData)
+
+	return workerSelectorDataList
 }

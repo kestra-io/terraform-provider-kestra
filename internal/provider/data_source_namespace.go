@@ -35,11 +35,6 @@ func dataSourceNamespace() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"plugin_defaults": {
-				Description: "The namespace plugin defaults.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
 			"allowed_namespaces": {
 				Description: "The allowed namespaces.",
 				Type:        schema.TypeList,
@@ -54,19 +49,25 @@ func dataSourceNamespace() *schema.Resource {
 					},
 				},
 			},
-			"worker_group": {
-				Description: "The worker group.",
+			"default_worker_selector": {
+				Description: "The default routing applied to every task of the namespace that does not define its own.",
 				Type:        schema.TypeList,
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key": {
-							Description: "The worker group key.",
+						"tags": {
+							Description: "The tags used to route to a matching Worker Queue.",
+							Type:        schema.TypeList,
+							Computed:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"match": {
+							Description: "How the tags are matched against a Worker Queue tag set: `ALL` or `ANY`.",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},
 						"fallback": {
-							Description: "The fallback strategy.",
+							Description: "The strategy when no worker is available: `FAIL`, `WAIT`, `CANCEL` or `IGNORE`.",
 							Type:        schema.TypeString,
 							Computed:    true,
 						},

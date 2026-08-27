@@ -59,6 +59,12 @@ resource "kestra_worker_group" "wkggg" {
   name     = "Tenant Worker Group"
 }
 
+resource "kestra_worker_queue" "wkqqq" {
+  queue_id = "tenant-worker-queue"
+  name     = "Tenant Worker Queue"
+  tags     = ["tenant-worker-queue"]
+}
+
 resource "kestra_flow" "ekestra_flowxample" {
   namespace = "io.kestra.terraform.e2e.data"
   flow_id   = "return-flow"
@@ -84,32 +90,22 @@ resource "kestra_test" "kestra_testsuite_example" {
 }
 
 resource "kestra_namespace" "kestra_namespaceexample" {
-  depends_on = [kestra_worker_group.wkggg]
-  namespace_id    = "io.kestra.terraform.e2e.data.addednamespace"
-  description     = "Friendly description"
+  depends_on   = [kestra_worker_queue.wkqqq]
+  namespace_id = "io.kestra.terraform.e2e.data.addednamespace"
+  description  = "Friendly description"
 
-  variables       = <<EOT
+  variables = <<EOT
 k1: 1
 k2:
     v1: 1
-EOT
-  plugin_defaults = <<EOT
-- type: io.kestra.plugin.core.log.Log
-  forced: false
-  values:
-    message: first {{flow.id}}
-- type: io.kestra.plugin.core.debug.Return
-  forced: false
-  values:
-    format: first {{flow.id}}
 EOT
 
   allowed_namespaces {
     namespace = "io.kestra.terraform.e2e.allowed"
   }
 
-  worker_group {
-    key      = "tenant-worker-group"
+  default_worker_selector {
+    tags     = kestra_worker_queue.wkqqq.tags
     fallback = "WAIT"
   }
 
@@ -172,8 +168,8 @@ resource "kestra_tenant" "exahhhmple" {
   tenant_id = "my-tenant"
   name      = "My Tenant"
 
-  worker_group {
-    key      = kestra_worker_group.wkggg.group_id
+  default_worker_selector {
+    tags     = kestra_worker_queue.wkqqq.tags
     fallback = "FAIL"
   }
 

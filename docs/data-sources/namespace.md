@@ -31,10 +31,10 @@ data "kestra_namespace" "example" {
 ### Read-Only
 
 - `allowed_namespaces` (List of Object) The allowed namespaces. (see [below for nested schema](#nestedatt--allowed_namespaces))
+- `default_worker_selector` (List of Object) The default routing applied to every task of the namespace that does not define its own. (see [below for nested schema](#nestedatt--default_worker_selector))
 - `description` (String) The namespace friendly description.
 - `id` (String) The ID of this resource.
 - `outputs_in_internal_storage` (Boolean) Whether outputs are stored in internal storage.
-- `plugin_defaults` (String) The namespace plugin defaults.
 - `secret_configuration` (Map of String) The secret configuration.
 - `secret_isolation` (List of Object) Secret isolation configuration (same shape as storage_isolation). (see [below for nested schema](#nestedatt--secret_isolation))
 - `secret_read_only` (Boolean) Whether secrets are read-only in this namespace.
@@ -44,7 +44,6 @@ data "kestra_namespace" "example" {
 - `storage_type` (String) The storage type.
 - `tenant_id` (String) The tenant id.
 - `variables` (String) The namespace variables.
-- `worker_group` (List of Object) The worker group. (see [below for nested schema](#nestedatt--worker_group))
 
 <a id="nestedatt--allowed_namespaces"></a>
 ### Nested Schema for `allowed_namespaces`
@@ -52,6 +51,16 @@ data "kestra_namespace" "example" {
 Read-Only:
 
 - `namespace` (String)
+
+
+<a id="nestedatt--default_worker_selector"></a>
+### Nested Schema for `default_worker_selector`
+
+Read-Only:
+
+- `fallback` (String)
+- `match` (String)
+- `tags` (List of String)
 
 
 <a id="nestedatt--secret_isolation"></a>
@@ -70,12 +79,3 @@ Read-Only:
 
 - `denied_services` (List of String)
 - `enabled` (Boolean)
-
-
-<a id="nestedatt--worker_group"></a>
-### Nested Schema for `worker_group`
-
-Read-Only:
-
-- `fallback` (String)
-- `key` (String)

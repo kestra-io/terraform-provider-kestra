@@ -31,23 +31,32 @@ func resourceTenant() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"worker_group": {
-				Description: "The worker group.",
+			"default_worker_selector": {
+				Description: "The default routing applied to every task of the tenant that does not define its own. Tasks are routed to a `kestra_worker_queue` whose tag set matches.",
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"key": {
-							Description: "The worker group key.",
-							Type:        schema.TypeString,
+						"tags": {
+							Description: "The tags used to route to a matching Worker Queue (each tag is an RFC 1123 label). The API rejects `match` and `fallback` without a non-empty tag set.",
+							Type:        schema.TypeList,
 							Required:    true,
+							MinItems:    1,
+							MaxItems:    20,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"match": {
+							Description:  "How the tags are matched against a Worker Queue tag set: `ALL` (default, the queue tags must be a superset) or `ANY` (they must intersect).",
+							Type:         schema.TypeString,
+							Optional:     true,
+							ValidateFunc: validation.StringInSlice([]string{"ALL", "ANY"}, false),
 						},
 						"fallback": {
-							Description:  "The fallback strategy.",
+							Description:  "The strategy when no worker is available: `FAIL` (default), `WAIT`, `CANCEL` or `IGNORE`.",
 							Type:         schema.TypeString,
-							Required:     true,
-							ValidateFunc: validation.StringInSlice([]string{"FAIL", "WAIT", "CANCEL"}, false),
+							Optional:     true,
+							ValidateFunc: validation.StringInSlice([]string{"FAIL", "WAIT", "CANCEL", "IGNORE"}, false),
 						},
 					},
 				},

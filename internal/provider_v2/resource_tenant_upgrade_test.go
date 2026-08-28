@@ -27,7 +27,8 @@ func currentTenantState(ctx context.Context, t *testing.T) tfsdk.State {
 }
 
 // TestTenantUpgradeStateV0 covers state written by the SDK v2 implementation. The
-// attribute names did not change, so everything has to survive the move.
+// attribute names did not change, so everything has to survive; `concurrency` and
+// `quotas` are new and stay absent rather than being invented.
 func TestTenantUpgradeStateV0(t *testing.T) {
 	ctx := context.Background()
 
@@ -107,4 +108,10 @@ func TestTenantUpgradeStateV0(t *testing.T) {
 	}
 
 	// The blocks the SDK v2 schema never had must not be conjured up by the upgrade.
+	if len(upgraded.Concurrency) != 0 {
+		t.Errorf("concurrency should be absent in upgraded state, got %#v", upgraded.Concurrency)
+	}
+	if len(upgraded.Quotas) != 0 {
+		t.Errorf("quotas should be absent in upgraded state, got %#v", upgraded.Quotas)
+	}
 }

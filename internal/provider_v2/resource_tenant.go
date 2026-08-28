@@ -50,6 +50,8 @@ type tenantModel struct {
 	SecretConfiguration      types.Map        `tfsdk:"secret_configuration"`
 	RequireExistingNamespace types.Bool       `tfsdk:"require_existing_namespace"`
 	OutputsInInternalStorage types.Bool       `tfsdk:"outputs_in_internal_storage"`
+	Concurrency              []concurrency    `tfsdk:"concurrency"`
+	Quotas                   []quota          `tfsdk:"quotas"`
 }
 
 func (r *tenantResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -131,6 +133,8 @@ func (r *tenantResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 					},
 				},
 			},
+			"concurrency": concurrencyNestedBlock(),
+			"quotas":      quotasNestedBlock(),
 			"storage_isolation": schema.ListNestedBlock{
 				MarkdownDescription: "Storage isolation configuration.",
 				Validators:          []validator.List{listvalidator.SizeAtMost(1)},
@@ -184,7 +188,9 @@ func (r *tenantResource) Create(ctx context.Context, req resource.CreateRequest,
 		resp.Diagnostics.AddError("Create tenant failed", err.Error())
 		return
 	}
+	configured := snapshotConcurrency(plan.Concurrency, plan.Quotas)
 	resp.Diagnostics.Append(bodyToTenantModel(ctx, out, &plan)...)
+	configured.restore(&plan.Concurrency, &plan.Quotas)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -226,7 +232,9 @@ func (r *tenantResource) Update(ctx context.Context, req resource.UpdateRequest,
 		resp.Diagnostics.AddError("Update tenant failed", err.Error())
 		return
 	}
+	configured := snapshotConcurrency(plan.Concurrency, plan.Quotas)
 	resp.Diagnostics.Append(bodyToTenantModel(ctx, out, &plan)...)
+	configured.restore(&plan.Concurrency, &plan.Quotas)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -365,6 +373,12 @@ func tenantModelToBody(ctx context.Context, m *tenantModel) (map[string]interfac
 	if !m.OutputsInInternalStorage.IsNull() {
 		body["outputsInInternalStorage"] = m.OutputsInInternalStorage.ValueBool()
 	}
+	if c := concurrencyToBody(m.Concurrency); c != nil {
+		body["concurrency"] = c
+	}
+	if q := quotasToBody(m.Quotas); q != nil {
+		body["quotas"] = q
+	}
 	return body, diags
 }
 
@@ -402,5 +416,7 @@ func bodyToTenantModel(ctx context.Context, body map[string]interface{}, m *tena
 	m.SecretConfiguration = stringMapFromBody(body["secretConfiguration"])
 	m.RequireExistingNamespace = optBool(body["requireExistingNamespace"])
 	m.OutputsInInternalStorage = optBool(body["outputsInInternalStorage"])
+	m.Concurrency = concurrencyFromBody(body)
+	m.Quotas = quotasFromBody(body)
 	return nil
 }

@@ -111,11 +111,30 @@ func TestMuxServesTenantAndNamespaceFromFrameworkProvider(t *testing.T) {
 	}
 
 	for _, name := range []string{"kestra_tenant", "kestra_namespace"} {
-		if _, ok := resp.ResourceSchemas[name]; !ok {
+		res, ok := resp.ResourceSchemas[name]
+		if !ok {
 			t.Errorf("expected the mux server to serve the %q resource", name)
+			continue
 		}
-		if _, ok := resp.DataSourceSchemas[name]; !ok {
+		blocks := make(map[string]bool, len(res.Block.BlockTypes))
+		for _, block := range res.Block.BlockTypes {
+			blocks[block.TypeName] = true
+		}
+		if !blocks["concurrency"] || !blocks["quotas"] {
+			t.Errorf("expected the %q resource to expose concurrency and quotas blocks, got %v", name, blocks)
+		}
+
+		ds, ok := resp.DataSourceSchemas[name]
+		if !ok {
 			t.Errorf("expected the mux server to serve the %q data source", name)
+			continue
+		}
+		attributes := make(map[string]bool, len(ds.Block.Attributes))
+		for _, attribute := range ds.Block.Attributes {
+			attributes[attribute.Name] = true
+		}
+		if !attributes["concurrency"] || !attributes["quotas"] {
+			t.Errorf("expected the %q data source to expose concurrency and quotas, got %v", name, attributes)
 		}
 	}
 

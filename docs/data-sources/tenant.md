@@ -30,10 +30,12 @@ data "kestra_tenant" "example" {
 
 ### Read-Only
 
+- `concurrency` (List of Object) The concurrency limit applied to the executions of every flow of the tenant: `limit` and `behavior`. (see [below for nested schema](#nestedatt--concurrency))
 - `default_worker_selector` (List of Object) The default routing applied to every task of the tenant that does not define its own: `tags`, `match` and `fallback`. (see [below for nested schema](#nestedatt--default_worker_selector))
 - `id` (String) The tenant id.
 - `name` (String) The tenant name.
 - `outputs_in_internal_storage` (Boolean) Whether outputs are stored in internal storage.
+- `quotas` (List of Object) The quotas evaluated before an execution starts: `duration`, `limit` and `behavior`. (see [below for nested schema](#nestedatt--quotas))
 - `require_existing_namespace` (Boolean) Whether tenant requires an existing namespace.
 - `secret_configuration` (Map of String) The secret configuration.
 - `secret_isolation` (List of Object) Secret isolation configuration: `enabled` and `denied_services`. (see [below for nested schema](#nestedatt--secret_isolation))
@@ -43,6 +45,15 @@ data "kestra_tenant" "example" {
 - `storage_isolation` (List of Object) Storage isolation configuration: `enabled` and `denied_services`. (see [below for nested schema](#nestedatt--storage_isolation))
 - `storage_type` (String) The storage type.
 
+<a id="nestedatt--concurrency"></a>
+### Nested Schema for `concurrency`
+
+Read-Only:
+
+- `behavior` (String)
+- `limit` (Number)
+
+
 <a id="nestedatt--default_worker_selector"></a>
 ### Nested Schema for `default_worker_selector`
 
@@ -51,6 +62,16 @@ Read-Only:
 - `fallback` (String)
 - `match` (String)
 - `tags` (Set of String)
+
+
+<a id="nestedatt--quotas"></a>
+### Nested Schema for `quotas`
+
+Read-Only:
+
+- `behavior` (String)
+- `duration` (String)
+- `limit` (Number)
 
 
 <a id="nestedatt--secret_isolation"></a>

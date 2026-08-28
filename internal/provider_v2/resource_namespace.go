@@ -56,6 +56,8 @@ type namespaceModel struct {
 	SecretReadOnly           types.Bool       `tfsdk:"secret_read_only"`
 	SecretConfiguration      types.Dynamic    `tfsdk:"secret_configuration"`
 	OutputsInInternalStorage types.Bool       `tfsdk:"outputs_in_internal_storage"`
+	Concurrency              []concurrency    `tfsdk:"concurrency"`
+	Quotas                   []quota          `tfsdk:"quotas"`
 }
 
 type allowedNS struct {
@@ -171,6 +173,8 @@ func (r *namespaceResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 					},
 				},
 			},
+			"concurrency": concurrencyNestedBlock(),
+			"quotas":      quotasNestedBlock(),
 			"storage_isolation": schema.ListNestedBlock{
 				MarkdownDescription: "Storage isolation configuration.",
 				Validators:          []validator.List{listvalidator.SizeAtMost(1)},
@@ -240,7 +244,9 @@ func (r *namespaceResource) Create(ctx context.Context, req resource.CreateReque
 		resp.Diagnostics.AddError("Create namespace failed", err.Error())
 		return
 	}
+	configured := snapshotConcurrency(plan.Concurrency, plan.Quotas)
 	resp.Diagnostics.Append(bodyToNamespaceModel(ctx, out, r.providerData.TenantId, &plan)...)
+	configured.restore(&plan.Concurrency, &plan.Quotas)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -282,7 +288,9 @@ func (r *namespaceResource) Update(ctx context.Context, req resource.UpdateReque
 		resp.Diagnostics.AddError("Update namespace failed", err.Error())
 		return
 	}
+	configured := snapshotConcurrency(plan.Concurrency, plan.Quotas)
 	resp.Diagnostics.Append(bodyToNamespaceModel(ctx, out, r.providerData.TenantId, &plan)...)
+	configured.restore(&plan.Concurrency, &plan.Quotas)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -594,6 +602,12 @@ func namespaceModelToBody(ctx context.Context, m *namespaceModel) (map[string]in
 	if !m.OutputsInInternalStorage.IsNull() {
 		body["outputsInInternalStorage"] = m.OutputsInInternalStorage.ValueBool()
 	}
+	if c := concurrencyToBody(m.Concurrency); c != nil {
+		body["concurrency"] = c
+	}
+	if q := quotasToBody(m.Quotas); q != nil {
+		body["quotas"] = q
+	}
 	return body, diags
 }
 
@@ -778,6 +792,8 @@ func bodyToNamespaceModel(ctx context.Context, body map[string]interface{}, tena
 	if oi, ok := body["outputsInInternalStorage"].(bool); ok {
 		m.OutputsInInternalStorage = types.BoolValue(oi)
 	}
+	m.Concurrency = concurrencyFromBody(body)
+	m.Quotas = quotasFromBody(body)
 	return nil
 }
 

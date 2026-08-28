@@ -19,6 +19,19 @@ Manages a Kestra Tenant.
 resource "kestra_tenant" "example" {
   tenant_id = "my-tenant"
   name      = "My Tenant"
+
+  # cap how many executions of the whole tenant run at once
+  concurrency {
+    limit    = 10
+    behavior = "QUEUE"
+  }
+
+  # and how many may start inside a sliding window
+  quotas {
+    duration = "PT1H"
+    limit    = 100
+    behavior = "FAIL"
+  }
 }
 ```
 
@@ -31,9 +44,11 @@ resource "kestra_tenant" "example" {
 
 ### Optional
 
+- `concurrency` (Block List) The concurrency limit applied to the executions of every flow inside this scope and its descendants. (see [below for nested schema](#nestedblock--concurrency))
 - `default_worker_selector` (Block List) The default routing applied to every task of the tenant that does not define its own. Tasks are routed to a `kestra_worker_queue` whose tag set matches. (see [below for nested schema](#nestedblock--default_worker_selector))
 - `name` (String) The tenant name.
 - `outputs_in_internal_storage` (Boolean) Whether outputs are stored in internal storage.
+- `quotas` (Block List) Quotas evaluated before an execution starts. Without any quota, executions run normally. (see [below for nested schema](#nestedblock--quotas))
 - `require_existing_namespace` (Boolean) Whether tenant requires an existing namespace.
 - `secret_configuration` (Map of String) The secret configuration.
 - `secret_isolation` (Block List) Secret isolation configuration (same shape as storage_isolation). (see [below for nested schema](#nestedblock--secret_isolation))
@@ -47,6 +62,15 @@ resource "kestra_tenant" "example" {
 
 - `id` (String) The tenant id.
 
+<a id="nestedblock--concurrency"></a>
+### Nested Schema for `concurrency`
+
+Required:
+
+- `behavior` (String) What happens to an execution once the limit is reached.
+- `limit` (Number) The maximum number of concurrent executions.
+
+
 <a id="nestedblock--default_worker_selector"></a>
 ### Nested Schema for `default_worker_selector`
 
@@ -58,6 +82,16 @@ Optional:
 
 - `fallback` (String) The strategy when no worker is available: `FAIL` (default), `WAIT`, `CANCEL` or `IGNORE`.
 - `match` (String) How the tags are matched against a Worker Queue tag set: `ALL` (default, the queue tags must be a superset) or `ANY` (they must intersect).
+
+
+<a id="nestedblock--quotas"></a>
+### Nested Schema for `quotas`
+
+Required:
+
+- `behavior` (String) What happens to an execution once the quota is exhausted.
+- `duration` (String) The sliding window the quota is counted over, as an ISO-8601 duration (for example `PT1H`).
+- `limit` (Number) The maximum number of executions allowed inside the window.
 
 
 <a id="nestedblock--secret_isolation"></a>

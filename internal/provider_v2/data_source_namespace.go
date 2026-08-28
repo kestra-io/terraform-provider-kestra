@@ -49,6 +49,8 @@ type namespaceDataSourceModel struct {
 	SecretReadOnly           types.Bool    `tfsdk:"secret_read_only"`
 	SecretConfiguration      types.Dynamic `tfsdk:"secret_configuration"`
 	OutputsInInternalStorage types.Bool    `tfsdk:"outputs_in_internal_storage"`
+	Concurrency              types.List    `tfsdk:"concurrency"`
+	Quotas                   types.List    `tfsdk:"quotas"`
 }
 
 func (d *namespaceDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -124,6 +126,16 @@ func (d *namespaceDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 				ElementType:         isolationObjectType,
 				MarkdownDescription: "Secret isolation configuration: `enabled` and `denied_services`.",
 			},
+			"concurrency": schema.ListAttribute{
+				Computed:            true,
+				ElementType:         concurrencyObjectType,
+				MarkdownDescription: "The concurrency limit applied to the executions of every flow of the namespace and its descendants: `limit` and `behavior`.",
+			},
+			"quotas": schema.ListAttribute{
+				Computed:            true,
+				ElementType:         quotaObjectType,
+				MarkdownDescription: "The quotas evaluated before an execution starts: `duration`, `limit` and `behavior`.",
+			},
 		},
 	}
 }
@@ -171,6 +183,8 @@ func (d *namespaceDataSource) Read(ctx context.Context, req datasource.ReadReque
 	data.DefaultWorkerSelector = workerSelectorToList(out)
 	data.StorageIsolation = isolationToList(out, "storageIsolation")
 	data.SecretIsolation = isolationToList(out, "secretIsolation")
+	data.Concurrency = concurrencyToList(out)
+	data.Quotas = quotasToList(out)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

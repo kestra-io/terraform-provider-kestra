@@ -249,6 +249,7 @@ func (p *kestraProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewTestResource,
 		NewNamespaceResource,
 		NewPolicyResource,
+		NewTenantResource,
 		NewWorkerGroupResource,
 		NewWorkerQueueResource,
 	}
@@ -257,7 +258,9 @@ func (p *kestraProvider) Resources(ctx context.Context) []func() resource.Resour
 func (p *kestraProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewTestDataSource,
+		NewNamespaceDataSource,
 		NewPolicyDataSource,
+		NewTenantDataSource,
 		NewWorkerGroupDataSource,
 		NewWorkerQueueDataSource,
 	}

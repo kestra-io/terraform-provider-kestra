@@ -10,8 +10,8 @@ import (
 
 func TestAccDataSourceTenant(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: providerFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: muxProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccDataSourceTenant("admin"),

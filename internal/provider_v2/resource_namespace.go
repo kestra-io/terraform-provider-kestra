@@ -734,25 +734,7 @@ func bodyToNamespaceModel(ctx context.Context, body map[string]interface{}, tena
 	// unlike the other optional fields, an absent selector clears the model: the API omits
 	// null fields, so absence means it is genuinely unset and must show up as drift
 	if ws, ok := body["defaultWorkerSelector"].(map[string]interface{}); ok {
-		one := workerSelector{Tags: types.SetNull(types.StringType), Match: types.StringNull(), Fallback: types.StringNull()}
-		if raw, ok := ws["tags"].([]interface{}); ok {
-			vals := make([]attr.Value, 0, len(raw))
-			for _, v := range raw {
-				if t, ok := v.(string); ok {
-					vals = append(vals, types.StringValue(t))
-				}
-			}
-			if sv, d := basetypes.NewSetValue(types.StringType, vals); !d.HasError() {
-				one.Tags = sv
-			}
-		}
-		if match, ok := ws["match"].(string); ok && match != "" {
-			one.Match = types.StringValue(match)
-		}
-		if fb, ok := ws["fallback"].(string); ok && fb != "" {
-			one.Fallback = types.StringValue(fb)
-		}
-		m.DefaultWorkerSelector = []workerSelector{one}
+		m.DefaultWorkerSelector = []workerSelector{workerSelectorFromBody(ws)}
 	} else {
 		m.DefaultWorkerSelector = nil
 	}

@@ -73,3 +73,53 @@ func TestMuxServesWorkerGroupFromFrameworkProvider(t *testing.T) {
 		t.Errorf("expected kestra_worker_group schema version 1 for the state upgrader, got %d", workerGroup.Version)
 	}
 }
+
+// TestMuxServesTenantAndNamespaceFromFrameworkProvider pins the provider that
+// serves the tenant and namespace types after both moved off the SDK provider.
+// The mux refuses a type registered on both, so the SDK provider dropping its
+// registration is what makes the move work; asserting only that the mux serves
+// them would still pass if the SDK implementation came back.
+func TestMuxServesTenantAndNamespaceFromFrameworkProvider(t *testing.T) {
+	ctx := context.Background()
+
+	sdkProvider := provider.New("test", nil)()
+	for _, name := range []string{"kestra_tenant", "kestra_namespace"} {
+		if _, ok := sdkProvider.ResourcesMap[name]; ok {
+			t.Errorf("the SDK provider still registers the %q resource; the mux refuses a type served by both", name)
+		}
+		if _, ok := sdkProvider.DataSourcesMap[name]; ok {
+			t.Errorf("the SDK provider still registers the %q data source; the mux refuses a type served by both", name)
+		}
+	}
+
+	mux, err := tf5muxserver.NewMuxServer(ctx, []func() tfprotov5.ProviderServer{
+		providerserver.NewProtocol5(provider_v2.New("test")()),
+		provider.New("test", nil)().GRPCProvider,
+	}...)
+	if err != nil {
+		t.Fatalf("unexpected mux server error: %v", err)
+	}
+
+	resp, err := mux.ProviderServer().GetProviderSchema(ctx, &tfprotov5.GetProviderSchemaRequest{})
+	if err != nil {
+		t.Fatalf("unexpected provider schema error: %v", err)
+	}
+	for _, d := range resp.Diagnostics {
+		if d.Severity == tfprotov5.DiagnosticSeverityError {
+			t.Fatalf("unexpected provider schema diagnostic: %s: %s", d.Summary, d.Detail)
+		}
+	}
+
+	for _, name := range []string{"kestra_tenant", "kestra_namespace"} {
+		if _, ok := resp.ResourceSchemas[name]; !ok {
+			t.Errorf("expected the mux server to serve the %q resource", name)
+		}
+		if _, ok := resp.DataSourceSchemas[name]; !ok {
+			t.Errorf("expected the mux server to serve the %q data source", name)
+		}
+	}
+
+	if v := resp.ResourceSchemas["kestra_tenant"].Version; v != 1 {
+		t.Errorf("expected kestra_tenant schema version 1 for the state upgrader, got %d", v)
+	}
+}

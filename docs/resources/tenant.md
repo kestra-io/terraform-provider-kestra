@@ -31,28 +31,28 @@ resource "kestra_tenant" "example" {
 
 ### Optional
 
-- `default_worker_selector` (Block List, Max: 1) The default routing applied to every task of the tenant that does not define its own. Tasks are routed to a `kestra_worker_queue` whose tag set matches. (see [below for nested schema](#nestedblock--default_worker_selector))
+- `default_worker_selector` (Block List) The default routing applied to every task of the tenant that does not define its own. Tasks are routed to a `kestra_worker_queue` whose tag set matches. (see [below for nested schema](#nestedblock--default_worker_selector))
 - `name` (String) The tenant name.
 - `outputs_in_internal_storage` (Boolean) Whether outputs are stored in internal storage.
 - `require_existing_namespace` (Boolean) Whether tenant requires an existing namespace.
 - `secret_configuration` (Map of String) The secret configuration.
-- `secret_isolation` (Block List, Max: 1) Secret isolation configuration (same shape as storage_isolation). (see [below for nested schema](#nestedblock--secret_isolation))
+- `secret_isolation` (Block List) Secret isolation configuration (same shape as storage_isolation). (see [below for nested schema](#nestedblock--secret_isolation))
 - `secret_read_only` (Boolean) Whether secrets are read-only in this tenant.
 - `secret_type` (String) The secret type.
 - `storage_configuration` (Map of String) The storage configuration.
-- `storage_isolation` (Block List, Max: 1) Storage isolation configuration. (see [below for nested schema](#nestedblock--storage_isolation))
+- `storage_isolation` (Block List) Storage isolation configuration. (see [below for nested schema](#nestedblock--storage_isolation))
 - `storage_type` (String) The storage type.
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) The tenant id.
 
 <a id="nestedblock--default_worker_selector"></a>
 ### Nested Schema for `default_worker_selector`
 
 Required:
 
-- `tags` (List of String) The tags used to route to a matching Worker Queue (each tag is an RFC 1123 label). The API rejects `match` and `fallback` without a non-empty tag set.
+- `tags` (Set of String) The tags used to route to a matching Worker Queue (each tag is an RFC 1123 label). The API rejects `match` and `fallback` without a non-empty tag set.
 
 Optional:
 
@@ -65,8 +65,8 @@ Optional:
 
 Optional:
 
-- `denied_services` (List of String) List of denied services for secret isolation.
-- `enabled` (Boolean) Enable secret isolation.
+- `denied_services` (Set of String) Set of denied services.
+- `enabled` (Boolean) Whether isolation is enabled.
 
 
 <a id="nestedblock--storage_isolation"></a>
@@ -74,8 +74,8 @@ Optional:
 
 Optional:
 
-- `denied_services` (List of String) List of denied services for isolation.
-- `enabled` (Boolean) Enable storage isolation.
+- `denied_services` (Set of String) Set of denied services.
+- `enabled` (Boolean) Whether isolation is enabled.
 
 ## Import
 

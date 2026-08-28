@@ -76,14 +76,29 @@ func TestAccTenantConcurrencyAndQuotas(t *testing.T) {
 				),
 			},
 			{
-				Config: testAccResourceTenant("concurrency-tenant", "My custom tenant"),
+				Config: testAccResourceTenantConcurrencyBare("concurrency-tenant"),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("kestra_tenant.new", "concurrency.#", "0"),
-					resource.TestCheckResourceAttr("kestra_tenant.new", "quotas.#", "0"),
+					resource.TestCheckResourceAttr("kestra_tenant.concurrency", "concurrency.#", "0"),
+					resource.TestCheckResourceAttr("kestra_tenant.concurrency", "quotas.#", "0"),
 				),
 			},
 		},
 	})
+}
+
+// The bare config has to keep the same resource address as the steps before it.
+// Switching to a different address with the same tenant_id makes Terraform create
+// the new tenant before destroying the old one, which the API rejects with
+// "Tenant id already exists" -- so the step would never reach its assertions.
+func testAccResourceTenantConcurrencyBare(id string) string {
+	return fmt.Sprintf(
+		`
+        resource "kestra_tenant" "concurrency" {
+            tenant_id = "%s"
+            name = "Concurrency tenant"
+        }`,
+		id,
+	)
 }
 
 func testAccResourceTenantConcurrency(id, behavior string, limit int, quotaDuration string, quotaLimit int, quotaBehavior string) string {

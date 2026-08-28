@@ -4,14 +4,14 @@ page_title: "kestra_tenant Data Source - terraform-provider-kestra"
 subcategory: ""
 description: |-
   Use this data source to access information about an existing Kestra Tenant.
-  -> This resource is only available on the Enterprise Edition https://kestra.io/enterprise
+  -> This data source is only available on the Enterprise Edition https://kestra.io/enterprise
 ---
 
 # kestra_tenant (Data Source)
 
 Use this data source to access information about an existing Kestra Tenant.
 
--> This resource is only available on the [Enterprise Edition](https://kestra.io/enterprise)
+-> This data source is only available on the [Enterprise Edition](https://kestra.io/enterprise)
 
 ## Example Usage
 
@@ -30,17 +30,17 @@ data "kestra_tenant" "example" {
 
 ### Read-Only
 
-- `default_worker_selector` (List of Object) The default routing applied to every task of the tenant that does not define its own. (see [below for nested schema](#nestedatt--default_worker_selector))
-- `id` (String) The ID of this resource.
+- `default_worker_selector` (List of Object) The default routing applied to every task of the tenant that does not define its own: `tags`, `match` and `fallback`. (see [below for nested schema](#nestedatt--default_worker_selector))
+- `id` (String) The tenant id.
 - `name` (String) The tenant name.
 - `outputs_in_internal_storage` (Boolean) Whether outputs are stored in internal storage.
-- `require_existing_namespace` (Boolean) Whether the tenant requires existing namespaces.
+- `require_existing_namespace` (Boolean) Whether tenant requires an existing namespace.
 - `secret_configuration` (Map of String) The secret configuration.
-- `secret_isolation` (List of Object) Secret isolation configuration (same shape as storage_isolation). (see [below for nested schema](#nestedatt--secret_isolation))
+- `secret_isolation` (List of Object) Secret isolation configuration: `enabled` and `denied_services`. (see [below for nested schema](#nestedatt--secret_isolation))
 - `secret_read_only` (Boolean) Whether secrets are read-only in this tenant.
 - `secret_type` (String) The secret type.
 - `storage_configuration` (Map of String) The storage configuration.
-- `storage_isolation` (List of Object) Storage isolation configuration. (see [below for nested schema](#nestedatt--storage_isolation))
+- `storage_isolation` (List of Object) Storage isolation configuration: `enabled` and `denied_services`. (see [below for nested schema](#nestedatt--storage_isolation))
 - `storage_type` (String) The storage type.
 
 <a id="nestedatt--default_worker_selector"></a>
@@ -50,7 +50,7 @@ Read-Only:
 
 - `fallback` (String)
 - `match` (String)
-- `tags` (List of String)
+- `tags` (Set of String)
 
 
 <a id="nestedatt--secret_isolation"></a>
@@ -58,7 +58,7 @@ Read-Only:
 
 Read-Only:
 
-- `denied_services` (List of String)
+- `denied_services` (Set of String)
 - `enabled` (Boolean)
 
 
@@ -67,5 +67,5 @@ Read-Only:
 
 Read-Only:
 
-- `denied_services` (List of String)
+- `denied_services` (Set of String)
 - `enabled` (Boolean)

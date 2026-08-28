@@ -13,7 +13,7 @@ require (
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.1
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
 	github.com/json-iterator/go v1.1.12
-	github.com/kestra-io/client-sdk/go-sdk/v2 v2.0.0-rc1
+	github.com/kestra-io/client-sdk/go-sdk/v2 v2.0.0-rc2
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 )

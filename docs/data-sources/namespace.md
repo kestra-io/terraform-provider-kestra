@@ -4,14 +4,14 @@ page_title: "kestra_namespace Data Source - terraform-provider-kestra"
 subcategory: ""
 description: |-
   Use this data source to access information about an existing Kestra Namespace.
-  -> This resource is only available on the Enterprise Edition https://kestra.io/enterprise
+  -> Some attributes are only available on the Enterprise Edition https://kestra.io/enterprise
 ---
 
 # kestra_namespace (Data Source)
 
 Use this data source to access information about an existing Kestra Namespace.
 
--> This resource is only available on the [Enterprise Edition](https://kestra.io/enterprise)
+-> Some attributes are only available on the [Enterprise Edition](https://kestra.io/enterprise)
 
 ## Example Usage
 
@@ -26,24 +26,24 @@ data "kestra_namespace" "example" {
 
 ### Required
 
-- `namespace_id` (String) The namespace.
+- `namespace_id` (String) The namespace id.
 
 ### Read-Only
 
 - `allowed_namespaces` (List of Object) The allowed namespaces. (see [below for nested schema](#nestedatt--allowed_namespaces))
-- `default_worker_selector` (List of Object) The default routing applied to every task of the namespace that does not define its own. (see [below for nested schema](#nestedatt--default_worker_selector))
-- `description` (String) The namespace friendly description.
-- `id` (String) The ID of this resource.
-- `outputs_in_internal_storage` (Boolean) Whether outputs are stored in internal storage.
-- `secret_configuration` (Map of String) The secret configuration.
-- `secret_isolation` (List of Object) Secret isolation configuration (same shape as storage_isolation). (see [below for nested schema](#nestedatt--secret_isolation))
-- `secret_read_only` (Boolean) Whether secrets are read-only in this namespace.
-- `secret_type` (String) The secret type.
-- `storage_configuration` (Map of String) The storage configuration.
-- `storage_isolation` (List of Object) Storage isolation configuration. (see [below for nested schema](#nestedatt--storage_isolation))
-- `storage_type` (String) The storage type.
+- `default_worker_selector` (List of Object) The default routing applied to every task of the namespace that does not define its own: `tags`, `match` and `fallback`. (see [below for nested schema](#nestedatt--default_worker_selector))
+- `description` (String) The namespace description.
+- `id` (String) The namespace id.
+- `outputs_in_internal_storage` (Boolean) Whether the task outputs are stored in the internal storage.
+- `secret_configuration` (Dynamic) The namespace secret configuration.
+- `secret_isolation` (List of Object) Secret isolation configuration: `enabled` and `denied_services`. (see [below for nested schema](#nestedatt--secret_isolation))
+- `secret_read_only` (Boolean) Whether the namespace secret manager is read only.
+- `secret_type` (String) The namespace secret type.
+- `storage_configuration` (Map of String) The namespace storage configuration.
+- `storage_isolation` (List of Object) Storage isolation configuration: `enabled` and `denied_services`. (see [below for nested schema](#nestedatt--storage_isolation))
+- `storage_type` (String) The namespace storage type.
 - `tenant_id` (String) The tenant id.
-- `variables` (String) The namespace variables.
+- `variables` (String) The namespace variables, as YAML.
 
 <a id="nestedatt--allowed_namespaces"></a>
 ### Nested Schema for `allowed_namespaces`
@@ -60,7 +60,7 @@ Read-Only:
 
 - `fallback` (String)
 - `match` (String)
-- `tags` (List of String)
+- `tags` (Set of String)
 
 
 <a id="nestedatt--secret_isolation"></a>
@@ -68,7 +68,7 @@ Read-Only:
 
 Read-Only:
 
-- `denied_services` (List of String)
+- `denied_services` (Set of String)
 - `enabled` (Boolean)
 
 
@@ -77,5 +77,5 @@ Read-Only:
 
 Read-Only:
 
-- `denied_services` (List of String)
+- `denied_services` (Set of String)
 - `enabled` (Boolean)

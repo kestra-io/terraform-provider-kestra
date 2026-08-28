@@ -1,6 +1,6 @@
 //go:build e2e
 
-package runtime
+package e2e
 
 import (
 	"fmt"
@@ -23,28 +23,31 @@ type execution struct {
 	} `json:"taskRunList"`
 }
 
-// The assertion the whole suite exists for: the app user Terraform created can run the
+// The assertion this whole suite exists for: the app user Terraform created can run the
 // flow Terraform created, it succeeds, and it returns what the fixtures say it should.
 //
 // Because the flow reads a secret, a KV entry and a namespace file, a SUCCESS here also
 // says kestra_namespace_secret, kestra_kv and kestra_namespace_file wrote values the
 // engine can actually resolve — not merely values the API accepted.
 func TestAppUserRunsFlowSuccessfully(t *testing.T) {
-	c := newClient(t, "app user", "KESTRA_E2E_USER_TOKEN")
+	c := asUser(t, "app user", "KESTRA_E2E_USER_TOKEN")
 
 	namespace := env(t, "KESTRA_E2E_NAMESPACE")
 	flowID := env(t, "KESTRA_E2E_FLOW_ID")
 	greeting := "hello-from-e2e"
 
-	// wait=true has the server hold the response until the execution finishes, so there
-	// is no polling loop to get flaky.
-	body := c.expectOK(t, "POST",
-		fmt.Sprintf("/executions/%s/%s", namespace, flowID),
-		url.Values{
-			"wait":     []string{"true"},
-			"greeting": []string{greeting},
-			"labels":   []string{"suite:e2e-scenario"},
-		})
+	body := c.expectOK(t, request{
+		method: "POST",
+		path:   fmt.Sprintf("/executions/%s/%s", namespace, flowID),
+		// wait=true has the server hold the response until the execution finishes, so
+		// there is no polling loop to get flaky.
+		query: url.Values{
+			"wait":   []string{"true"},
+			"labels": []string{"suite:e2e-scenario"},
+		},
+		// inputs are multipart/form-data, not query parameters
+		form: map[string]string{"greeting": greeting},
+	})
 
 	exec := decode[execution](t, body, "execution")
 
@@ -53,6 +56,9 @@ func TestAppUserRunsFlowSuccessfully(t *testing.T) {
 			exec.ID, exec.State.Current, taskStates(exec), truncate(body))
 	}
 
+	// Proves the input reached the flow (first half) and that the KV entry resolved
+	// (second half). A greeting sent the wrong way would silently fall back to the
+	// flow's default and show up here.
 	want := greeting + ":" + env(t, "KESTRA_E2E_KV_VALUE")
 	got, ok := exec.Outputs["result"].(string)
 	if !ok {
@@ -67,13 +73,19 @@ func TestAppUserRunsFlowSuccessfully(t *testing.T) {
 
 // The test suite kestra_test manages is currently only checked for round-trip. Running
 // it proves Kestra can actually execute what the provider persisted.
+//
+// Run as the super-admin on purpose: the question here is whether the resource
+// round-trips into something runnable, so authorization should not be a variable.
 func TestManagedTestSuitePasses(t *testing.T) {
-	c := newClient(t, "platform admin", "KESTRA_E2E_ADMIN_TOKEN")
+	c := asSuperAdmin(t)
 
 	namespace := env(t, "KESTRA_E2E_NAMESPACE")
 	suiteID := env(t, "KESTRA_E2E_TESTSUITE_ID")
 
-	body := c.expectOK(t, "POST", fmt.Sprintf("/tests/%s/%s/run", namespace, suiteID), nil)
+	body := c.expectOK(t, request{
+		method: "POST",
+		path:   fmt.Sprintf("/tests/%s/%s/run", namespace, suiteID),
+	})
 
 	// The response shape has moved between versions, so assert on what is stable: no
 	// result in the payload may report a failed state.
@@ -90,9 +102,9 @@ func taskStates(e execution) string {
 	if len(e.TaskRunList) == 0 {
 		return "(no task runs — the failure happened before any task started)"
 	}
-	out := ""
+	var b strings.Builder
 	for _, tr := range e.TaskRunList {
-		out += fmt.Sprintf("%s=%s ", tr.TaskID, tr.State.Current)
+		fmt.Fprintf(&b, "%s=%s ", tr.TaskID, tr.State.Current)
 	}
-	return out
+	return b.String()
 }

@@ -116,6 +116,8 @@ apply_and_assert_idempotent "$PLATFORM" "scenarioTests/10-platform"
 step "scenarioTests/runtime: assert behaviour over the API"
 KESTRA_E2E_URL="$KESTRA_URL" \
 KESTRA_E2E_TENANT="$KESTRA_TENANT_ID" \
+KESTRA_E2E_USERNAME="$KESTRA_USERNAME" \
+KESTRA_E2E_PASSWORD="$KESTRA_PASSWORD" \
 KESTRA_E2E_ADMIN_TOKEN="$PLATFORM_ADMIN_TOKEN" \
 KESTRA_E2E_USER_TOKEN="$(tf "$PLATFORM" output -raw app_user_api_token)" \
 KESTRA_E2E_NAMESPACE="$(tf "$PLATFORM" output -raw namespace)" \

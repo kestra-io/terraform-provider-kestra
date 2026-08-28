@@ -26,6 +26,8 @@ func TestBodyToTenantModelClearsFieldsAbsentFromTheResponse(t *testing.T) {
 			SecretConfiguration:      types.MapValueMust(types.StringType, map[string]attr.Value{"k": types.StringValue("v")}),
 			RequireExistingNamespace: types.BoolValue(true),
 			OutputsInInternalStorage: types.BoolValue(true),
+			Concurrency:              []concurrency{{Limit: types.Int64Value(5), Behavior: types.StringValue("QUEUE")}},
+			Quotas:                   []quota{{Duration: types.StringValue("PT1H"), Limit: types.Int64Value(9), Behavior: types.StringValue("FAIL")}},
 		}
 	}
 
@@ -53,5 +55,19 @@ func TestBodyToTenantModelClearsFieldsAbsentFromTheResponse(t *testing.T) {
 	}
 	if !m.OutputsInInternalStorage.IsNull() {
 		t.Errorf("outputs_in_internal_storage should clear, got %v", m.OutputsInInternalStorage)
+	}
+	if len(m.Concurrency) != 0 {
+		t.Errorf("concurrency should clear, got %#v", m.Concurrency)
+	}
+	if len(m.Quotas) != 0 {
+		t.Errorf("quotas should clear, got %#v", m.Quotas)
+	}
+}
+
+// A concurrency object with neither field set would put nulls into two Required
+// attributes and fail the apply with an opaque type error.
+func TestConcurrencyFromBodyIgnoresAnEmptyObject(t *testing.T) {
+	if got := concurrencyFromBody(map[string]interface{}{"concurrency": map[string]interface{}{}}); got != nil {
+		t.Errorf("an empty concurrency object should read as unset, got %#v", got)
 	}
 }

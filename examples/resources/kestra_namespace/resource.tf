@@ -18,4 +18,16 @@ EOT
     match    = "ALL"
     fallback = "WAIT"
   }
+
+  # cap how many executions of this namespace and its descendants run at once
+  concurrency {
+    limit    = 5
+    behavior = "QUEUE"
+  }
+
+  quotas {
+    duration = "PT1H"
+    limit    = 50
+    behavior = "FAIL"
+  }
 }

@@ -31,10 +31,12 @@ data "kestra_namespace" "example" {
 ### Read-Only
 
 - `allowed_namespaces` (List of Object) The allowed namespaces. (see [below for nested schema](#nestedatt--allowed_namespaces))
+- `concurrency` (List of Object) The concurrency limit applied to the executions of every flow of the namespace and its descendants: `limit` and `behavior`. (see [below for nested schema](#nestedatt--concurrency))
 - `default_worker_selector` (List of Object) The default routing applied to every task of the namespace that does not define its own: `tags`, `match` and `fallback`. (see [below for nested schema](#nestedatt--default_worker_selector))
 - `description` (String) The namespace description.
 - `id` (String) The namespace id.
 - `outputs_in_internal_storage` (Boolean) Whether the task outputs are stored in the internal storage.
+- `quotas` (List of Object) The quotas evaluated before an execution starts: `duration`, `limit` and `behavior`. (see [below for nested schema](#nestedatt--quotas))
 - `secret_configuration` (Dynamic) The namespace secret configuration.
 - `secret_isolation` (List of Object) Secret isolation configuration: `enabled` and `denied_services`. (see [below for nested schema](#nestedatt--secret_isolation))
 - `secret_read_only` (Boolean) Whether the namespace secret manager is read only.
@@ -53,6 +55,15 @@ Read-Only:
 - `namespace` (String)
 
 
+<a id="nestedatt--concurrency"></a>
+### Nested Schema for `concurrency`
+
+Read-Only:
+
+- `behavior` (String)
+- `limit` (Number)
+
+
 <a id="nestedatt--default_worker_selector"></a>
 ### Nested Schema for `default_worker_selector`
 
@@ -61,6 +72,16 @@ Read-Only:
 - `fallback` (String)
 - `match` (String)
 - `tags` (Set of String)
+
+
+<a id="nestedatt--quotas"></a>
+### Nested Schema for `quotas`
+
+Read-Only:
+
+- `behavior` (String)
+- `duration` (String)
+- `limit` (Number)
 
 
 <a id="nestedatt--secret_isolation"></a>

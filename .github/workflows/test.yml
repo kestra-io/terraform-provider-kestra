@@ -130,7 +130,6 @@ jobs:
           terraform_wrapper: false
 
       - name: Terraform acceptance tests
-        continue-on-error: ${{ matrix.kestraVersion == 'develop' }}
         timeout-minutes: 10
         env:
           TF_ACC: "1"
@@ -141,7 +140,6 @@ jobs:
           go test -v -cover ./internal/...
 
       - name: Terraform E2E tests
-        continue-on-error: ${{ matrix.kestraVersion == 'develop' }}
         timeout-minutes: 10
         env:
           TF_ACC: "1"

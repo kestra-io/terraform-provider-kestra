@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -18,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 
 	"github.com/kestra-io/terraform-provider-kestra/internal/provider_v2/sdk_client"
 )
@@ -190,14 +188,9 @@ func (r *tenantResource) Create(ctx context.Context, req resource.CreateRequest,
 		resp.Diagnostics.AddError("Create tenant failed", err.Error())
 		return
 	}
-	plannedConcurrency, plannedQuotas := plan.Concurrency, plan.Quotas
+	configured := snapshotConcurrency(plan.Concurrency, plan.Quotas)
 	resp.Diagnostics.Append(bodyToTenantModel(ctx, out, &plan)...)
-	// A server that predates these fields (2.0.0-rc1) accepts the write but omits
-	// them from the response. They are pure configuration, so the framework
-	// requires the post-write state to match the plan; letting the response clear
-	// them fails the apply outright. Read still treats an absent key as drift, so
-	// a server that ignores them shows up as a diff on the next plan.
-	plan.Concurrency, plan.Quotas = plannedConcurrency, plannedQuotas
+	configured.restore(&plan.Concurrency, &plan.Quotas)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -239,14 +232,9 @@ func (r *tenantResource) Update(ctx context.Context, req resource.UpdateRequest,
 		resp.Diagnostics.AddError("Update tenant failed", err.Error())
 		return
 	}
-	plannedConcurrency, plannedQuotas := plan.Concurrency, plan.Quotas
+	configured := snapshotConcurrency(plan.Concurrency, plan.Quotas)
 	resp.Diagnostics.Append(bodyToTenantModel(ctx, out, &plan)...)
-	// A server that predates these fields (2.0.0-rc1) accepts the write but omits
-	// them from the response. They are pure configuration, so the framework
-	// requires the post-write state to match the plan; letting the response clear
-	// them fails the apply outright. Read still treats an absent key as drift, so
-	// a server that ignores them shows up as a diff on the next plan.
-	plan.Concurrency, plan.Quotas = plannedConcurrency, plannedQuotas
+	configured.restore(&plan.Concurrency, &plan.Quotas)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -298,19 +286,9 @@ func upgradeTenantStateV0(ctx context.Context, req resource.UpgradeStateRequest,
 		SecretConfiguration:      types.MapNull(types.StringType),
 	}
 
-	m.SecretConfiguration = stringMapFromV0(raw["secret_configuration"])
-
-	if sc, ok := raw["storage_configuration"].(map[string]interface{}); ok && len(sc) > 0 {
-		els := map[string]attr.Value{}
-		for k, v := range sc {
-			if s, ok := v.(string); ok {
-				els[k] = types.StringValue(s)
-			}
-		}
-		if mv, diags := basetypes.NewMapValue(types.StringType, els); !diags.HasError() {
-			m.StorageConfiguration = mv
-		}
-	}
+	// V0 state stores these with the same shape as an API body, so they share a decoder.
+	m.SecretConfiguration = stringMapFromBody(raw["secret_configuration"])
+	m.StorageConfiguration = stringMapFromBody(raw["storage_configuration"])
 
 	if ws, ok := raw["default_worker_selector"].([]interface{}); ok && len(ws) > 0 {
 		if mp, ok := ws[0].(map[string]interface{}); ok {
@@ -412,27 +390,17 @@ func bodyToTenantModel(ctx context.Context, body map[string]interface{}, m *tena
 	if name, ok := body["name"].(string); ok {
 		m.Name = types.StringValue(name)
 	}
-	// an absent selector clears the model: the API omits null fields, so absence
-	// means it is genuinely unset and must show up as drift
+	// Every optional field below clears when its key is absent. The API omits null
+	// fields and echoes back everything that is set, so an absent key means the
+	// value is genuinely unset and has to surface as drift rather than leaving a
+	// stale value in state.
 	if ws, ok := body["defaultWorkerSelector"].(map[string]interface{}); ok {
 		m.DefaultWorkerSelector = []workerSelector{workerSelectorFromBody(ws)}
 	} else {
 		m.DefaultWorkerSelector = nil
 	}
-	if st, ok := body["storageType"].(string); ok {
-		m.StorageType = types.StringValue(st)
-	}
-	if sc, ok := body["storageConfiguration"].(map[string]interface{}); ok && len(sc) > 0 {
-		els := map[string]attr.Value{}
-		for k, v := range sc {
-			if s, ok := v.(string); ok {
-				els[k] = types.StringValue(s)
-			}
-		}
-		if mv, diags := basetypes.NewMapValue(types.StringType, els); !diags.HasError() {
-			m.StorageConfiguration = mv
-		}
-	}
+	m.StorageType = optString(body["storageType"])
+	m.StorageConfiguration = stringMapFromBody(body["storageConfiguration"])
 	if len(m.StorageIsolation) > 0 {
 		if si, ok := body["storageIsolation"].(map[string]interface{}); ok {
 			m.StorageIsolation = []isolation{isolationFromBody(ctx, si, m.StorageIsolation[0])}
@@ -443,19 +411,11 @@ func bodyToTenantModel(ctx context.Context, body map[string]interface{}, m *tena
 			m.SecretIsolation = []isolation{isolationFromBody(ctx, si, m.SecretIsolation[0])}
 		}
 	}
-	if st, ok := body["secretType"].(string); ok {
-		m.SecretType = types.StringValue(st)
-	}
-	if sro, ok := body["secretReadOnly"].(bool); ok {
-		m.SecretReadOnly = types.BoolValue(sro)
-	}
+	m.SecretType = optString(body["secretType"])
+	m.SecretReadOnly = optBool(body["secretReadOnly"])
 	m.SecretConfiguration = stringMapFromBody(body["secretConfiguration"])
-	if ren, ok := body["requireExistingNamespace"].(bool); ok {
-		m.RequireExistingNamespace = types.BoolValue(ren)
-	}
-	if oi, ok := body["outputsInInternalStorage"].(bool); ok {
-		m.OutputsInInternalStorage = types.BoolValue(oi)
-	}
+	m.RequireExistingNamespace = optBool(body["requireExistingNamespace"])
+	m.OutputsInInternalStorage = optBool(body["outputsInInternalStorage"])
 	m.Concurrency = concurrencyFromBody(body)
 	m.Quotas = quotasFromBody(body)
 	return nil

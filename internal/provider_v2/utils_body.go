@@ -28,12 +28,6 @@ func stringMapFromBody(raw interface{}) types.Map {
 	return out
 }
 
-// stringMapFromV0 reads a string map out of state written by the SDK v2
-// implementation. The shape is the same as an API body, so it shares the decoder.
-func stringMapFromV0(raw interface{}) types.Map {
-	return stringMapFromBody(raw)
-}
-
 func dynamicFromBody(raw interface{}) types.Dynamic {
 	in, ok := raw.(map[string]interface{})
 	if !ok || len(in) == 0 {

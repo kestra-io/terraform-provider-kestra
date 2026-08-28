@@ -107,6 +107,32 @@ func quotasToBody(list []quota) interface{} {
 	return out
 }
 
+// configuredConcurrency snapshots the planned blocks so a write can restore them
+// over whatever the response carried.
+//
+// The provider supports Kestra 2.0.0-rc1, which is in the CI matrix and which
+// accepts these fields but omits them from the write response. They are pure
+// configuration, so the framework requires the post-write state to match the
+// plan; letting the response clear them fails the apply outright.
+//
+// The restore also masks server-side normalisation: an instance that clamped a
+// limit or rewrote a behavior would land the planned value in state rather than
+// Terraform raising "Provider produced inconsistent result after apply". Read
+// treats an absent or differing key as drift, so either case resurfaces as a
+// diff on the next plan.
+type configuredConcurrency struct {
+	concurrency []concurrency
+	quotas      []quota
+}
+
+func snapshotConcurrency(c []concurrency, q []quota) configuredConcurrency {
+	return configuredConcurrency{concurrency: c, quotas: q}
+}
+
+func (s configuredConcurrency) restore(c *[]concurrency, q *[]quota) {
+	*c, *q = s.concurrency, s.quotas
+}
+
 // concurrencyFromBody mirrors the defaultWorkerSelector handling: the API omits
 // null fields, so an absent key means genuinely unset and has to surface as
 // drift rather than leaving the prior value in place.
@@ -121,6 +147,11 @@ func concurrencyFromBody(body map[string]interface{}) []concurrency {
 	}
 	if behavior, ok := raw["behavior"].(string); ok && behavior != "" {
 		one.Behavior = types.StringValue(behavior)
+	}
+	// Both are Required in the schema, so an empty object would put nulls in state
+	// and fail the apply with an opaque type error. Treat it as unset.
+	if one.Limit.IsNull() && one.Behavior.IsNull() {
+		return nil
 	}
 	return []concurrency{one}
 }

@@ -108,8 +108,12 @@ apply_and_assert_idempotent "$BOOTSTRAP" "scenarioTests/00-bootstrap"
 # from here on a failure must still tear the instance back down
 trap cleanup_scenario EXIT
 
+# stage 00 owns every identity: /api/v1/users/** is super-admin only, so the app user and
+# its token are issued here and merely authorized by stage 10
 PLATFORM_ADMIN_TOKEN="$(tf "$BOOTSTRAP" output -raw platform_admin_api_token)"
+APP_USER_TOKEN="$(tf "$BOOTSTRAP" output -raw app_user_api_token)"
 export TF_VAR_platform_admin_api_token="$PLATFORM_ADMIN_TOKEN"
+export TF_VAR_app_user_id="$(tf "$BOOTSTRAP" output -raw app_user_id)"
 
 apply_and_assert_idempotent "$PLATFORM" "scenarioTests/10-platform"
 
@@ -119,7 +123,7 @@ KESTRA_E2E_TENANT="$KESTRA_TENANT_ID" \
 KESTRA_E2E_USERNAME="$KESTRA_USERNAME" \
 KESTRA_E2E_PASSWORD="$KESTRA_PASSWORD" \
 KESTRA_E2E_ADMIN_TOKEN="$PLATFORM_ADMIN_TOKEN" \
-KESTRA_E2E_USER_TOKEN="$(tf "$PLATFORM" output -raw app_user_api_token)" \
+KESTRA_E2E_USER_TOKEN="$APP_USER_TOKEN" \
 KESTRA_E2E_NAMESPACE="$(tf "$PLATFORM" output -raw namespace)" \
 KESTRA_E2E_FORBIDDEN_NAMESPACE="$(tf "$PLATFORM" output -raw forbidden_namespace)" \
 KESTRA_E2E_FLOW_ID="$(tf "$PLATFORM" output -raw flow_id)" \

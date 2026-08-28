@@ -3,6 +3,11 @@
 # Applied as the platform admin created in stage 00, authenticating with that user's API
 # token. Nothing here runs as the super-admin, which is the point: it is the only place
 # in the repo where the provider is exercised through ordinary RBAC.
+#
+# Identities live in stage 00, not here: /api/v1/users/** is instance-level and
+# super-admin only since 0.24, so a tenant admin cannot create a user, set its password
+# or issue its token. What a tenant admin *can* do — and what this stage does — is grant
+# an existing identity permissions, through a group, a role and a binding.
 
 terraform {
   required_providers {
@@ -94,7 +99,7 @@ resource "kestra_test" "scenario" {
 }
 
 #-------------------------------------------------------------------------------
-# The app user — a regular human who may run this one flow and nothing else
+# Authorization for the app user created in stage 00
 #-------------------------------------------------------------------------------
 resource "kestra_group" "app_users" {
   name        = "e2e-app-users"
@@ -102,11 +107,13 @@ resource "kestra_group" "app_users" {
 }
 
 # Deliberately narrow, so the negative assertions in scenarioTests/runtime have
-# something real to bite on: read and run flows, read their own executions, and nothing
-# else. No CREATE on FLOW, no SECRET, no KVSTORE.
+# something real to bite on: read and run flows, read the resulting executions, and
+# nothing else. No CREATE on FLOW, no SECRET, no KVSTORE.
 #
-# EXECUTE lives on FLOW in Kestra 2.0, while starting a run also needs CREATE on
-# EXECUTION — a role with only one of the two looks plausible and does not work.
+# Every action below appears in internal/provider/migrate_role_permissions.go, which
+# mirrors the API's own vocabulary. The API validates action-per-resource and rejects
+# anything else with a 422, so that file — not the CRUD verbs in the older docs — is the
+# reference to write roles against.
 resource "kestra_role" "launcher" {
   name        = "e2e-launcher"
   description = "View and execute flows; view the resulting executions."
@@ -116,6 +123,8 @@ resource "kestra_role" "launcher" {
     actions = ["VIEW", "LIST"]
   }
 
+  # EXECUTE is a FLOW action in 2.0, while starting a run also needs CREATE on
+  # EXECUTION — a role with only one of the two reads as correct and does not work.
   resources {
     type    = "FLOW"
     actions = ["VIEW", "LIST", "EXECUTE"]
@@ -136,33 +145,10 @@ resource "kestra_binding" "app_users" {
   namespace   = kestra_namespace.allowed.namespace_id
 }
 
-resource "kestra_user" "app_user" {
-  email       = "e2e-app-user@kestra.io"
-  first_name  = "E2E"
-  last_name   = "App User"
-  description = "Regular user. Gets its permissions from the e2e-app-users group."
-}
-
-resource "kestra_user_password" "app_user" {
-  user_id  = kestra_user.app_user.id
-  password = var.app_user_password
-}
-
 # Membership rather than kestra_user.groups: that attribute is a full replacement and
-# would fight anything else managing this user's groups.
+# would fight anything else managing this user's groups. It is also the one piece of
+# identity wiring a tenant admin may do, since it is tenant-scoped.
 resource "kestra_user_group_membership" "app_user" {
-  user_id  = kestra_user.app_user.id
+  user_id  = var.app_user_id
   group_id = kestra_group.app_users.id
-}
-
-resource "kestra_user_api_token" "app_user" {
-  user_id     = kestra_user.app_user.id
-  name        = "e2e-app-user"
-  description = "Used by scenarioTests/runtime to act as the app user."
-  max_age     = "PT2H"
-
-  depends_on = [
-    kestra_user_group_membership.app_user,
-    kestra_binding.app_users,
-  ]
 }

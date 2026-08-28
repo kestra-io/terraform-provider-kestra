@@ -5,9 +5,10 @@
 # resource it manages: Kestra has no API for creating the first super-admin, and
 # `kestra_user` has never exposed the privilege.
 #
-# This is the only stage that uses those break-glass credentials, which is also the only
-# stage a customer would run with them. Everything after this point is applied by the
-# platform admin created here.
+# This stage owns every *identity*, because since 0.24 all of /api/v1/users/** is
+# instance-level and super-admin only — creating a user, setting its password and
+# issuing its API token cannot be done by a tenant admin. Stage 10 owns authorization
+# (groups, roles, bindings), which is tenant-scoped and therefore delegable.
 
 terraform {
   required_providers {
@@ -25,14 +26,22 @@ provider "kestra" {
   tenant_id = var.tenant_id
 }
 
-# The platform admin. An ordinary user — the point is that stage 10 authenticates as
-# this identity rather than as the super-admin, so every resource it manages is
-# exercised through real RBAC instead of through break-glass access.
+# Kestra creates an Admin role per tenant. Binding it beats hand-writing a permission
+# matrix: the valid actions differ per resource in ways that are easy to get wrong and
+# the API rejects (SECRET, for instance, has no CREATE — secrets are created through
+# UPDATE). It is also what a customer would actually do.
+data "kestra_role" "admin" {
+  name = "Admin"
+}
+
+#-------------------------------------------------------------------------------
+# The platform admin — the identity stage 10 applies as
+#-------------------------------------------------------------------------------
 resource "kestra_user" "platform_admin" {
   email       = "e2e-platform-admin@kestra.io"
   first_name  = "E2E"
   last_name   = "Platform Admin"
-  description = "Manages the scenario platform in stage 10. Created by scenarioTests/00-bootstrap."
+  description = "Applies scenarioTests/10-platform. Created by scenarioTests/00-bootstrap."
 }
 
 resource "kestra_user_password" "platform_admin" {
@@ -40,77 +49,14 @@ resource "kestra_user_password" "platform_admin" {
   password = var.platform_admin_password
 }
 
-# Permissions this admin needs to build the platform in stage 10.
-#
-# Actions are the Kestra 2.0 fine-grained vocabulary, not the pre-2.0 CRUD verbs. The
-# old READ/CREATE/UPDATE/DELETE names still round-trip through the API, so a role
-# written with them looks correct in state and in a plan while granting nothing — see
-# internal/provider/migrate_role_permissions.go for the full mapping.
-resource "kestra_role" "platform_admin" {
-  name        = "e2e-platform-admin"
-  description = "Full management of the scenario namespaces and their IAM."
-
-  resources {
-    type    = "NAMESPACE"
-    actions = ["VIEW", "LIST", "CREATE", "UPDATE", "DELETE", "MANAGE_FILES", "EXPORT_PLUGIN_DEFAULTS", "IMPORT_PLUGIN_DEFAULTS"]
-  }
-
-  resources {
-    type    = "FLOW"
-    actions = ["VIEW", "LIST", "EXPORT", "CREATE", "IMPORT", "UPDATE", "EXECUTE", "DISABLE", "ENABLE", "VALIDATE", "DELETE"]
-  }
-
-  resources {
-    type    = "EXECUTION"
-    actions = ["VIEW", "LIST", "ACCESS_LOGS", "ACCESS_OUTPUTS", "ACCESS_FILES", "EXPORT", "FOLLOW", "CREATE", "UPDATE", "RESTART", "KILL", "REPLAY", "PAUSE", "RESUME", "CHANGE_LABELS", "UNQUEUE", "FORCE_RUN", "DELETE"]
-  }
-
-  resources {
-    type    = "SECRET"
-    actions = ["VIEW", "LIST", "CREATE", "UPDATE", "DELETE"]
-  }
-
-  resources {
-    type    = "KVSTORE"
-    actions = ["VIEW", "LIST", "CREATE", "UPDATE", "DELETE"]
-  }
-
-  resources {
-    type    = "TESTSUITE"
-    actions = ["VIEW", "LIST", "CREATE", "UPDATE", "DELETE"]
-  }
-
-  resources {
-    type    = "ROLE"
-    actions = ["VIEW", "LIST", "CREATE", "UPDATE", "DELETE"]
-  }
-
-  resources {
-    type    = "BINDING"
-    actions = ["VIEW", "LIST", "CREATE", "DELETE"]
-  }
-
-  resources {
-    type    = "GROUP"
-    actions = ["VIEW", "LIST", "CREATE", "UPDATE", "MANAGE_MEMBERS", "DELETE"]
-  }
-
-  resources {
-    type    = "USER"
-    actions = ["VIEW", "LIST", "CREATE", "UPDATE", "MANAGE_GROUP_MEMBERSHIP", "DELETE"]
-  }
-}
-
-# Tenant-wide: no `namespace`, because stage 10 creates the namespaces and cannot be
-# scoped to namespaces that do not exist yet.
 resource "kestra_binding" "platform_admin" {
   type        = "USER"
   external_id = kestra_user.platform_admin.id
-  role_id     = kestra_role.platform_admin.id
+  role_id     = data.kestra_role.admin.role_id
 }
 
-# How stage 10 authenticates. The binding must exist first or the token is issued to an
-# identity with no permissions and stage 10 fails on its first read.
+# The binding must exist before the token is issued, or stage 10 authenticates as an
+# identity with no permissions and fails on its first read.
 resource "kestra_user_api_token" "platform_admin" {
   user_id     = kestra_user.platform_admin.id
   name        = "e2e-platform-admin"
@@ -118,4 +64,27 @@ resource "kestra_user_api_token" "platform_admin" {
   max_age     = "PT2H"
 
   depends_on = [kestra_binding.platform_admin]
+}
+
+#-------------------------------------------------------------------------------
+# The app user — a regular human. Deliberately gets no binding here: stage 10 grants
+# its permissions through a group, so this identity starts with none.
+#-------------------------------------------------------------------------------
+resource "kestra_user" "app_user" {
+  email       = "e2e-app-user@kestra.io"
+  first_name  = "E2E"
+  last_name   = "App User"
+  description = "Regular user. Permissions come from the group stage 10 puts it in."
+}
+
+resource "kestra_user_password" "app_user" {
+  user_id  = kestra_user.app_user.id
+  password = var.app_user_password
+}
+
+resource "kestra_user_api_token" "app_user" {
+  user_id     = kestra_user.app_user.id
+  name        = "e2e-app-user"
+  description = "Used by scenarioTests/runtime to act as the app user."
+  max_age     = "PT2H"
 }

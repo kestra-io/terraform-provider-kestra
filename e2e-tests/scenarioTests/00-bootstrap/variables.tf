@@ -29,3 +29,10 @@ variable "platform_admin_password" {
   default     = "E2ePlatformAdmin!1234"
   sensitive   = true
 }
+
+variable "app_user_password" {
+  description = "Basic-auth password set on the app user, so the account is usable in the UI when debugging a failed run."
+  type        = string
+  default     = "E2eAppUser!1234"
+  sensitive   = true
+}

@@ -16,9 +16,7 @@ variable "platform_admin_api_token" {
   sensitive   = true
 }
 
-variable "app_user_password" {
-  description = "Basic-auth password set on the app user, so the account is usable in the UI when debugging a failed run."
+variable "app_user_id" {
+  description = "Id of the app user created by scenarioTests/00-bootstrap."
   type        = string
-  default     = "E2eAppUser!1234"
-  sensitive   = true
 }

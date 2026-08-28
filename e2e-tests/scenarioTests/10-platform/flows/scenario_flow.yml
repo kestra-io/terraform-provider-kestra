@@ -1,0 +1,29 @@
+id: e2e_scenario_flow
+namespace: io.kestra.e2escenario.allowed
+
+# Deliberately reads a secret, a KV entry and a namespace file, so one successful
+# execution validates four provider resources at once instead of one.
+
+inputs:
+  - id: greeting
+    type: STRING
+    defaults: hello
+
+tasks:
+  - id: read_secret
+    type: io.kestra.plugin.core.log.Log
+    # length only — never log the value itself
+    message: "secret resolved, length={{ secret('E2E_SCENARIO_TOKEN') | length }}"
+
+  - id: read_namespace_file
+    type: io.kestra.plugin.core.log.Log
+    message: "namespace file: {{ read('scenario-marker.txt') }}"
+
+  - id: return
+    type: io.kestra.plugin.core.debug.Return
+    format: "{{ inputs.greeting }}:{{ kv('E2E_SCENARIO_KV') }}"
+
+outputs:
+  - id: result
+    type: STRING
+    value: "{{ outputs.return.value }}"

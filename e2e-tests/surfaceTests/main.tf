@@ -109,10 +109,12 @@ EOT
     fallback = "WAIT"
   }
 
-  storage_type = "s3"
+  # Kestra 2.0 validates these against the backends actually present. s3 storage and
+  # aws-secret-manager are plugins and the EE image ships none, so the old fake values
+  # now fail with "No storage interface can be found for 'kestra.storage.type=s3'".
+  storage_type = "local"
   storage_configuration = {
-    bucket = "my-namespace-bucket"
-    region = "eu-west-1"
+    basePath = "/app/storage/e2e-namespace"
   }
 
   storage_isolation {
@@ -126,13 +128,9 @@ EOT
   }
 
   secret_read_only = false
-  secret_type = "aws-secret-manager"
+  secret_type = "elasticsearch"
   secret_configuration = {
-
-    accessKeyId = "mysuperaccesskey"
-    secretKeyId = "mysupersecretkey"
-    sessionToken = "mysupersessiontoken"
-    region = "us-east-1"
+    secret = "e2e-namespace-elasticsearch-secret-32min"
   }
 
   outputs_in_internal_storage = true
@@ -173,10 +171,9 @@ resource "kestra_tenant" "exahhhmple" {
     fallback = "FAIL"
   }
 
-  storage_type = "s3"
+  storage_type = "local"
   storage_configuration = {
-    bucket = "my-tenant-bucket"
-    region = "eu-west-1"
+    basePath = "/app/storage/e2e-tenant"
   }
 
   storage_isolation {
@@ -189,13 +186,10 @@ resource "kestra_tenant" "exahhhmple" {
     denied_services = []
   }
 
-  secret_type = "aws-secret-manager"
+  secret_type = "elasticsearch"
   secret_read_only = true
   secret_configuration = {
-    accessKeyId = "mysuperaccesskey"
-    secretKeyId = "mysupersecretkey"
-    sessionToken = "mysupersessiontoken"
-    region = "us-east-1"
+    secret = "e2e-tenant-elasticsearch-secret-key-32min"
   }
 
   require_existing_namespace = false

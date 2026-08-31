@@ -110,21 +110,20 @@ resource "kestra_group" "app_users" {
 # something real to bite on: read and run flows, read the resulting executions, and
 # nothing else. No CREATE on FLOW, no SECRET, no KVSTORE.
 #
-# Every action below appears in internal/provider/migrate_role_permissions.go, which
-# mirrors the API's own vocabulary. The API validates action-per-resource and rejects
-# anything else with a 422, so that file — not the CRUD verbs in the older docs — is the
-# reference to write roles against.
+# The action sets below are taken from Kestra's own managed roles, which are the
+# authoritative reference: GET /api/v1/{tenant}/roles/launcher_{tenant} (and
+# admin_{tenant}) return exactly the valid resource/action pairs. The API rejects
+# anything else with a 422, and neither the published permissions reference (still on the
+# pre-2.0 CRUD verbs) nor migrate_role_permissions.go (a migration map — it emits
+# SECRET CREATE and EXECUTION CREATE, both refused) can be trusted for this.
+#
+# The one that catches people: EXECUTION has no CREATE. Starting a flow run is gated
+# solely by FLOW EXECUTE. NAMESPACE is absent here for the same reason it is absent from
+# the managed Launcher role — viewing flows does not require it.
 resource "kestra_role" "launcher" {
   name        = "e2e-launcher"
   description = "View and execute flows; view the resulting executions."
 
-  resources {
-    type    = "NAMESPACE"
-    actions = ["VIEW", "LIST"]
-  }
-
-  # EXECUTE is a FLOW action in 2.0, while starting a run also needs CREATE on
-  # EXECUTION — a role with only one of the two reads as correct and does not work.
   resources {
     type    = "FLOW"
     actions = ["VIEW", "LIST", "EXECUTE"]
@@ -132,7 +131,7 @@ resource "kestra_role" "launcher" {
 
   resources {
     type    = "EXECUTION"
-    actions = ["VIEW", "LIST", "CREATE", "ACCESS_LOGS", "ACCESS_OUTPUTS", "FOLLOW"]
+    actions = ["VIEW", "LIST", "ACCESS_LOGS", "ACCESS_OUTPUTS", "FOLLOW"]
   }
 }
 

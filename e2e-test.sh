@@ -83,7 +83,11 @@ apply_and_assert_idempotent() {
 # Suite A — surface
 #-------------------------------------------------------------------------------
 SURFACE="$E2E/surfaceTests"
-rm -f "$SURFACE"/terraform.tfstate*
+# State is deliberately kept between runs. The original script deleted it on every run,
+# which orphaned everything the previous run created and made the suite impossible to
+# re-run against an instance that was not freshly wiped. Keeping it lets Terraform
+# refresh: on a fresh instance the reads 404, the resources drop out of state, and the
+# apply recreates them.
 apply_and_assert_idempotent "$SURFACE" "surfaceTests"
 
 #-------------------------------------------------------------------------------
@@ -92,11 +96,20 @@ apply_and_assert_idempotent "$SURFACE" "surfaceTests"
 BOOTSTRAP="$E2E/scenarioTests/00-bootstrap"
 PLATFORM="$E2E/scenarioTests/10-platform"
 
+# A failed teardown is a finding, not a warning: it means a delete path is broken, and it
+# leaves resources behind that make the next run collide. Record it and fail the run.
+destroy_failed=0
 cleanup_scenario() {
   step "scenarioTests: destroy (reverse order)"
-  tf "$PLATFORM" destroy -auto-approve || echo "⚠️  10-platform destroy failed"
-  tf "$BOOTSTRAP" destroy -auto-approve || echo "⚠️  00-bootstrap destroy failed"
+  tf "$PLATFORM" destroy -auto-approve || { echo "❌ 10-platform destroy failed"; destroy_failed=1; }
+  tf "$BOOTSTRAP" destroy -auto-approve || { echo "❌ 00-bootstrap destroy failed"; destroy_failed=1; }
+  [ "$destroy_failed" -eq 0 ] || exit 1
 }
+
+# Unlike surfaceTests, the scenario stages are created and destroyed within a single run,
+# so their state has no value across runs — carrying it over only risks handing the
+# runtime a credential from a previous run whose server-side token is long gone.
+rm -f "$BOOTSTRAP"/terraform.tfstate* "$PLATFORM"/terraform.tfstate*
 
 export TF_VAR_kestra_url="$KESTRA_URL"
 export TF_VAR_tenant_id="$KESTRA_TENANT_ID"

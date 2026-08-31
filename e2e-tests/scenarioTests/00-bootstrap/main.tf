@@ -112,15 +112,27 @@ resource "kestra_binding" "platform_admin" {
   role_id     = kestra_role.platform_admin.id
 }
 
+# Two orderings matter here.
+#
 # The binding must exist before the token is issued, or stage 10 authenticates as an
 # identity with no permissions and fails on its first read.
+#
+# The password must also be set before the token is issued. An API token is stored on the
+# user document, alongside the `auths` array that a password write replaces, so a
+# concurrent PATCH .../password and POST .../api-tokens is a lost update: the password
+# write wins and the token silently disappears. Terraform happily runs both in parallel
+# because neither depends on the other, which made this fail intermittently — the token
+# was created, reported as created, and was gone by the time anything tried to use it.
 resource "kestra_user_api_token" "platform_admin" {
   user_id     = kestra_user.platform_admin.id
   name        = "e2e-platform-admin"
   description = "Used by scenarioTests/10-platform."
   max_age     = "PT2H"
 
-  depends_on = [kestra_binding.platform_admin]
+  depends_on = [
+    kestra_binding.platform_admin,
+    kestra_user_password.platform_admin,
+  ]
 }
 
 #-------------------------------------------------------------------------------
@@ -144,4 +156,8 @@ resource "kestra_user_api_token" "app_user" {
   name        = "e2e-app-user"
   description = "Used by scenarioTests/runtime to act as the app user."
   max_age     = "PT2H"
+
+  # see the note on the platform admin's token: the password write would otherwise race
+  # this and drop the token
+  depends_on = [kestra_user_password.app_user]
 }

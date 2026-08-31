@@ -81,7 +81,8 @@ jobs:
     name: Matrix Test
     needs: [build, list-versions]
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # must exceed the sum of its steps: acceptance (10) + e2e (15) + env setup
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
@@ -142,14 +143,24 @@ jobs:
 
       - name: Terraform E2E tests
         continue-on-error: ${{ matrix.kestraVersion == 'develop' }}
-        timeout-minutes: 10
+        timeout-minutes: 15
         env:
           TF_ACC: "1"
           KESTRA_URL: "http://127.27.27.27:8080"
           KESTRA_USERNAME: root@root.com
           KESTRA_PASSWORD: Root!1234
         run: |
-          sh e2e-test.sh
+          bash e2e-test.sh
+
+      - name: Upload E2E diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-diagnostics-${{ matrix.kestraVersion }}-tf${{ matrix.terraform }}
+          path: |
+            terraform-trace.log
+          retention-days: 7
+          if-no-files-found: ignore
 
   notify-failure:
     name: Notify CI failure

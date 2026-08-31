@@ -1,0 +1,12 @@
+id: e2e_forbidden_flow
+namespace: io.kestra.e2escenario.forbidden
+
+# Exists only so stage 20 can prove the app user cannot reach it. This namespace is a
+# *sibling* of the one the user is bound to, not a child: Kestra inherits bindings down
+# the namespace tree, so a nested namespace would be granted access and the assertion
+# would quietly pass for the wrong reason.
+
+tasks:
+  - id: noop
+    type: io.kestra.plugin.core.log.Log
+    message: the app user must never be able to read or run this

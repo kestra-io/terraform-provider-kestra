@@ -1,0 +1,13 @@
+id: e2e_scenario_testsuite
+namespace: io.kestra.e2escenario.allowed
+description: asserts the scenario flow returns the greeting joined to the KV value
+flowId: e2e_scenario_flow
+testCases:
+  - id: returns_greeting_and_kv
+    type: io.kestra.core.tests.flow.UnitTest
+    fixtures:
+      inputs:
+        greeting: "hi"
+    assertions:
+      - value: "{{ outputs.return.value }}"
+        equalTo: "hi:e2e-kv-value"

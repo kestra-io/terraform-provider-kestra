@@ -70,8 +70,8 @@ func asSuperAdmin(t *testing.T) *client {
 type request struct {
 	method string
 	path   string // appended to /api/v1/{tenant}, or to /api/v1 when instance is set
-	// instance targets a non-tenant-scoped route, e.g. /tenants or /users. Kestra moved
-	// these out from under the tenant segment in 0.23.
+	// instance targets a non-tenant-scoped route, e.g. /tenants or /users, which do not
+	// live under the tenant segment.
 	instance bool
 	query    url.Values
 	form     map[string]string // sent as multipart/form-data

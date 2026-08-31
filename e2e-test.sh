@@ -22,10 +22,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 E2E="$ROOT/e2e-tests"
 
-# Only the filename of the locally built plugin. Deliberately not a released version:
-# the suites declare no version constraint, because dev_overrides never evaluates one.
-# This used to be "0.24.0" on both sides, which was never a release of this provider —
-# the confusion came from Kestra's own 0.24 release.
+# Only the filename of the locally built plugin, never a released version: the suites
+# declare no version constraint because dev_overrides never evaluates one.
 PROVIDER_VERSION="0.0.0-dev"
 
 KESTRA_URL="${KESTRA_URL:-http://localhost:8088}"

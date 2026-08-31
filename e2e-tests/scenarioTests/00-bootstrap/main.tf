@@ -5,18 +5,17 @@
 # resource it manages: Kestra has no API for creating the first super-admin, and
 # `kestra_user` has never exposed the privilege.
 #
-# This stage owns every *identity*, because since Kestra 0.24 all of /api/v1/users/** is
-# instance-level and super-admin only — creating a user, setting its password and
-# issuing its API token cannot be done by a tenant admin. Stage 10 owns authorization
-# (groups, roles, bindings), which is tenant-scoped and therefore delegable.
+# This stage owns every *identity*: /api/v1/users/** is instance-level and super-admin
+# only, so creating a user, setting its password and issuing its API token cannot be done
+# by a tenant admin. Stage 10 owns authorization — groups, roles, bindings — which is
+# tenant-scoped and therefore delegable.
 
 terraform {
   required_providers {
     kestra = {
-      # No version constraint on purpose. These suites always run against the provider
-      # built from the working tree via dev_overrides, which ignores version constraints
-      # entirely — so a pin here is never evaluated and can only misinform. (It used to
-      # say 0.24.0, which was never a release of this provider; the latest is 1.x.)
+      # No version constraint on purpose: these suites always run against the provider
+      # built from the working tree via dev_overrides, which never evaluates one. A pin
+      # here cannot protect anything and can only misinform.
       source = "kestra-io/kestra"
     }
   }

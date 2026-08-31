@@ -1,8 +1,11 @@
 terraform {
   required_providers {
     kestra = {
+      # No version constraint on purpose. These suites always run against the provider
+      # built from the working tree via dev_overrides, which ignores version constraints
+      # entirely — so a pin here is never evaluated and can only misinform. (It used to
+      # say 0.24.0, which was never a release of this provider; the latest is 1.x.)
       source = "kestra-io/kestra"
-      version = "0.24.0"
     }
   }
 }

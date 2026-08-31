@@ -26,12 +26,69 @@ provider "kestra" {
   tenant_id = var.tenant_id
 }
 
-# Kestra creates an Admin role per tenant. Binding it beats hand-writing a permission
-# matrix: the valid actions differ per resource in ways that are easy to get wrong and
-# the API rejects (SECRET, for instance, has no CREATE — secrets are created through
-# UPDATE). It is also what a customer would actually do.
-data "kestra_role" "admin" {
-  name = "Admin"
+# Permissions stage 10 needs. Written out rather than looked up: Kestra creates an Admin
+# role per tenant and the ES fixtures seed more, so `data.kestra_role` by name resolves
+# to several matches in this environment and fails.
+#
+# The action vocabulary is the 2.0 fine-grained one and the API validates the
+# resource/action *pair*, rejecting a bad one with a 422. Two traps are encoded below:
+#
+#   * SECRET has no CREATE. A secret is created through UPDATE — the permissions
+#     reference says so explicitly, and the API returns
+#     "Action CREATE is not valid for resource SECRET".
+#   * BINDING has no UPDATE. Bindings are immutable; they are created and deleted.
+#
+# internal/provider/migrate_role_permissions.go is the closest in-repo reference for the
+# vocabulary, but it is a migration map rather than the API's validation table — it emits
+# SECRET CREATE, which the API refuses. Trust the API.
+resource "kestra_role" "platform_admin" {
+  name        = "e2e-platform-admin"
+  description = "Manages the scenario namespaces and their IAM. Created by scenarioTests/00-bootstrap."
+
+  resources {
+    type    = "NAMESPACE"
+    actions = ["VIEW", "LIST", "CREATE", "UPDATE", "DELETE", "MANAGE_FILES"]
+  }
+
+  resources {
+    type    = "FLOW"
+    actions = ["VIEW", "LIST", "CREATE", "UPDATE", "DELETE"]
+  }
+
+  resources {
+    type    = "EXECUTION"
+    actions = ["VIEW", "LIST"]
+  }
+
+  resources {
+    type    = "SECRET"
+    actions = ["VIEW", "LIST", "UPDATE", "DELETE"]
+  }
+
+  resources {
+    type    = "KVSTORE"
+    actions = ["VIEW", "LIST", "CREATE", "UPDATE", "DELETE"]
+  }
+
+  resources {
+    type    = "TESTSUITE"
+    actions = ["VIEW", "LIST", "CREATE", "UPDATE", "DELETE"]
+  }
+
+  resources {
+    type    = "ROLE"
+    actions = ["VIEW", "LIST", "CREATE", "UPDATE", "DELETE"]
+  }
+
+  resources {
+    type    = "BINDING"
+    actions = ["VIEW", "LIST", "CREATE", "DELETE"]
+  }
+
+  resources {
+    type    = "GROUP"
+    actions = ["VIEW", "LIST", "CREATE", "UPDATE", "DELETE", "MANAGE_MEMBERS"]
+  }
 }
 
 #-------------------------------------------------------------------------------
@@ -52,7 +109,7 @@ resource "kestra_user_password" "platform_admin" {
 resource "kestra_binding" "platform_admin" {
   type        = "USER"
   external_id = kestra_user.platform_admin.id
-  role_id     = data.kestra_role.admin.role_id
+  role_id     = kestra_role.platform_admin.id
 }
 
 # The binding must exist before the token is issued, or stage 10 authenticates as an

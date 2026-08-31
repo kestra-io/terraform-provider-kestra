@@ -50,14 +50,26 @@ jobs:
           mkdir -p ../../docs/content/docs/13.terraform/
           cp -R * ../../docs/content/docs/13.terraform/
 
-      - name: Push change to docs
-        uses: stefanzweifel/git-auto-commit-action@v7
+      - name: Generate docs app token
+        id: docs-app-token
+        uses: actions/create-github-app-token@v3
         with:
-          commit_message: "feat(docs): update terraform docs"
-          branch: main
-          file_pattern: 'content/docs/13.terraform/*'
-          repository: "docs"
-          pull_before_commit: true
+          app-id: ${{ secrets.GH_BOT_APP_ID }}
+          private-key: ${{ secrets.GH_BOT_PRIVATE_KEY }}
+          owner: kestra-io
+          repositories: docs
+
+      - name: Open PR with docs change
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ steps.docs-app-token.outputs.token }}
+          path: docs
+          commit-message: "feat(docs): update terraform docs"
+          branch: "chore/terraform-docs-${{ github.ref_name }}"
+          base: main
+          add-paths: 'content/docs/13.terraform/*'
+          title: "feat(docs): update terraform docs (${{ github.ref_name }})"
+          body: "Automated docs update triggered by terraform-provider-kestra release ${{ github.ref_name }}."
 
       - name: Slack - Notify CI failure
         if: failure()

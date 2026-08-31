@@ -90,6 +90,81 @@ SURFACE="$E2E/surfaceTests"
 apply_and_assert_idempotent "$SURFACE" "surfaceTests"
 
 #-------------------------------------------------------------------------------
+# Suite A2 — concurrency limits and quotas (conditional)
+#-------------------------------------------------------------------------------
+CONCURRENCY="$E2E/concurrencyTests"
+
+# These fields landed in Kestra 2.0 after 2.0.0-rc1. An instance that predates them
+# accepts the field and drops it silently rather than rejecting the request, so writing
+# one and reading it back is the only way to tell. Mirrors testAccPreCheckConcurrency.
+concurrency_supported() {
+  local ns="io.kestra.terraform.e2econcurrencyprobe"
+  local base="$KESTRA_URL/api/v1/$KESTRA_TENANT_ID/namespaces"
+  curl -fsS -u "$KESTRA_USERNAME:$KESTRA_PASSWORD" -H 'Content-Type: application/json' \
+    -X POST -d "{\"id\":\"$ns\",\"deleted\":false,\"concurrency\":{\"limit\":1,\"behavior\":\"QUEUE\"}}" \
+    "$base" >/dev/null 2>&1 || return 1
+  local got
+  got=$(curl -fsS -u "$KESTRA_USERNAME:$KESTRA_PASSWORD" "$base/$ns" 2>/dev/null)
+  curl -fsS -u "$KESTRA_USERNAME:$KESTRA_PASSWORD" -X DELETE "$base/$ns" >/dev/null 2>&1 || true
+  printf '%s' "$got" | grep -q '"concurrency"'
+}
+
+# The bug this feature closes: both resources replace the whole entity on write, so a
+# limit set from the UI or the API used to be wiped by the next apply that touched the
+# namespace. That is only observable against a live instance — mutate the value out of
+# band, and require Terraform to report drift rather than quietly agreeing.
+assert_concurrency_drift() {
+  local ns="$1" configured="$2"
+  local base="$KESTRA_URL/api/v1/$KESTRA_TENANT_ID/namespaces"
+  local mutated=$((configured + 1))
+
+  step "concurrencyTests: a limit changed out of band must show up as drift"
+
+  # writes replace the entity, so send the current body back with only the limit changed
+  local body
+  body=$(curl -fsS -u "$KESTRA_USERNAME:$KESTRA_PASSWORD" "$base/$ns") || return 1
+  body=$(printf '%s' "$body" | python3 -c "
+import json,sys
+d = json.load(sys.stdin)
+d.setdefault('concurrency', {})['limit'] = $mutated
+print(json.dumps(d))
+") || return 1
+  curl -fsS -u "$KESTRA_USERNAME:$KESTRA_PASSWORD" -H 'Content-Type: application/json' \
+    -X PUT -d "$body" "$base/$ns" >/dev/null || return 1
+  echo "set the limit to $mutated behind Terraform's back (configured: $configured)"
+
+  local code=0
+  tf "$CONCURRENCY" plan -detailed-exitcode >/dev/null || code=$?
+  case $code in
+    2) echo "✅ drift detected" ;;
+    0) echo "❌ plan is empty — a limit changed outside Terraform is invisible, which is the bug this feature closes"; return 1 ;;
+    *) echo "❌ plan failed"; return 1 ;;
+  esac
+
+  step "concurrencyTests: apply must restore the configured limit"
+  tf "$CONCURRENCY" apply -auto-approve >/dev/null || return 1
+  code=0
+  tf "$CONCURRENCY" plan -detailed-exitcode >/dev/null || code=$?
+  [ "$code" -eq 0 ] || { echo "❌ plan still not empty after re-apply"; return 1; }
+  echo "✅ restored, plan empty again"
+}
+
+rm -f "$CONCURRENCY"/terraform.tfstate*
+if concurrency_supported; then
+  apply_and_assert_idempotent "$CONCURRENCY" "concurrencyTests"
+  assert_concurrency_drift \
+    "$(tf "$CONCURRENCY" output -raw namespace)" \
+    "$(tf "$CONCURRENCY" output -raw concurrency_limit)" \
+    || { tf "$CONCURRENCY" destroy -auto-approve >/dev/null 2>&1 || true; exit 1; }
+  step "concurrencyTests: destroy"
+  tf "$CONCURRENCY" destroy -auto-approve || { echo "❌ concurrencyTests destroy failed"; exit 1; }
+else
+  step "concurrencyTests: skipped"
+  echo "⏭  this instance accepts concurrency/quotas but does not return them, so it"
+  echo "   predates the fields (they landed in Kestra 2.0 after 2.0.0-rc1)."
+fi
+
+#-------------------------------------------------------------------------------
 # Suite B — scenario
 #-------------------------------------------------------------------------------
 BOOTSTRAP="$E2E/scenarioTests/00-bootstrap"

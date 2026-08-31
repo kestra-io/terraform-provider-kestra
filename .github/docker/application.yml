@@ -30,13 +30,16 @@ kestra:
       base-path: "/app/storage"
   queue:
     type: kafka
+  # Kestra 2.0 dropped the built-in Vault secret backend: rc2 fails to start with
+  # "No secret interface can be found for 'kestra.secret.type=vault'. Supported types
+  # are: [elasticsearch,jdbc]". Elasticsearch matches the repository backend already
+  # configured above, and nothing in the tests depends on Vault specifically — the
+  # `secret_type = "vault"` values in the namespace/tenant tests are free-form
+  # per-namespace config strings, unrelated to this instance-level setting.
   secret:
-    type: vault
-    vault:
-      address: "http://vault:8200"
-      password:
-        user: john
-        password: foo
+    type: elasticsearch
+    elasticsearch:
+      secret: "e2e-tests-elasticsearch-secret-key-32min"
   ee:
     tenants:
       enabled: true

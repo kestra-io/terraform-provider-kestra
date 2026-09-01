@@ -148,6 +148,15 @@ resource "kestra_user" "app_user" {
   description = "Regular user. Permissions come from the group stage 10 puts it in."
 }
 
+# Since Kestra 2.0 tenant access is a prerequisite rather than something granted as a
+# side effect: stage 10 puts this user in a group, and that write resolves the user
+# through a tenant access check and 404s without this. Granted here, as root, rather
+# than in stage 10: the platform admin stage 10 authenticates as is not necessarily
+# permitted to hand out tenant access.
+resource "kestra_user_tenant_access" "app_user" {
+  user_id = kestra_user.app_user.id
+}
+
 resource "kestra_user_password" "app_user" {
   user_id  = kestra_user.app_user.id
   password = var.app_user_password

@@ -26,14 +26,22 @@ func TestAccUserGroupMembership(t *testing.T) {
 			}
 		}
 
+		resource "kestra_user_tenant_access" "alice" {
+			user_id = kestra_user.alice.id
+		}
+
 		resource "kestra_user_group_membership" "alice_platform" {
 			user_id  = kestra_user.alice.id
 			group_id = kestra_group.platform.id
+
+			depends_on = [kestra_user_tenant_access.alice]
 		}
 
 		resource "kestra_user_group_membership" "alice_data" {
 			user_id  = kestra_user.alice.id
 			group_id = kestra_group.data.id
+
+			depends_on = [kestra_user_tenant_access.alice]
 		}
 	`, suffix)
 

@@ -14,7 +14,6 @@ type execution struct {
 	State struct {
 		Current string `json:"current"`
 	} `json:"state"`
-	Outputs     map[string]any `json:"outputs"`
 	TaskRunList []struct {
 		TaskID string `json:"taskId"`
 		State  struct {
@@ -56,13 +55,22 @@ func TestAppUserRunsFlowSuccessfully(t *testing.T) {
 			exec.ID, exec.State.Current, taskStates(exec), truncate(body))
 	}
 
+	// Flow-level outputs are fetched rather than read off the execution: Kestra 2.0.0-rc9
+	// moved them out of the execution into their own table, served from this endpoint, so
+	// the payload above no longer carries them. Reading them as the app user also needs
+	// EXECUTION ACCESS_OUTPUTS, which the launcher role grants.
+	outputs := decode[map[string]any](t, c.expectOK(t, request{
+		method: "GET",
+		path:   fmt.Sprintf("/outputs/executions/%s", exec.ID),
+	}), "execution outputs")
+
 	// Proves the input reached the flow (first half) and that the KV entry resolved
 	// (second half). A greeting sent the wrong way would silently fall back to the
 	// flow's default and show up here.
 	want := greeting + ":" + env(t, "KESTRA_E2E_KV_VALUE")
-	got, ok := exec.Outputs["result"].(string)
+	got, ok := outputs["result"].(string)
 	if !ok {
-		t.Fatalf("execution %s has no string output \"result\"; outputs=%v", exec.ID, exec.Outputs)
+		t.Fatalf("execution %s has no string output \"result\"; outputs=%v", exec.ID, outputs)
 	}
 	if got != want {
 		t.Errorf("flow output = %q, want %q — the input, the KV entry or both did not reach the flow", got, want)

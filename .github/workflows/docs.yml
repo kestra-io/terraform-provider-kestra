@@ -30,25 +30,9 @@ jobs:
 
       - name: Transform docs for website
         run: |
-          cd terraform-provider-kestra/docs/
-          
-          find  -type f -name "*.md" -exec sed -i 's/subcategory: ""/editLink: false/g' {} +
-          find . -type f -name "*.md" -exec sed -i 's/```terraform/```hcl/g' {} +
-          
-          find data-sources -type f -name "*.md" -exec sed -Ei  's/page_title: "([^ ]+).*"/title: \1/g' {} +
-          find resources -type f -name "*.md" -exec sed -Ei  's/page_title: "([^ ]+).*"/title: \1/g' {} +
-          find guides -type f -name "*.md" -exec sed -Ei  's/page_title: "([^"]+)"/title: \1/g' {} +
-          
-          find . -type f -name "*.md" -exec sed -Ei  's/^-> (.*)/::alert{type="info"}\n\1\n::/g' {} +
-          find . -type f -name "*.md" -exec sed -Ei  's/^~> (.*)/::alert{type="warning"}\n\1\n::/g' {} +
-          find . -type f -name "*.md" -exec sed -Ei  's/^!> (.*)/::alert{type="danger"}\n\1\n::/g' {} +
-          
-          sed -Ei  's/page_title: "([^ ]+).*"/title: Provider configurations/g' index.md
-          sed -Ei  's/^# kestra Provider/# Provider configurations/g' index.md
-          mv index.md guides/configurations.md
-          
-          mkdir -p ../../docs/content/docs/13.terraform/
-          cp -R * ../../docs/content/docs/13.terraform/
+          terraform-provider-kestra/.github/scripts/docs-to-website.sh \
+            terraform-provider-kestra/docs \
+            docs/src/contents/docs/13.terraform
 
       - name: Generate docs app token
         id: docs-app-token
@@ -65,7 +49,8 @@ jobs:
         run: |
           cd docs
           BRANCH="chore/terraform-docs-${{ github.ref_name }}"
-          git add content/docs/13.terraform/
+          git add src/contents/docs/13.terraform/
+          git rm -r --quiet --ignore-unmatch content/docs/13.terraform
           git diff --cached --quiet && { echo "No docs changes, skipping."; exit 0; }
           git checkout -b "$BRANCH"
           git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \

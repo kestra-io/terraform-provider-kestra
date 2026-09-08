@@ -154,7 +154,7 @@ jobs:
 
       - name: Upload E2E diagnostics
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-diagnostics-${{ matrix.kestraVersion }}-tf${{ matrix.terraform }}
           path: |

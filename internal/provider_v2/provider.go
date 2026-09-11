@@ -102,8 +102,9 @@ func (p *kestraProvider) Schema(ctx context.Context, req provider.SchemaRequest,
 }
 
 type ProviderData struct {
-	Client   *kestra_api_client.APIClient
-	TenantId string
+	Client       *kestra_api_client.APIClient
+	KestraClient *kestra_api_client.KestraClient
+	TenantId     string
 }
 
 func (p *kestraProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
@@ -237,8 +238,9 @@ func (p *kestraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	// Make client and tenantId available during DataSource and Resource type Configure methods.
 	providerData := &ProviderData{
-		Client:   client,
-		TenantId: tenantId,
+		Client:       client,
+		KestraClient: sdk_client.NewKestraClient(url, int64(timeout), username, password, jwt, apiToken, &extraHeaders),
+		TenantId:     tenantId,
 	}
 	resp.DataSourceData = providerData
 	resp.ResourceData = providerData
@@ -249,6 +251,7 @@ func (p *kestraProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewTestResource,
 		NewNamespaceResource,
 		NewPolicyResource,
+		NewReusableInputsResource,
 		NewTenantResource,
 		NewWorkerGroupResource,
 		NewWorkerQueueResource,
@@ -260,6 +263,7 @@ func (p *kestraProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewTestDataSource,
 		NewNamespaceDataSource,
 		NewPolicyDataSource,
+		NewReusableInputsDataSource,
 		NewTenantDataSource,
 		NewWorkerGroupDataSource,
 		NewWorkerQueueDataSource,

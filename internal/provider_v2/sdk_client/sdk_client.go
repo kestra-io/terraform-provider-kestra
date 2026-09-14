@@ -18,26 +18,42 @@ func NewClient(ctx context.Context, url string, timeout int64, username *string,
 		},
 	}
 
-	defaultHeaders := map[string]string{}
-	if (username != nil) && (password != nil) {
-		auth := base64.StdEncoding.EncodeToString([]byte(*username + ":" + *password))
-		defaultHeaders["Authorization"] = "Basic " + auth
-	}
-	if jwt != nil && *jwt != "" {
-		cookieHeader := "JWT=" + *jwt
-		defaultHeaders["Cookie"] = cookieHeader
-	}
-	if apiToken != nil && *apiToken != "" {
-		defaultHeaders["Authorization"] = "Bearer " + *apiToken
-	}
-	if extraHeaders != nil {
-		for k, v := range *extraHeaders {
-			defaultHeaders[k] = v
-		}
-	}
-	configuration.DefaultHeader = defaultHeaders
+	configuration.DefaultHeader = defaultHeaders(username, password, jwt, apiToken, extraHeaders)
 
 	apiClient := kestra_api_client.NewAPIClient(configuration)
 
 	return apiClient, nil
+}
+
+// defaultHeaders builds the headers applied to every request. Later entries win:
+// an api token overrides basic auth, and extra headers override both.
+func defaultHeaders(username *string, password *string, jwt *string, apiToken *string, extraHeaders *map[string]string) map[string]string {
+	headers := map[string]string{}
+	if (username != nil) && (password != nil) {
+		auth := base64.StdEncoding.EncodeToString([]byte(*username + ":" + *password))
+		headers["Authorization"] = "Basic " + auth
+	}
+	if jwt != nil && *jwt != "" {
+		headers["Cookie"] = "JWT=" + *jwt
+	}
+	if apiToken != nil && *apiToken != "" {
+		headers["Authorization"] = "Bearer " + *apiToken
+	}
+	if extraHeaders != nil {
+		for k, v := range *extraHeaders {
+			headers[k] = v
+		}
+	}
+	return headers
+}
+
+// NewKestraClient builds the hand-written client from the same configuration as NewClient.
+// Auth goes through plain headers because WithBasicAuth/WithTokenAuth outrank an
+// Authorization entry from extraHeaders, inverting the precedence used above.
+func NewKestraClient(url string, timeout int64, username *string, password *string, jwt *string, apiToken *string, extraHeaders *map[string]string) *kestra_api_client.KestraClient {
+	return kestra_api_client.NewClient(
+		url,
+		kestra_api_client.WithHTTPClient(&http.Client{Timeout: time.Duration(timeout) * time.Second}),
+		kestra_api_client.WithHeaders(defaultHeaders(username, password, jwt, apiToken, extraHeaders)),
+	)
 }

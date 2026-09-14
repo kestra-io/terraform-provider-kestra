@@ -104,7 +104,7 @@ func (r *reusableInputsResource) Schema(_ context.Context, _ resource.SchemaRequ
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages a Kestra Reusable Inputs block (EE): a named, namespace-scoped set of input " +
 			"definitions that flows reference via a `REUSABLE_INPUTS` input. Its YAML source is persisted by the " +
-			"API and round-tripped verbatim. Requires Kestra EE 2.0.1 or later.",
+			"API and round-tripped verbatim.",
 		Attributes: reusableInputsSchema(),
 	}
 }

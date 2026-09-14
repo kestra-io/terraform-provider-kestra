@@ -3,12 +3,12 @@
 page_title: "kestra_reusable_inputs Resource - terraform-provider-kestra"
 subcategory: ""
 description: |-
-  Manages a Kestra Reusable Inputs block (EE): a named, namespace-scoped set of input definitions that flows reference via a REUSABLE_INPUTS input. Its YAML source is persisted by the API and round-tripped verbatim. Requires Kestra EE 2.0.1 or later.
+  Manages a Kestra Reusable Inputs block (EE): a named, namespace-scoped set of input definitions that flows reference via a REUSABLE_INPUTS input. Its YAML source is persisted by the API and round-tripped verbatim.
 ---
 
 # kestra_reusable_inputs (Resource)
 
-Manages a Kestra Reusable Inputs block (EE): a named, namespace-scoped set of input definitions that flows reference via a `REUSABLE_INPUTS` input. Its YAML source is persisted by the API and round-tripped verbatim. Requires Kestra EE 2.0.1 or later.
+Manages a Kestra Reusable Inputs block (EE): a named, namespace-scoped set of input definitions that flows reference via a `REUSABLE_INPUTS` input. Its YAML source is persisted by the API and round-tripped verbatim.
 
 ## Example Usage
 

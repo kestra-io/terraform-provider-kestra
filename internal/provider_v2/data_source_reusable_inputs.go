@@ -27,7 +27,7 @@ func (d *reusableInputsDataSource) Metadata(_ context.Context, req datasource.Me
 
 func (d *reusableInputsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Reads a Kestra Reusable Inputs block (EE). Requires Kestra EE 2.0.1 or later.",
+		MarkdownDescription: "Reads a Kestra Reusable Inputs block (EE).",
 		Attributes: map[string]schema.Attribute{
 			"reusable_inputs_id": schema.StringAttribute{
 				MarkdownDescription: "The reusable inputs block id.",

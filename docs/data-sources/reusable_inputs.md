@@ -3,12 +3,12 @@
 page_title: "kestra_reusable_inputs Data Source - terraform-provider-kestra"
 subcategory: ""
 description: |-
-  Reads a Kestra Reusable Inputs block (EE). Requires Kestra EE 2.0.1 or later.
+  Reads a Kestra Reusable Inputs block (EE).
 ---
 
 # kestra_reusable_inputs (Data Source)
 
-Reads a Kestra Reusable Inputs block (EE). Requires Kestra EE 2.0.1 or later.
+Reads a Kestra Reusable Inputs block (EE).
 
 ## Example Usage
 

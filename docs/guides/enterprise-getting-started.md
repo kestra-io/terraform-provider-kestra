@@ -13,6 +13,14 @@ This guide shows how to manage a Kestra Enterprise Edition instance with Terrafo
 Use a fresh Kestra Enterprise instance, or an existing one. The first time, you need an account that can create service accounts (for example the basic auth super admin created during the instance setup).
 
 ```hcl
+terraform {
+  required_providers {
+    kestra = {
+      source = "kestra-io/kestra"
+    }
+  }
+}
+
 provider "kestra" {
   url      = "http://localhost:8080"
   username = var.kestra_admin_username
@@ -55,6 +63,12 @@ resource "kestra_role" "admin" {
   resources {
     type    = "FLOW"
     actions = ["VIEW", "LIST", "CREATE", "UPDATE", "DELETE"]
+  }
+
+  # needed when a flow creates a new namespace
+  resources {
+    type    = "NAMESPACE"
+    actions = ["VIEW", "LIST", "CREATE"]
   }
 }
 

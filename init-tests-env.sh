@@ -112,7 +112,7 @@ echo ""
 echo "--------------------------------------------"
 echo ""
 echo "create unit_test tenant using Kestra API"
-curl --fail-with-body -sS -u 'root@root.com:Root!1234' -X POST -H 'Content-Type: application/json' -d '{"id":"unit_test","name":"Unit Test"}' "127.27.27.27:8080/api/v1/tenants"
+curl --fail-with-body -sS -u 'root@root.com:Root!1234' -X POST -H 'Content-Type: application/json' -d '{"id":"unit_test","name":"Unit Test","type":"STANDARD"}' "127.27.27.27:8080/api/v1/tenants"
 
 echo ""
 echo "--------------------------------------------"

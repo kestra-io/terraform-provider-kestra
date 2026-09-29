@@ -10,7 +10,19 @@ This guide shows how to manage a Kestra Enterprise Edition instance with Terrafo
 
 ## 1. Start an instance
 
-Use a fresh Kestra Enterprise instance, or an existing one. The first time, you need an account that can create service accounts (for example the basic auth super admin created during the instance setup).
+Use a fresh Kestra Enterprise instance, or an existing one. The first time, you need an account that can create service accounts: the Instance Owner. It is created at startup from the Kestra configuration (`application.yml`):
+
+```yaml
+kestra:
+  security:
+    instance-owner:
+      username: admin@example.com
+      password: a-strong-password
+```
+
+-> `kestra.security.super-admin` is the deprecated name of `kestra.security.instance-owner`.
+
+The provider works in a tenant, `main` by default. A fresh instance has no tenant yet, so create one first (from the UI or the API) and set `tenant_id` on the provider (see step 4) if you don't use `main`.
 
 ```hcl
 terraform {
@@ -28,13 +40,13 @@ provider "kestra" {
 }
 ```
 
-## 2. Create a service account with super admin rights
+## 2. Create a service account with Instance Owner permissions
 
 ```hcl
 resource "kestra_service_account" "terraform" {
   name        = "terraform"
   description = "Used by Terraform to manage this instance"
-  super_admin = true
+  super_admin = true # makes the service account an Instance Owner
 }
 
 resource "kestra_service_account_api_token" "terraform" {
@@ -54,7 +66,7 @@ Apply it, then read the token once with `terraform output -raw terraform_api_tok
 
 ## 3. Give the service account access to tenant data
 
-A super admin manages the instance (tenants, service accounts, users...), but it does not see the data inside a tenant such as flows, namespaces or executions. If you want to terraform tenant data, bind a role to the service account:
+An Instance Owner manages the instance (tenants, service accounts, users...), but it does not see the data inside a tenant such as flows, namespaces or executions. If you want to terraform tenant data, bind a role to the service account:
 
 ```hcl
 resource "kestra_role" "admin" {
@@ -73,7 +85,7 @@ resource "kestra_role" "admin" {
 }
 
 resource "kestra_binding" "terraform" {
-  type        = "USER"
+  type        = "USER" # service accounts are bound as "USER"
   external_id = kestra_service_account.terraform.id
   role_id     = kestra_role.admin.id
 }

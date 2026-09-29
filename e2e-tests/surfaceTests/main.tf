@@ -98,9 +98,9 @@ resource "kestra_flow" "complex-test-suite-flow" {
   content   = file("./data/complex-test-suite/extract-flow.yml")
 }
 resource "kestra_test" "complex-testsuite" {
-  namespace = "io.kestra.terraform.e2e.data.weather"
-  test_id   = "extract-testsuite"
-  content   = file("./data/complex-test-suite/extract-testsuite.yml")
+  namespace  = "io.kestra.terraform.e2e.data.weather"
+  test_id    = "extract-testsuite"
+  content    = file("./data/complex-test-suite/extract-testsuite.yml")
   depends_on = [kestra_flow.complex-test-suite-flow]
 }
 

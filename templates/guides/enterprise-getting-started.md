@@ -46,7 +46,7 @@ provider "kestra" {
 resource "kestra_service_account" "terraform" {
   name        = "terraform"
   description = "Used by Terraform to manage this instance"
-  super_admin = true # makes the service account an Instance Owner
+  super_admin = true # Instance Owner
 }
 
 resource "kestra_service_account_api_token" "terraform" {
@@ -61,6 +61,8 @@ output "terraform_api_token" {
   sensitive = true
 }
 ```
+
+-> In the UI this is called **Instance Owner**. The provider schema still names the attribute `super_admin`: `super_admin = true` makes the service account an Instance Owner.
 
 Apply it, then read the token once with `terraform output -raw terraform_api_token` and store it in your secret manager.
 

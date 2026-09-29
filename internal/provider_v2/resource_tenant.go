@@ -315,6 +315,8 @@ func tenantModelToBody(ctx context.Context, m *tenantModel) (map[string]interfac
 	body := map[string]interface{}{
 		"id":   m.TenantId.ValueString(),
 		"name": m.Name.ValueString(),
+		// Kestra develop rejects a create or update without a type; STANDARD is what older versions defaulted to.
+		"type": "STANDARD",
 	}
 
 	if len(m.DefaultWorkerSelector) > 0 {

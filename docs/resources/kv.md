@@ -23,6 +23,7 @@ Manages a Kestra Key-Value pair.
 
 ### Optional
 
+- `description` (String) An optional description for the Key-Value pair.
 - `type` (String) The type of the value. If not provided, we will try to deduce the type based on the value. Useful in case you provide numbers, booleans, dates or json that you want to be stored as string. Accepted values are: STRING, NUMBER, BOOLEAN, DATETIME, DATE, DURATION, JSON.
 
 ### Read-Only

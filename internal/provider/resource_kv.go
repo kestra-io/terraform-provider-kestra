@@ -53,6 +53,11 @@ func resourceKv() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"description": {
+				Description: "An optional description for the Key-Value pair.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -90,6 +95,10 @@ func resourceKvSet(ctx context.Context, d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	_, descriptionExists := d.GetOkExists("description")
+	if descriptionExists {
+		req.Header.Set("description", d.Get("description").(string))
+	}
 
 	_, _, reqErr := c.rawResponseRequest(httpMethod, req)
 	if reqErr != nil {
@@ -120,7 +129,7 @@ func resourceKvRead(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.FromErr(err)
 	}
 
-	_, body, reqErr := c.rawResponseRequest("GET", req)
+	_, body, headers, reqErr := c.rawResponseRequestWithHeaders("GET", req)
 	if reqErr != nil {
 		if reqErr.StatusCode == http.StatusNotFound {
 			d.SetId("")
@@ -165,6 +174,9 @@ func resourceKvRead(ctx context.Context, d *schema.ResourceData, meta interface{
 		value = fmt.Sprint(kvResponsePtr.Value)
 	}
 	if err := d.Set("value", value); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("description", headers.Get("description")); err != nil {
 		return diag.FromErr(err)
 	}
 

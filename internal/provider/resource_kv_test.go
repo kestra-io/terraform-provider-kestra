@@ -17,10 +17,11 @@ func TestAccKv(t *testing.T) {
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccResourceKv(
+				Config: testAccResourceKvWithDescription(
 					"io.kestra.terraform",
 					"string",
 					"stringValue",
+					"A sample key-value description",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
@@ -31,6 +32,9 @@ func TestAccKv(t *testing.T) {
 					),
 					resource.TestCheckResourceAttr(
 						"kestra_kv.new", "value", "stringValue",
+					),
+					resource.TestCheckResourceAttr(
+						"kestra_kv.new", "description", "A sample key-value description",
 					),
 					resource.TestCheckNoResourceAttr(
 						"kestra_kv.new", "type",
@@ -48,6 +52,17 @@ func TestAccKv(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"kestra_kv.new", "value", "stringValue",
 					),
+				),
+			},
+			{
+				Config: testAccResourceKvWithDescription(
+					"io.kestra.terraform",
+					"string",
+					"stringValue",
+					"Updated key-value description",
+				),
+				Check: resource.TestCheckResourceAttr(
+					"kestra_kv.new", "description", "Updated key-value description",
 				),
 			},
 			{
@@ -212,6 +227,16 @@ func TestAccKv(t *testing.T) {
 
 func testAccResourceKv(namespace string, key string, value string) string {
 	return testAccResourceKvWithType(namespace, key, value, "")
+}
+
+func testAccResourceKvWithDescription(namespace, key, value, description string) string {
+	return fmt.Sprintf(`
+        resource "kestra_kv" "new" {
+            namespace = %q
+			key = %q
+            value = %q
+			description = %q
+        }`, namespace, key, value, description)
 }
 
 func testAccResourceKvWithType(namespace string, key string, value string, valueType string) string {

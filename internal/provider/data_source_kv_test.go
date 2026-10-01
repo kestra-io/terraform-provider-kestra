@@ -22,6 +22,9 @@ func TestAccDataSourceKv(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.kestra_kv.new", "value", "stringValue",
 					),
+					resource.TestCheckResourceAttr(
+						"data.kestra_kv.new", "description", "A sample KV description",
+					),
 				),
 			},
 			{

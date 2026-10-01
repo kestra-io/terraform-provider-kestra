@@ -41,6 +41,11 @@ func dataSourceKv() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"description": {
+				Description: "The description of the Key-Value pair.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -60,7 +65,7 @@ func dataSourceKvRead(ctx context.Context, d *schema.ResourceData, meta interfac
 		return diag.FromErr(err)
 	}
 
-	_, body, reqErr := c.rawResponseRequest("GET", req)
+	_, body, headers, reqErr := c.rawResponseRequestWithHeaders("GET", req)
 	if reqErr != nil {
 		if reqErr.StatusCode == http.StatusNotFound {
 			d.SetId("")
@@ -105,6 +110,9 @@ func dataSourceKvRead(ctx context.Context, d *schema.ResourceData, meta interfac
 		value = fmt.Sprint(kvResponsePtr.Value)
 	}
 	if err := d.Set("value", value); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("description", headers.Get("description")); err != nil {
 		return diag.FromErr(err)
 	}
 

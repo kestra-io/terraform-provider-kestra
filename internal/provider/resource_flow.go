@@ -20,6 +20,7 @@ func resourceFlow() *schema.Resource {
 		UpdateContext: resourceFlowUpdate,
 		DeleteContext: resourceFlowDelete,
 		Identity: &schema.ResourceIdentity{
+			Version: 1,
 			SchemaFunc: func() map[string]*schema.Schema {
 				return map[string]*schema.Schema{
 					"namespace": {
@@ -300,10 +301,23 @@ func setFlowIdentity(d *schema.ResourceData) diag.Diagnostics {
 		return diag.FromErr(err)
 	}
 
-	if err := identity.Set("namespace", d.Get("namespace").(string)); err != nil {
+	namespace, _ := d.Get("namespace").(string)
+	flowID, _ := d.Get("flow_id").(string)
+
+	if namespace == "" || flowID == "" {
+		namespaceFromID, flowIDFromID := flowConvertId(d.Id())
+		if namespace == "" {
+			namespace = namespaceFromID
+		}
+		if flowID == "" {
+			flowID = flowIDFromID
+		}
+	}
+
+	if err := identity.Set("namespace", namespace); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := identity.Set("flow_id", d.Get("flow_id").(string)); err != nil {
+	if err := identity.Set("flow_id", flowID); err != nil {
 		return diag.FromErr(err)
 	}
 

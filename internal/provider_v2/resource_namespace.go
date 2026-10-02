@@ -268,9 +268,6 @@ func (r *namespaceResource) Create(ctx context.Context, req resource.CreateReque
 	resp.Diagnostics.Append(resp.Identity.Set(ctx, namespaceIdentityModel{
 		NamespaceId: plan.NamespaceId,
 	})...)
-	resp.Diagnostics.Append(resp.Identity.Set(ctx, namespaceIdentityModel{
-		NamespaceId: plan.NamespaceId,
-	})...)
 }
 
 func (r *namespaceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -318,6 +315,9 @@ func (r *namespaceResource) Update(ctx context.Context, req resource.UpdateReque
 	resp.Diagnostics.Append(bodyToNamespaceModel(ctx, out, r.providerData.TenantId, &plan)...)
 	configured.restore(&plan.Concurrency, &plan.Quotas)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, namespaceIdentityModel{
+		NamespaceId: plan.NamespaceId,
+	})...)
 }
 
 func (r *namespaceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {

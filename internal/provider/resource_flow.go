@@ -12,6 +12,11 @@ import (
 
 type ResourceFlow struct{}
 
+// NewFlowResource exposes the SDKv2 flow resource to the Framework list resource bridge.
+func NewFlowResource() *schema.Resource {
+	return resourceFlow()
+}
+
 func resourceFlow() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Manages a Kestra Flow.",

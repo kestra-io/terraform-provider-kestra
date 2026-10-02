@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -28,6 +29,7 @@ import (
 var (
 	_ resource.Resource                 = &namespaceResource{}
 	_ resource.ResourceWithImportState  = &namespaceResource{}
+	_ resource.ResourceWithIdentity     = &namespaceResource{}
 	_ resource.ResourceWithConfigure    = &namespaceResource{}
 	_ resource.ResourceWithUpgradeState = &namespaceResource{}
 )
@@ -38,6 +40,10 @@ func NewNamespaceResource() resource.Resource {
 
 type namespaceResource struct {
 	providerData ProviderData
+}
+
+type namespaceIdentityModel struct {
+	NamespaceId types.String `tfsdk:"namespace_id"`
 }
 
 type namespaceModel struct {
@@ -80,6 +86,17 @@ type isolation struct {
 
 func (r *namespaceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_namespace"
+}
+
+func (r *namespaceResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityschema.Schema{
+		Version: 1,
+		Attributes: map[string]identityschema.Attribute{
+			"namespace_id": identityschema.StringAttribute{
+				RequiredForImport: true,
+			},
+		},
+	}
 }
 
 func (r *namespaceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -248,6 +265,9 @@ func (r *namespaceResource) Create(ctx context.Context, req resource.CreateReque
 	resp.Diagnostics.Append(bodyToNamespaceModel(ctx, out, r.providerData.TenantId, &plan)...)
 	configured.restore(&plan.Concurrency, &plan.Quotas)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, namespaceIdentityModel{
+		NamespaceId: plan.NamespaceId,
+	})...)
 }
 
 func (r *namespaceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -268,6 +288,9 @@ func (r *namespaceResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 	resp.Diagnostics.Append(bodyToNamespaceModel(ctx, out, r.providerData.TenantId, &state)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, namespaceIdentityModel{
+		NamespaceId: state.NamespaceId,
+	})...)
 }
 
 func (r *namespaceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -292,6 +315,9 @@ func (r *namespaceResource) Update(ctx context.Context, req resource.UpdateReque
 	resp.Diagnostics.Append(bodyToNamespaceModel(ctx, out, r.providerData.TenantId, &plan)...)
 	configured.restore(&plan.Concurrency, &plan.Quotas)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, namespaceIdentityModel{
+		NamespaceId: plan.NamespaceId,
+	})...)
 }
 
 func (r *namespaceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -307,8 +333,20 @@ func (r *namespaceResource) Delete(ctx context.Context, req resource.DeleteReque
 }
 
 func (r *namespaceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("namespace_id"), req.ID)...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
+	if req.ID != "" {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("namespace_id"), req.ID)...)
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
+		return
+	}
+
+	var identityData namespaceIdentityModel
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identityData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("namespace_id"), identityData.NamespaceId)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), identityData.NamespaceId)...)
 }
 
 func (r *namespaceResource) UpgradeState(_ context.Context) map[int64]resource.StateUpgrader {

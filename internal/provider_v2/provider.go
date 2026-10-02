@@ -6,18 +6,19 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	sdkv2schema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/kestra-io/client-sdk/go-sdk/v2/kestra_api_client"
 	"github.com/kestra-io/terraform-provider-kestra/internal/provider_v2/sdk_client"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ provider.Provider = &kestraProvider{}
+	_ provider.Provider                  = &kestraProvider{}
 	_ provider.ProviderWithListResources = &kestraProvider{}
 )
 
@@ -25,7 +26,8 @@ type kestraProvider struct {
 	// version is set to the provider version on release, "dev" when the
 	// provider is built and ran locally, and "test" when running acceptance
 	// testing.
-	version string
+	version             string
+	flowResourceFactory func() *sdkv2schema.Resource
 }
 
 // exampleProviderModel maps provider schema data to a Go type.
@@ -41,10 +43,11 @@ type kestraProviderModel struct {
 	KeepOriginalSource types.Bool   `tfsdk:"keep_original_source"`
 }
 
-func New(version string) func() provider.Provider {
+func New(version string, flowResourceFactory func() *sdkv2schema.Resource) func() provider.Provider {
 	return func() provider.Provider {
 		return &kestraProvider{
-			version: version,
+			version:             version,
+			flowResourceFactory: flowResourceFactory,
 		}
 	}
 }
@@ -263,7 +266,9 @@ func (p *kestraProvider) Resources(ctx context.Context) []func() resource.Resour
 
 func (p *kestraProvider) ListResources(ctx context.Context) []func() list.ListResource {
 	return []func() list.ListResource{
-		NewFlowListResource,
+		func() list.ListResource {
+			return NewFlowListResource(p.flowResourceFactory)
+		},
 		NewNamespaceListResource,
 	}
 }

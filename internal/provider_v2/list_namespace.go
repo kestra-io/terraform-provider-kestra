@@ -34,7 +34,7 @@ func (r *namespaceListResource) ListResourceConfigSchema(_ context.Context, _ li
 	resp.Schema = listschema.Schema{}
 }
 
-func (r *namespaceListResource) Configure(_ context.Context, req list.ConfigureRequest, resp *list.ConfigureResponse) {
+func (r *namespaceListResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	providerData, ok := req.ProviderData.(*ProviderData)
 	if !ok || providerData == nil {
 		resp.Diagnostics.AddError(

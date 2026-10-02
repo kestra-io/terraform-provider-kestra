@@ -1,10 +1,10 @@
-package provider_test
+package provider_query_test
 
 import (
 	"context"
 	"fmt"
-	"strings"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -145,12 +145,11 @@ list "kestra_namespace" "limited_namespaces" {
 	})
 }
 
-
 var queryMuxProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
 	"kestra": func() (tfprotov5.ProviderServer, error) {
 		ctx := context.Background()
 		providers := []func() tfprotov5.ProviderServer{
-			providerserver.NewProtocol5(provider_v2.New("test")()),
+			providerserver.NewProtocol5(provider_v2.New("test", provider.NewFlowResource)()),
 			provider.New("test", nil)().GRPCProvider,
 		}
 		mux, err := tf5muxserver.NewMuxServer(ctx, providers...)

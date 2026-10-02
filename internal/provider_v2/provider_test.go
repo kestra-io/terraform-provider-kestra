@@ -3,6 +3,7 @@ package provider_v2
 import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/kestra-io/terraform-provider-kestra/internal/provider"
 	"os"
 	"testing"
 )
@@ -26,7 +27,7 @@ var (
 	// CLI command executed to create a provider server to which the CLI can
 	// reattach.
 	testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-		"kestra": providerserver.NewProtocol6WithError(New("acc_test_version")()),
+		"kestra": providerserver.NewProtocol6WithError(New("acc_test_version", provider.NewFlowResource)()),
 	}
 )
 

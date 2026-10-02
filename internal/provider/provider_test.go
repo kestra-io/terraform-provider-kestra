@@ -1,12 +1,17 @@
 package provider
 
 import (
+	"context"
 	"io"
 	"os"
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/hashicorp/terraform-plugin-mux/tf5muxserver"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/kestra-io/terraform-provider-kestra/internal/provider_v2"
 )
 
 // providerFactories are used to instantiate a provider during acceptance testing.
@@ -24,6 +29,21 @@ var providerFactoriesKOSFalse = map[string]func() (*schema.Provider, error){
 		provider := New("dev", nil)()
 		provider.Schema["keep_original_source"].Default = false
 		return provider, nil
+	},
+}
+
+var muxProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
+	"kestra": func() (tfprotov5.ProviderServer, error) {
+		ctx := context.Background()
+		providers := []func() tfprotov5.ProviderServer{
+			providerserver.NewProtocol5(provider_v2.New("test", NewFlowResource)()),
+			New("test", nil)().GRPCProvider,
+		}
+		mux, err := tf5muxserver.NewMuxServer(ctx, providers...)
+		if err != nil {
+			return nil, err
+		}
+		return mux.ProviderServer(), nil
 	},
 }
 

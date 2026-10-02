@@ -1,11 +1,12 @@
 package provider_v2
 
 import (
+	"os"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/kestra-io/terraform-provider-kestra/internal/provider"
-	"os"
-	"testing"
 )
 
 const (

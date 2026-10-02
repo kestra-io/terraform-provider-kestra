@@ -32,6 +32,9 @@ var providerFactoriesKOSFalse = map[string]func() (*schema.Provider, error){
 	},
 }
 
+// muxProviderFactories wires the SDK v2 provider together with the new
+// framework provider via the same mux server used in main.go, so acceptance
+// tests can reach resources served by either implementation.
 var muxProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
 	"kestra": func() (tfprotov5.ProviderServer, error) {
 		ctx := context.Background()

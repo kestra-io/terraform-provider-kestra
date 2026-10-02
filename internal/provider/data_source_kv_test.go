@@ -22,9 +22,6 @@ func TestAccDataSourceKv(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"data.kestra_kv.new", "value", "stringValue",
 					),
-					resource.TestCheckResourceAttr(
-						"data.kestra_kv.new", "description", "A sample KV description",
-					),
 				),
 			},
 			{
@@ -145,6 +142,24 @@ func TestAccDataSourceKv(t *testing.T) {
 							return fmt.Errorf("unexpected value: %s", value)
 						},
 					),
+				),
+			},
+		},
+	})
+}
+
+func TestAccDataSourceKvDescription(t *testing.T) {
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+			testAccPreCheckKvDescription(t)
+		},
+		ProviderFactories: providerFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccDataSourceKv("io.kestra.terraform.data", "description"),
+				Check: resource.TestCheckResourceAttr(
+					"data.kestra_kv.new", "description", "A data source description with café 東京",
 				),
 			},
 		},

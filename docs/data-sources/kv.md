@@ -22,8 +22,8 @@ Use this data source to access value for an existing Key-Value pair.
 
 ### Read-Only
 
+- `description` (String) The description of the Key-Value pair. Requires Kestra 2.1.0 or later.
 - `id` (String) The ID of this resource.
-- `description` (String) The description of the Key-Value pair.
 - `tenant_id` (String) The tenant id.
 - `type` (String) The type of the value. One of STRING, NUMBER, BOOLEAN, DATETIME, DATE, DURATION, JSON.
 - `value` (String) The fetched value.

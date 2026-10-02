@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -17,11 +18,10 @@ func TestAccKv(t *testing.T) {
 		ProviderFactories: providerFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccResourceKvWithDescription(
+				Config: testAccResourceKv(
 					"io.kestra.terraform",
 					"string",
 					"stringValue",
-					"A sample key-value description",
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
@@ -34,7 +34,7 @@ func TestAccKv(t *testing.T) {
 						"kestra_kv.new", "value", "stringValue",
 					),
 					resource.TestCheckResourceAttr(
-						"kestra_kv.new", "description", "A sample key-value description",
+						"kestra_kv.new", "description", "",
 					),
 					resource.TestCheckNoResourceAttr(
 						"kestra_kv.new", "type",
@@ -52,17 +52,6 @@ func TestAccKv(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"kestra_kv.new", "value", "stringValue",
 					),
-				),
-			},
-			{
-				Config: testAccResourceKvWithDescription(
-					"io.kestra.terraform",
-					"string",
-					"stringValue",
-					"Updated key-value description",
-				),
-				Check: resource.TestCheckResourceAttr(
-					"kestra_kv.new", "description", "Updated key-value description",
 				),
 			},
 			{
@@ -223,6 +212,67 @@ func TestAccKv(t *testing.T) {
 			},
 		},
 	})
+}
+
+func TestAccKvDescription(t *testing.T) {
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+			testAccPreCheckKvDescription(t)
+		},
+		ProviderFactories: providerFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccResourceKvWithDescription(
+					"io.kestra.terraform",
+					"description",
+					"value",
+					"A description with café 東京 🚀",
+				),
+				Check: resource.TestCheckResourceAttr(
+					"kestra_kv.new", "description", "A description with café 東京 🚀",
+				),
+			},
+			{
+				Config: testAccResourceKvWithDescription(
+					"io.kestra.terraform",
+					"description",
+					"value",
+					"Updated description: naïve façade",
+				),
+				Check: resource.TestCheckResourceAttr(
+					"kestra_kv.new", "description", "Updated description: naïve façade",
+				),
+			},
+			{
+				Config: testAccResourceKv("io.kestra.terraform", "description", "value"),
+				Check:  resource.TestCheckResourceAttr("kestra_kv.new", "description", ""),
+			},
+		},
+	})
+}
+
+func testAccPreCheckKvDescription(t *testing.T) {
+	version := strings.TrimPrefix(os.Getenv("KESTRA_VERSION"), "v")
+	if version == "" || version == "develop" {
+		return
+	}
+
+	parts := strings.Split(version, ".")
+	if len(parts) < 2 {
+		t.Fatalf("KESTRA_VERSION %q is not a valid Kestra version", version)
+	}
+	major, err := strconv.Atoi(parts[0])
+	if err != nil {
+		t.Fatalf("KESTRA_VERSION %q is not a valid Kestra version: %v", version, err)
+	}
+	minor, err := strconv.Atoi(parts[1])
+	if err != nil {
+		t.Fatalf("KESTRA_VERSION %q is not a valid Kestra version: %v", version, err)
+	}
+	if major < 2 || (major == 2 && minor < 1) {
+		t.Skipf("KV description headers require Kestra 2.1.0 or later; skipping on %s", version)
+	}
 }
 
 func testAccResourceKv(namespace string, key string, value string) string {

@@ -54,7 +54,7 @@ func resourceKv() *schema.Resource {
 				Required:    true,
 			},
 			"description": {
-				Description: "An optional description for the Key-Value pair.",
+				Description: "An optional description for the Key-Value pair. Requires Kestra 2.1.0 or later.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
@@ -95,10 +95,7 @@ func resourceKvSet(ctx context.Context, d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	_, descriptionExists := d.GetOkExists("description")
-	if descriptionExists {
-		req.Header.Set("description", d.Get("description").(string))
-	}
+	req.Header.Set("description", d.Get("description").(string))
 
 	_, _, reqErr := c.rawResponseRequest(httpMethod, req)
 	if reqErr != nil {

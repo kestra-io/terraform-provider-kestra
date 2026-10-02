@@ -19,6 +19,20 @@ func resourceFlow() *schema.Resource {
 		ReadContext:   resourceFlowRead,
 		UpdateContext: resourceFlowUpdate,
 		DeleteContext: resourceFlowDelete,
+		Identity: &schema.ResourceIdentity{
+			SchemaFunc: func() map[string]*schema.Schema {
+				return map[string]*schema.Schema{
+					"namespace": {
+						Type:              schema.TypeString,
+						RequiredForImport: true,
+					},
+					"flow_id": {
+						Type:              schema.TypeString,
+						RequiredForImport: true,
+					},
+				}
+			},
+		},
 		Schema: map[string]*schema.Schema{
 			"tenant_id": {
 				Description: "The tenant id.",
@@ -52,7 +66,36 @@ func resourceFlow() *schema.Resource {
 			},
 		},
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: func(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+				if d.Id() != "" {
+					return []*schema.ResourceData{d}, nil
+				}
+
+				identity, err := d.Identity()
+				if err != nil {
+					return nil, fmt.Errorf("error getting flow identity: %w", err)
+				}
+
+				namespace, ok := identity.Get("namespace").(string)
+				if !ok || namespace == "" {
+					return nil, fmt.Errorf("flow identity attribute %q must be a non-empty string", "namespace")
+				}
+
+				flowID, ok := identity.Get("flow_id").(string)
+				if !ok || flowID == "" {
+					return nil, fmt.Errorf("flow identity attribute %q must be a non-empty string", "flow_id")
+				}
+
+				if err := d.Set("namespace", namespace); err != nil {
+					return nil, fmt.Errorf("error setting flow namespace: %w", err)
+				}
+				if err := d.Set("flow_id", flowID); err != nil {
+					return nil, fmt.Errorf("error setting flow id: %w", err)
+				}
+
+				d.SetId(fmt.Sprintf("%s/%s", namespace, flowID))
+				return []*schema.ResourceData{d}, nil
+			},
 		},
 	}
 }
@@ -84,6 +127,8 @@ func resourceFlowCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		}
 
 		errs := flowSourceApiToSchema(r.(map[string]interface{}), d, c)
+
+		diags = append(diags, setFlowIdentity(d)...)
 		if errs != nil {
 			return append(diags, errs...)
 		}
@@ -101,6 +146,8 @@ func resourceFlowCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		}
 
 		errs := flowApiToSchema(r.(map[string]interface{}), d, c)
+
+		diags = append(diags, setFlowIdentity(d)...)
 		if errs != nil {
 			return append(diags, errs...)
 		}
@@ -139,6 +186,8 @@ func resourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interfac
 		}
 
 		errs := flowSourceApiToSchema(r.(map[string]interface{}), d, c)
+
+		diags = append(diags, setFlowIdentity(d)...)
 		if errs != nil {
 			return append(diags, errs...)
 		}
@@ -156,6 +205,8 @@ func resourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interfac
 		}
 
 		errs := flowApiToSchema(r.(map[string]interface{}), d, c)
+
+		diags = append(diags, setFlowIdentity(d)...)
 		if errs != nil {
 			return append(diags, errs...)
 		}
@@ -198,6 +249,8 @@ func resourceFlowUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 			}
 
 			errs := flowSourceApiToSchema(r.(map[string]interface{}), d, c)
+
+			diags = append(diags, setFlowIdentity(d)...)
 			if errs != nil {
 				return append(diags, errs...)
 			}
@@ -217,6 +270,8 @@ func resourceFlowUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 			}
 
 			errs := flowApiToSchema(r.(map[string]interface{}), d, c)
+
+			diags = append(diags, setFlowIdentity(d)...)
 			if errs != nil {
 				return append(diags, errs...)
 			}
@@ -243,6 +298,22 @@ func resourceFlowDelete(ctx context.Context, d *schema.ResourceData, meta interf
 	d.SetId("")
 
 	return diags
+}
+
+func setFlowIdentity(d *schema.ResourceData) diag.Diagnostics {
+	identity, err := d.Identity()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := identity.Set("namespace", d.Get("namespace").(string)); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := identity.Set("flow_id", d.Get("flow_id").(string)); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
 }
 
 func validateFlow(client *Client, content string, diags diag.Diagnostics) diag.Diagnostics {

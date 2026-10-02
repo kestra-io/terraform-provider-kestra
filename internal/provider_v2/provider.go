@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/list"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/kestra-io/client-sdk/go-sdk/v2/kestra_api_client"
 	"github.com/kestra-io/terraform-provider-kestra/internal/provider_v2/sdk_client"
@@ -17,6 +18,7 @@ import (
 // Ensure the implementation satisfies the expected interfaces.
 var (
 	_ provider.Provider = &kestraProvider{}
+	_ provider.ProviderWithListResources = &kestraProvider{}
 )
 
 type kestraProvider struct {
@@ -244,6 +246,7 @@ func (p *kestraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	}
 	resp.DataSourceData = providerData
 	resp.ResourceData = providerData
+	resp.ListResourceData = providerData
 }
 
 func (p *kestraProvider) Resources(ctx context.Context) []func() resource.Resource {
@@ -255,6 +258,13 @@ func (p *kestraProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewTenantResource,
 		NewWorkerGroupResource,
 		NewWorkerQueueResource,
+	}
+}
+
+func (p *kestraProvider) ListResources(ctx context.Context) []func() list.ListResource {
+	return []func() list.ListResource{
+		NewFlowListResource,
+		NewNamespaceListResource,
 	}
 }
 

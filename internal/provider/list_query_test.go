@@ -13,7 +13,7 @@ import (
 
 func TestAccQueryFlowList(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck: testAccPreCheck,
+		PreCheck: func() { testAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_14_0),
 		},
@@ -78,7 +78,7 @@ list "kestra_flow" "limited_flows" {
 
 func TestAccQueryNamespaceList(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck: testAccPreCheck,
+		PreCheck: func() { testAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_14_0),
 		},

@@ -127,11 +127,10 @@ func resourceFlowCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		}
 
 		errs := flowSourceApiToSchema(r.(map[string]interface{}), d, c)
-
-		diags = append(diags, setFlowIdentity(d)...)
 		if errs != nil {
 			return append(diags, errs...)
 		}
+		diags = append(diags, setFlowIdentity(d)...)
 
 		return diags
 	} else {
@@ -146,11 +145,10 @@ func resourceFlowCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		}
 
 		errs := flowApiToSchema(r.(map[string]interface{}), d, c)
-
-		diags = append(diags, setFlowIdentity(d)...)
 		if errs != nil {
 			return append(diags, errs...)
 		}
+		diags = append(diags, setFlowIdentity(d)...)
 
 		// Add a warning for JSON creation deprecation
 		diags = append(diags, diag.Diagnostic{
@@ -186,11 +184,10 @@ func resourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interfac
 		}
 
 		errs := flowSourceApiToSchema(r.(map[string]interface{}), d, c)
-
-		diags = append(diags, setFlowIdentity(d)...)
 		if errs != nil {
 			return append(diags, errs...)
 		}
+		diags = append(diags, setFlowIdentity(d)...)
 
 		return diags
 	} else {
@@ -205,11 +202,10 @@ func resourceFlowRead(ctx context.Context, d *schema.ResourceData, meta interfac
 		}
 
 		errs := flowApiToSchema(r.(map[string]interface{}), d, c)
-
-		diags = append(diags, setFlowIdentity(d)...)
 		if errs != nil {
 			return append(diags, errs...)
 		}
+		diags = append(diags, setFlowIdentity(d)...)
 
 		return diags
 	}
@@ -249,11 +245,10 @@ func resourceFlowUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 			}
 
 			errs := flowSourceApiToSchema(r.(map[string]interface{}), d, c)
-
-			diags = append(diags, setFlowIdentity(d)...)
 			if errs != nil {
 				return append(diags, errs...)
 			}
+			diags = append(diags, setFlowIdentity(d)...)
 
 			return diags
 		} else {
@@ -270,11 +265,10 @@ func resourceFlowUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 			}
 
 			errs := flowApiToSchema(r.(map[string]interface{}), d, c)
-
-			diags = append(diags, setFlowIdentity(d)...)
 			if errs != nil {
 				return append(diags, errs...)
 			}
+			diags = append(diags, setFlowIdentity(d)...)
 
 			return diags
 		}

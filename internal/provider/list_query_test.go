@@ -3,6 +3,7 @@ package provider_test
 import (
 	"context"
 	"fmt"
+	"strings"
 	"os"
 	"testing"
 
@@ -87,11 +88,11 @@ list "kestra_flow" "limited_flows" {
 
 func TestAccQueryNamespaceList(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck: func() { testAccPreCheck(t) },
+		PreCheck: func() { queryTestAccPreCheck(t) },
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.SkipBelow(tfversion.Version1_14_0),
 		},
-		ProtoV5ProviderFactories: muxProviderFactories,
+		ProtoV5ProviderFactories: queryMuxProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccResourceFlow(
@@ -189,16 +190,5 @@ EOT
 }
 
 func queryConcat(s ...string) string {
-	return fmt.Sprintf("%s", joinLines(s...))
-}
-
-func joinLines(s ...string) string {
-	result := ""
-	for i, line := range s {
-		if i > 0 {
-			result += "\n"
-		}
-		result += line
-	}
-	return result
+	return strings.Join(s, "\n")
 }

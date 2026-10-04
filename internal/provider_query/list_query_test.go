@@ -77,6 +77,10 @@ list "kestra_flow" "limited_flows" {
 								tfjsonpath.New("flow_id"),
 								knownvalue.StringExact("query-test"),
 							},
+							{
+								tfjsonpath.New("id"),
+								knownvalue.StringExact("io.kestra.terraform.bulkimport/query-test"),
+							},
 						},
 					),
 					querycheck.ExpectLength("kestra_flow.limited_flows", 1),

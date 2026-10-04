@@ -33,6 +33,7 @@ type flowListIdentityModel struct {
 }
 
 type flowListResourceModel struct {
+	ID        types.String `tfsdk:"id"`
 	TenantID  types.String `tfsdk:"tenant_id"`
 	Namespace types.String `tfsdk:"namespace"`
 	FlowID    types.String `tfsdk:"flow_id"`
@@ -154,6 +155,7 @@ func (r *flowListResource) List(ctx context.Context, req list.ListRequest, resp 
 				}
 
 				result.Diagnostics.Append(result.Resource.Set(ctx, flowListResourceModel{
+					ID:        types.StringValue(fmt.Sprintf("%s/%s", fullFlow.GetNamespace(), fullFlow.GetId())),
 					TenantID:  types.StringValue(r.providerData.TenantId),
 					Namespace: types.StringValue(fullFlow.GetNamespace()),
 					FlowID:    types.StringValue(fullFlow.GetId()),

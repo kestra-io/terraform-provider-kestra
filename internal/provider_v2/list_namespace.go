@@ -11,6 +11,7 @@ import (
 	listschema "github.com/hashicorp/terraform-plugin-framework/list/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/kestra-io/client-sdk/go-sdk/v2/kestra_api_client"
 )
 
 var (
@@ -35,6 +36,9 @@ func (r *namespaceListResource) ListResourceConfigSchema(_ context.Context, _ li
 }
 
 func (r *namespaceListResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
 	providerData, ok := req.ProviderData.(*ProviderData)
 	if !ok || providerData == nil {
 		resp.Diagnostics.AddError(
@@ -132,15 +136,20 @@ func (r *namespaceListResource) List(ctx context.Context, req list.ListRequest, 
 				}
 
 				model := namespaceModel{
-					Id:          types.StringValue(namespaceID),
-					TenantId:    types.StringValue(r.providerData.TenantId),
-					NamespaceId: types.StringValue(namespaceID),
+					Id:                   types.StringValue(namespaceID),
+					TenantId:             types.StringValue(r.providerData.TenantId),
+					NamespaceId:          types.StringValue(namespaceID),
+					StorageConfiguration: types.MapNull(types.StringType),
+					SecretConfiguration:  types.DynamicNull(),
 				}
-				if fullNamespace.StorageIsolation != nil {
-					model.StorageIsolation = []isolation{{}}
+				// Kestra always returns both isolation objects, so only seed a block when the
+				// isolation is actually configured; a disabled one would be generated as config
+				// that the imported state never holds, showing drift right after the import.
+				if isolationConfigured(fullNamespace.StorageIsolation) {
+					model.StorageIsolation = []isolation{emptyIsolation()}
 				}
-				if fullNamespace.SecretIsolation != nil {
-					model.SecretIsolation = []isolation{{}}
+				if isolationConfigured(fullNamespace.SecretIsolation) {
+					model.SecretIsolation = []isolation{emptyIsolation()}
 				}
 
 				result.Diagnostics.Append(bodyToNamespaceModel(
@@ -178,4 +187,15 @@ func (r *namespaceListResource) List(ctx context.Context, req list.ListRequest, 
 
 func intPointer(value int) *int {
 	return &value
+}
+
+func isolationConfigured(in *kestra_api_client.Isolation) bool {
+	return in != nil && (in.GetEnabled() || len(in.GetDeniedServices()) > 0)
+}
+
+func emptyIsolation() isolation {
+	return isolation{
+		Enabled:        types.BoolNull(),
+		DeniedServices: types.SetNull(types.StringType),
+	}
 }

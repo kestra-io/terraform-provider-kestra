@@ -56,6 +56,9 @@ func (r *flowListResource) ListResourceConfigSchema(_ context.Context, _ list.Li
 }
 
 func (r *flowListResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
 	providerData, ok := req.ProviderData.(*ProviderData)
 	if !ok || providerData == nil {
 		resp.Diagnostics.AddError(

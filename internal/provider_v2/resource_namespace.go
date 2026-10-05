@@ -90,7 +90,7 @@ func (r *namespaceResource) Metadata(_ context.Context, req resource.MetadataReq
 
 func (r *namespaceResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
 	resp.IdentitySchema = identityschema.Schema{
-		Version: 1,
+		Version: 0,
 		Attributes: map[string]identityschema.Attribute{
 			"namespace_id": identityschema.StringAttribute{
 				RequiredForImport: true,

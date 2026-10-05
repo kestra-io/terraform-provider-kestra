@@ -246,9 +246,17 @@ func (r *tenantResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 
 	_, status, err := sdk_client.RawRequest(ctx, r.providerData.Client, http.MethodDelete, r.tenantPath(state.TenantId.ValueString()), nil)
-	if err != nil && status != http.StatusNotFound {
-		resp.Diagnostics.AddError("Delete tenant failed", err.Error())
+	if err == nil || status == http.StatusNotFound {
+		return
 	}
+	// Some backends answer 500 "tenantId cannot be null" while the tenant is really deleted (#215).
+	// Only trust that when the tenant is gone, otherwise surface the original error.
+	if status >= http.StatusInternalServerError {
+		if _, getStatus, _ := sdk_client.RawRequest(ctx, r.providerData.Client, http.MethodGet, r.tenantPath(state.TenantId.ValueString()), nil); getStatus == http.StatusNotFound {
+			return
+		}
+	}
+	resp.Diagnostics.AddError("Delete tenant failed", err.Error())
 }
 
 func (r *tenantResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

@@ -132,13 +132,17 @@ func (r *flowListResource) List(ctx context.Context, req list.ListRequest, resp 
 					revision = types.Int64Value(int64(*fullFlow.Revision))
 				}
 
+				// like an import, a listed flow leaves its metadata to content
 				result.Diagnostics.Append(result.Resource.Set(ctx, flowModel{
-					Id:        types.StringValue(fmt.Sprintf("%s/%s", fullFlow.GetNamespace(), fullFlow.GetId())),
-					TenantId:  types.StringValue(r.providerData.TenantId),
-					Namespace: types.StringValue(fullFlow.GetNamespace()),
-					FlowId:    types.StringValue(fullFlow.GetId()),
-					Revision:  revision,
-					Content:   types.StringValue(*fullFlow.Source),
+					Id:          types.StringValue(fmt.Sprintf("%s/%s", fullFlow.GetNamespace(), fullFlow.GetId())),
+					TenantId:    types.StringValue(r.providerData.TenantId),
+					Namespace:   types.StringValue(fullFlow.GetNamespace()),
+					FlowId:      types.StringValue(fullFlow.GetId()),
+					Revision:    revision,
+					Content:     types.StringValue(*fullFlow.Source),
+					Disabled:    types.BoolNull(),
+					Description: types.StringNull(),
+					Labels:      types.MapNull(types.StringType),
 				})...)
 			}
 

@@ -9,8 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 )
 
-// TestFlowUpgradeStateV0 covers state written by the SDK v2 implementation. The attribute
-// names did not change, so everything has to survive the move.
+// TestFlowUpgradeStateV0 covers state written by the SDK v2 implementation. Its attributes
+// carry over unchanged, and the metadata attributes it did not have stay unset, so content
+// keeps managing those keys and the upgrade plans no change.
 func TestFlowUpgradeStateV0(t *testing.T) {
 	ctx := context.Background()
 
@@ -63,5 +64,8 @@ func TestFlowUpgradeStateV0(t *testing.T) {
 	}
 	if got := upgraded.Content.ValueString(); got != "id: hello\nnamespace: company.team\ndisabled: true\ntasks: []\n" {
 		t.Errorf("content = %q", got)
+	}
+	if !upgraded.Disabled.IsNull() || !upgraded.Description.IsNull() || !upgraded.Labels.IsNull() {
+		t.Error("the metadata attributes must stay unset after the upgrade")
 	}
 }

@@ -23,3 +23,21 @@ pluginDefaults:
       message: third {{flow.id}}
 EOT
 }
+
+resource "kestra_flow" "with_metadata" {
+  namespace   = "company.team"
+  flow_id     = "my-other-flow"
+  description = "Managed from Terraform"
+  disabled    = false
+  labels = {
+    team = "data"
+  }
+  content = <<EOT
+id: my-other-flow
+namespace: company.team
+tasks:
+  - id: hello
+    type: io.kestra.plugin.core.log.Log
+    message: hello
+EOT
+}

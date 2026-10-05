@@ -174,7 +174,17 @@ func TestMuxServesFlowFromFrameworkProvider(t *testing.T) {
 		}
 	}
 
-	if _, ok := resp.ResourceSchemas["kestra_flow"]; !ok {
-		t.Error("expected the mux server to serve the kestra_flow resource")
+	res, ok := resp.ResourceSchemas["kestra_flow"]
+	if !ok {
+		t.Fatal("expected the mux server to serve the kestra_flow resource")
+	}
+	attributes := make(map[string]bool, len(res.Block.Attributes))
+	for _, attribute := range res.Block.Attributes {
+		attributes[attribute.Name] = true
+	}
+	for _, name := range []string{"disabled", "description", "labels"} {
+		if !attributes[name] {
+			t.Errorf("expected the kestra_flow resource to expose %q, got %v", name, attributes)
+		}
 	}
 }

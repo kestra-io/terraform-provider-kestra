@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -44,12 +45,15 @@ type flowIdentityModel struct {
 }
 
 type flowModel struct {
-	Id        types.String `tfsdk:"id"`
-	TenantId  types.String `tfsdk:"tenant_id"`
-	Namespace types.String `tfsdk:"namespace"`
-	FlowId    types.String `tfsdk:"flow_id"`
-	Revision  types.Int64  `tfsdk:"revision"`
-	Content   types.String `tfsdk:"content"`
+	Id          types.String `tfsdk:"id"`
+	TenantId    types.String `tfsdk:"tenant_id"`
+	Namespace   types.String `tfsdk:"namespace"`
+	FlowId      types.String `tfsdk:"flow_id"`
+	Revision    types.Int64  `tfsdk:"revision"`
+	Content     types.String `tfsdk:"content"`
+	Disabled    types.Bool   `tfsdk:"disabled"`
+	Description types.String `tfsdk:"description"`
+	Labels      types.Map    `tfsdk:"labels"`
 }
 
 func (m flowModel) identity() flowIdentityModel {
@@ -78,8 +82,10 @@ func (r *flowResource) IdentitySchema(_ context.Context, _ resource.IdentitySche
 
 func (r *flowResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		MarkdownDescription: "Manages a Kestra Flow.",
-		Version:             1,
+		MarkdownDescription: "Manages a Kestra Flow.\n\n" +
+			"The flow `description`, `disabled` and `labels` can be written in `content` or set as attributes, but not both. " +
+			"An attribute is merged into the source sent to Kestra and left out of `content` when read back.",
+		Version: 1,
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -112,6 +118,19 @@ func (r *flowResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				MarkdownDescription: "The flow full content in yaml string.",
 				PlanModifiers:       []planmodifier.String{YamlEqualPlanModifier()},
 			},
+			"disabled": schema.BoolAttribute{
+				Optional:            true,
+				MarkdownDescription: "Whether the flow is disabled. Leave `disabled` out of `content` when set.",
+			},
+			"description": schema.StringAttribute{
+				Optional:            true,
+				MarkdownDescription: "The flow description. Leave `description` out of `content` when set.",
+			},
+			"labels": schema.MapAttribute{
+				Optional:            true,
+				ElementType:         types.StringType,
+				MarkdownDescription: "The flow labels. Leave `labels` out of `content` when set.",
+			},
 		},
 	}
 }
@@ -140,10 +159,28 @@ func (r *flowResource) ValidateConfig(ctx context.Context, req resource.Validate
 		return
 	}
 
-	document, _, err := parseFlowSource(config.Content.ValueString())
+	document, values, err := parseFlowSource(config.Content.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(path.Root("content"), "Invalid flow content", err.Error())
 		return
+	}
+
+	// rejected even when both values match: as agreed in #120, neither one takes precedence
+	for _, metadata := range []struct {
+		key   string
+		value attr.Value
+	}{
+		{"description", config.Description},
+		{"disabled", config.Disabled},
+		{"labels", config.Labels},
+	} {
+		if _, inContent := values[metadata.key]; inContent && !metadata.value.IsNull() {
+			resp.Diagnostics.AddAttributeError(
+				path.Root(metadata.key),
+				"Conflicting flow metadata",
+				fmt.Sprintf("`%s` is set both as an attribute and in content. Remove it from one of them.", metadata.key),
+			)
+		}
 	}
 
 	for _, identity := range []struct {
@@ -210,7 +247,8 @@ func (r *flowResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRe
 
 		// a formatting-only change to content is suppressed by its plan modifier, but the
 		// revision was already marked unknown; keep it so no update is planned
-		if plan.Content.Equal(state.Content) && plan.Namespace.Equal(state.Namespace) && plan.FlowId.Equal(state.FlowId) {
+		if plan.Content.Equal(state.Content) && plan.Namespace.Equal(state.Namespace) && plan.FlowId.Equal(state.FlowId) &&
+			plan.Disabled.Equal(state.Disabled) && plan.Description.Equal(state.Description) && plan.Labels.Equal(state.Labels) {
 			plan.Revision = state.Revision
 		}
 	}
@@ -223,11 +261,24 @@ func isFlowNotFound(err error) bool {
 	return errors.As(err, &apiErr) && apiErr.StatusCode == http.StatusNotFound
 }
 
-// sourceForWrite returns the source to save once the server validated it: the server knows
-// the plugins and their properties, so an invalid flow fails before anything is saved.
+// sourceForWrite returns content with the metadata attributes merged in, once the server
+// validated it: the server knows the plugins and their properties, so an invalid flow fails
+// before anything is saved.
 func (r *flowResource) sourceForWrite(ctx context.Context, plan flowModel) (string, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	source := plan.Content.ValueString()
+	metadata := flowMetadata{Description: plan.Description.ValueStringPointer(), Disabled: plan.Disabled.ValueBoolPointer()}
+	if !plan.Labels.IsNull() {
+		labels := map[string]string{}
+		if diags = plan.Labels.ElementsAs(ctx, &labels, false); diags.HasError() {
+			return "", diags
+		}
+		metadata.Labels = &labels
+	}
+	source, err := mergeFlowMetadata(plan.Content.ValueString(), metadata)
+	if err != nil {
+		diags.AddAttributeError(path.Root("content"), "Invalid flow content", err.Error())
+		return "", diags
+	}
 
 	violations, err := r.providerData.KestraClient.Flows().ValidateFlows(ctx, r.providerData.TenantId, source)
 	if err != nil {
@@ -260,16 +311,51 @@ func setFlowFromAPI(data *flowModel, flow *kestra_api_client.FlowWithSource, ten
 	data.Revision = types.Int64Value(int64(flow.GetRevision()))
 }
 
-// populateFlowModel refreshes the model from a flow read with its source. Content keeps its
-// configured text unless the source differs from it.
-func populateFlowModel(data *flowModel, flow *kestra_api_client.FlowWithSource, tenantId string) diag.Diagnostics {
+// populateFlowModel refreshes the model from a flow read with its source. Keys managed by an
+// attribute are moved out of the source into the attribute; content keeps its configured
+// text unless the remaining source differs from it.
+func populateFlowModel(ctx context.Context, data *flowModel, flow *kestra_api_client.FlowWithSource, tenantId string) diag.Diagnostics {
 	var diags diag.Diagnostics
-	if flow.Source == nil {
-		diags.AddError("Client Error", fmt.Sprintf("Kestra returned no source for flow %s/%s.", flow.GetNamespace(), flow.GetId()))
+	readError := func(err error) diag.Diagnostics {
+		diags.AddError("Client Error", fmt.Sprintf("Unable to read flow %s/%s: %s", flow.GetNamespace(), flow.GetId(), err))
 		return diags
+	}
+	if flow.Source == nil {
+		return readError(errors.New("the API returned no source"))
 	}
 
 	source := flow.GetSource()
+	document, values, err := parseFlowSource(source)
+	if err != nil {
+		return readError(err)
+	}
+
+	var managed []string
+	if !data.Disabled.IsNull() {
+		data.Disabled = types.BoolValue(flow.GetDisabled())
+		managed = append(managed, "disabled")
+	}
+	if !data.Description.IsNull() {
+		data.Description = types.StringValue(flow.GetDescription())
+		managed = append(managed, "description")
+	}
+	if !data.Labels.IsNull() {
+		labels, err := flowLabels(values["labels"])
+		if err != nil {
+			return readError(err)
+		}
+		var labelDiags diag.Diagnostics
+		data.Labels, labelDiags = types.MapValueFrom(ctx, types.StringType, labels)
+		diags.Append(labelDiags...)
+		managed = append(managed, "labels")
+	}
+
+	if len(managed) > 0 {
+		removeFlowKeys(document, managed)
+		if source, err = encodeFlowSource(document); err != nil {
+			return readError(err)
+		}
+	}
 	if data.Content.IsNull() || !flowSourcesEqual(data.Content.ValueString(), source) {
 		data.Content = types.StringValue(source)
 	}
@@ -322,7 +408,7 @@ func (r *flowResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 	tflog.Trace(ctx, fmt.Sprintf("read a flow resource: %s/%s", flow.GetNamespace(), flow.GetId()))
 
-	resp.Diagnostics.Append(populateFlowModel(&state, flow, r.providerData.TenantId)...)
+	resp.Diagnostics.Append(populateFlowModel(ctx, &state, flow, r.providerData.TenantId)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -402,7 +488,8 @@ func (r *flowResource) UpgradeState(_ context.Context) map[int64]resource.StateU
 	}
 }
 
-// upgradeFlowStateV0 reads state written by the SDK v2 implementation.
+// upgradeFlowStateV0 reads state written by the SDK v2 implementation. It had no metadata
+// attributes, so they start unset and content keeps managing those keys.
 func upgradeFlowStateV0(ctx context.Context, req resource.UpgradeStateRequest, resp *resource.UpgradeStateResponse) {
 	var prior struct {
 		Id        *string `json:"id"`
@@ -418,12 +505,15 @@ func upgradeFlowStateV0(ctx context.Context, req resource.UpgradeStateRequest, r
 	}
 
 	state := flowModel{
-		Id:        types.StringPointerValue(prior.Id),
-		TenantId:  types.StringPointerValue(prior.TenantId),
-		Namespace: types.StringPointerValue(prior.Namespace),
-		FlowId:    types.StringPointerValue(prior.FlowId),
-		Revision:  types.Int64PointerValue(prior.Revision),
-		Content:   types.StringPointerValue(prior.Content),
+		Id:          types.StringPointerValue(prior.Id),
+		TenantId:    types.StringPointerValue(prior.TenantId),
+		Namespace:   types.StringPointerValue(prior.Namespace),
+		FlowId:      types.StringPointerValue(prior.FlowId),
+		Revision:    types.Int64PointerValue(prior.Revision),
+		Content:     types.StringPointerValue(prior.Content),
+		Disabled:    types.BoolNull(),
+		Description: types.StringNull(),
+		Labels:      types.MapNull(types.StringType),
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

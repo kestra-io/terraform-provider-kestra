@@ -149,3 +149,23 @@ tasks:
   - ${indent(4, file("t1.yml"))}
   - ${indent(4, file("t2.yml"))}
 ```
+
+## Flow metadata as attributes
+
+`description`, `disabled` and `labels` can also be set as attributes of `kestra_flow`, which lets them come from Terraform variables or other resources without templating the yaml:
+
+```terraform
+resource "kestra_flow" "example" {
+  namespace   = "company.team"
+  flow_id     = "my-flow"
+  description = "Loads the daily orders"
+  disabled    = var.environment != "production"
+  labels = {
+    team = "data"
+    env  = var.environment
+  }
+  content = file("my-flow.yml")
+}
+```
+
+The attributes are appended to the yaml sent to Kestra and left out of `content` when the flow is read back. A key is managed either by its attribute or in the yaml, never both: setting an attribute that also appears in `content` is an error at plan time, even when both values are equal. Remove an attribute to hand its key back to the yaml.

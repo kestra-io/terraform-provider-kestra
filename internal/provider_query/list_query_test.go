@@ -31,10 +31,10 @@ func TestAccQueryFlowList(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccResourceFlow(
-					"io.kestra.terraform.bulkimport",
+					"tfbulkimport",
 					"query-test",
 					"id: query-test",
-					"namespace: io.kestra.terraform.bulkimport",
+					"namespace: tfbulkimport",
 					"tasks:",
 					"  - id: hello",
 					"    type: io.kestra.plugin.core.log.Log",
@@ -59,19 +59,19 @@ list "kestra_flow" "limited_flows" {
 `,
 				QueryResultChecks: []querycheck.QueryResultCheck{
 					querycheck.ExpectIdentity("kestra_flow.all_flows", map[string]knownvalue.Check{
-						"namespace": knownvalue.StringExact("io.kestra.terraform.bulkimport"),
+						"namespace": knownvalue.StringExact("tfbulkimport"),
 						"flow_id":   knownvalue.StringExact("query-test"),
 					}),
 					querycheck.ExpectResourceKnownValues(
 						"kestra_flow.all_flows",
 						queryfilter.ByResourceIdentity(map[string]knownvalue.Check{
-							"namespace": knownvalue.StringExact("io.kestra.terraform.bulkimport"),
+							"namespace": knownvalue.StringExact("tfbulkimport"),
 							"flow_id":   knownvalue.StringExact("query-test"),
 						}),
 						[]querycheck.KnownValueCheck{
 							{
 								tfjsonpath.New("namespace"),
-								knownvalue.StringExact("io.kestra.terraform.bulkimport"),
+								knownvalue.StringExact("tfbulkimport"),
 							},
 							{
 								tfjsonpath.New("flow_id"),
@@ -79,7 +79,7 @@ list "kestra_flow" "limited_flows" {
 							},
 							{
 								tfjsonpath.New("id"),
-								knownvalue.StringExact("io.kestra.terraform.bulkimport/query-test"),
+								knownvalue.StringExact("tfbulkimport/query-test"),
 							},
 						},
 					),
@@ -100,10 +100,10 @@ func TestAccQueryNamespaceList(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccResourceFlow(
-					"io.kestra.terraform.bulkimport",
+					"tfbulkimport",
 					"namespace-seed",
 					"id: namespace-seed",
-					"namespace: io.kestra.terraform.bulkimport",
+					"namespace: tfbulkimport",
 					"tasks:",
 					"  - id: hello",
 					"    type: io.kestra.plugin.core.log.Log",
@@ -128,17 +128,17 @@ list "kestra_namespace" "limited_namespaces" {
 `,
 				QueryResultChecks: []querycheck.QueryResultCheck{
 					querycheck.ExpectIdentity("kestra_namespace.all_namespaces", map[string]knownvalue.Check{
-						"namespace_id": knownvalue.StringExact("io.kestra.terraform.bulkimport"),
+						"namespace_id": knownvalue.StringExact("tfbulkimport"),
 					}),
 					querycheck.ExpectResourceKnownValues(
 						"kestra_namespace.all_namespaces",
 						queryfilter.ByResourceIdentity(map[string]knownvalue.Check{
-							"namespace_id": knownvalue.StringExact("io.kestra.terraform.bulkimport"),
+							"namespace_id": knownvalue.StringExact("tfbulkimport"),
 						}),
 						[]querycheck.KnownValueCheck{
 							{
 								tfjsonpath.New("namespace_id"),
-								knownvalue.StringExact("io.kestra.terraform.bulkimport"),
+								knownvalue.StringExact("tfbulkimport"),
 							},
 						},
 					),

@@ -64,7 +64,7 @@ list "kestra_namespace" "all_namespaces" {
 }
 ```
 
-The namespace search is intentionally unfiltered so the query can discover the namespaces returned by Kestra's namespace search API.
+Only namespaces that exist in Kestra are listed. A namespace that is only implied, because it holds flows or prefixes another namespace without having been created itself, is left out.
 
 ## Generate configuration
 

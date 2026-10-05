@@ -3,9 +3,10 @@ package sdk_client
 import (
 	"context"
 	"encoding/base64"
-	"github.com/kestra-io/client-sdk/go-sdk/v2/kestra_api_client"
 	"net/http"
 	"time"
+
+	"github.com/kestra-io/client-sdk/go-sdk/v2/kestra_api_client"
 )
 
 func NewClient(ctx context.Context, url string, timeout int64, username *string, password *string, jwt *string, apiToken *string, extraHeaders *map[string]string) (*kestra_api_client.APIClient, error) {
@@ -31,17 +32,17 @@ func defaultHeaders(username *string, password *string, jwt *string, apiToken *s
 	headers := map[string]string{}
 	if (username != nil) && (password != nil) {
 		auth := base64.StdEncoding.EncodeToString([]byte(*username + ":" + *password))
-		headers["Authorization"] = "Basic " + auth
+		headers[http.CanonicalHeaderKey("Authorization")] = "Basic " + auth
 	}
 	if jwt != nil && *jwt != "" {
 		headers["Cookie"] = "JWT=" + *jwt
 	}
 	if apiToken != nil && *apiToken != "" {
-		headers["Authorization"] = "Bearer " + *apiToken
+		headers[http.CanonicalHeaderKey("Authorization")] = "Bearer " + *apiToken
 	}
 	if extraHeaders != nil {
 		for k, v := range *extraHeaders {
-			headers[k] = v
+			headers[http.CanonicalHeaderKey(k)] = v
 		}
 	}
 	return headers

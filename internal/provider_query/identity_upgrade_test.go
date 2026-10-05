@@ -16,7 +16,7 @@ func TestAccIdentityUpgradeFromRelease(t *testing.T) {
 provider "kestra" {}
 
 resource "kestra_namespace" "upgrade" {
-  namespace_id = "io.kestra.terraform.identityupgrade"
+  namespace_id = "tfidentityupgrade"
   description  = "created before resource identity"
 }
 
@@ -25,7 +25,7 @@ resource "kestra_flow" "upgrade" {
   flow_id   = "identity-upgrade"
   content   = <<EOT
 id: identity-upgrade
-namespace: io.kestra.terraform.identityupgrade
+namespace: tfidentityupgrade
 tasks:
   - id: hello
     type: io.kestra.plugin.core.log.Log

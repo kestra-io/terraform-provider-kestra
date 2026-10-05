@@ -21,7 +21,7 @@ func TestMuxServesWorkerGroupFromFrameworkProvider(t *testing.T) {
 	ctx := context.Background()
 
 	mux, err := tf5muxserver.NewMuxServer(ctx, []func() tfprotov5.ProviderServer{
-		providerserver.NewProtocol5(provider_v2.New("test")()),
+		providerserver.NewProtocol5(provider_v2.New("test", provider.NewFlowResource)()),
 		provider.New("test", nil)().GRPCProvider,
 	}...)
 	if err != nil {
@@ -93,7 +93,7 @@ func TestMuxServesTenantAndNamespaceFromFrameworkProvider(t *testing.T) {
 	}
 
 	mux, err := tf5muxserver.NewMuxServer(ctx, []func() tfprotov5.ProviderServer{
-		providerserver.NewProtocol5(provider_v2.New("test")()),
+		providerserver.NewProtocol5(provider_v2.New("test", provider.NewFlowResource)()),
 		provider.New("test", nil)().GRPCProvider,
 	}...)
 	if err != nil {

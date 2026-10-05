@@ -99,16 +99,11 @@ func TestAccQueryNamespaceList(t *testing.T) {
 		ProtoV5ProviderFactories: queryMuxProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccResourceFlow(
-					"tfbulkimport",
-					"namespace-seed",
-					"id: namespace-seed",
-					"namespace: tfbulkimport",
-					"tasks:",
-					"  - id: hello",
-					"    type: io.kestra.plugin.core.log.Log",
-					"    message: namespace seed",
-				),
+				// a real namespace: one only implied by a flow is not listed
+				Config: `
+resource "kestra_namespace" "seed" {
+  namespace_id = "tfbulkimport"
+}`,
 			},
 			{
 				Query: true,

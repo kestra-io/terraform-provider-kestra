@@ -78,7 +78,9 @@ func (r *namespaceListResource) List(ctx context.Context, req list.ListRequest, 
 			intPointer(page),
 			intPointer(pageSize),
 			sort,
-			nil,
+			// without it, search also returns ancestors that only exist as a prefix of
+			// another namespace, and reading those below makes Kestra persist them
+			kestra_api_client.PtrBool(true),
 			nil,
 		)
 		if err != nil {

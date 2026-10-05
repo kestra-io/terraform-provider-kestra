@@ -130,8 +130,10 @@ func testAccResourceTenantConcurrency(id, behavior string, limit int, quotaDurat
 
 // TestAccTenantDestroyWithResources pins that destroying a tenant which already
 // holds a flow, a KV and an execution succeeds and really removes the tenant.
-// Tenant deletion used to answer 500 "tenantId cannot be null" on some backends
-// (#215); the provider only forwards the DELETE, so this guards the end to end behavior.
+// Tenant deletion answers 500 "tenantId cannot be null" on Kestra EE 1.x (#215) and
+// 204 on 2.0 and above. The provider's 5xx then re-read recovery only runs on a
+// backend that still has the bug: on a 204 backend this test does not touch it, and
+// TestTenantDeleteAfterServerError in provider_v2 is what covers that branch.
 func TestAccTenantDestroyWithResources(t *testing.T) {
 	// unique per run: recreating a deleted tenant id gives 403 on the first calls on some backends
 	tenantId := fmt.Sprintf("destroy-with-resources-%d", time.Now().UnixNano()%1000000)
@@ -179,11 +181,11 @@ func tenantApi(method, path, contentType, body string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	req.SetBasicAuth(os.Getenv("KESTRA_USERNAME"), os.Getenv("KESTRA_PASSWORD"))
+	setAccAuth(req)
 	if contentType != "" {
 		req.Header.Set("Content-Type", contentType)
 	}
-	res, err := http.DefaultClient.Do(req)
+	res, err := (&http.Client{Timeout: 30 * time.Second}).Do(req)
 	if err != nil {
 		return 0, err
 	}

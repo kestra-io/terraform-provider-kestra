@@ -11,8 +11,8 @@ import (
 
 func TestAccResourceFlow(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: providerFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: muxProviderFactories,
 		Steps: []resource.TestStep{
 			// TODO these test don't work well on macos
 			{
@@ -138,8 +138,8 @@ func TestAccResourceFlow(t *testing.T) {
 
 func TestAccIncohrenceResourceFlow(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: providerFactoriesKOSFalse,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: muxProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccResourceFlow(
@@ -154,7 +154,7 @@ func TestAccIncohrenceResourceFlow(t *testing.T) {
 						"    level: TRACE",
 					),
 				),
-				ExpectError: regexp.MustCompile(".*incoherent resource id: simple.*"),
+				ExpectError: regexp.MustCompile("Inconsistent flow identity"),
 			},
 		},
 	})
@@ -162,11 +162,11 @@ func TestAccIncohrenceResourceFlow(t *testing.T) {
 
 func TestAccTenantResourceFlow(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
-		PreCheck:          func() { testAccPreCheck(t) },
-		ProviderFactories: providerTenantFactories,
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: muxProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccResourceFlow(
+				Config: `provider "kestra" { tenant_id = "unit_test" }` + testAccResourceFlow(
 					"io.kestra.terraform",
 					"simple",
 					concat(

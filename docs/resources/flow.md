@@ -49,12 +49,12 @@ EOT
 
 ### Optional
 
-- `flow_id` (String) The flow id.
-- `namespace` (String) The flow namespace.
+- `flow_id` (String) The flow id. Defaults to the `id` in `content`, which it must match. Set it when `content` can be unknown during planning, or an update of the flow plans a replacement.
+- `namespace` (String) The flow namespace. Defaults to the `namespace` in `content`, which it must match. Set it when `content` can be unknown during planning, or an update of the flow plans a replacement.
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) The flow resource id, `namespace/flow_id`.
 - `revision` (Number) The flow revision.
 - `tenant_id` (String) The tenant id.
 

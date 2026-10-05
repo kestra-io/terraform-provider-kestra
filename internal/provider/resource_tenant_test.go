@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -132,7 +133,8 @@ func testAccResourceTenantConcurrency(id, behavior string, limit int, quotaDurat
 // Tenant deletion used to answer 500 "tenantId cannot be null" on some backends
 // (#215); the provider only forwards the DELETE, so this guards the end to end behavior.
 func TestAccTenantDestroyWithResources(t *testing.T) {
-	const tenantId = "destroy-with-resources"
+	// unique per run: recreating a deleted tenant id gives 403 on the first calls on some backends
+	tenantId := fmt.Sprintf("destroy-with-resources-%d", time.Now().UnixNano()%1000000)
 
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },

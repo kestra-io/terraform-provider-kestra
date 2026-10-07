@@ -32,13 +32,13 @@ func defaultHeaders(username *string, password *string, jwt *string, apiToken *s
 	headers := map[string]string{}
 	if (username != nil) && (password != nil) {
 		auth := base64.StdEncoding.EncodeToString([]byte(*username + ":" + *password))
-		headers[http.CanonicalHeaderKey("Authorization")] = "Basic " + auth
+		headers["Authorization"] = "Basic " + auth
 	}
 	if jwt != nil && *jwt != "" {
 		headers["Cookie"] = "JWT=" + *jwt
 	}
 	if apiToken != nil && *apiToken != "" {
-		headers[http.CanonicalHeaderKey("Authorization")] = "Bearer " + *apiToken
+		headers["Authorization"] = "Bearer " + *apiToken
 	}
 	if extraHeaders != nil {
 		for k, v := range *extraHeaders {

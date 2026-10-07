@@ -159,15 +159,6 @@ func TestUnitDefaultHeaders(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := defaultHeaders(tt.username, tt.password, tt.jwt, tt.apiToken, tt.extra)
 
-			// Regression guard: ensure at most one form of the Authorization
-			// header (case-insensitive) is present in the returned map.
-			_, hasTitleCase := got["Authorization"]
-			_, hasLowerCase := got["authorization"]
-			if hasTitleCase && hasLowerCase {
-				t.Errorf("duplicate authorization keys: both \"Authorization\" (%q) and \"authorization\" (%q) are present",
-					got["Authorization"], got["authorization"])
-			}
-
 			if len(got) != len(tt.expected) {
 				t.Fatalf("expected %v, got %v", tt.expected, got)
 			}

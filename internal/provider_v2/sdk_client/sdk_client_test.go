@@ -141,11 +141,24 @@ func TestUnitDefaultHeaders(t *testing.T) {
 			apiToken: str(""),
 			expected: map[string]string{"Authorization": "Basic dXNlcjpwYXNz"},
 		},
+		// Regression: lowercase "authorization" extra header must not produce
+		// duplicate keys alongside a title-case "Authorization" entry.
+		// The map should hold exactly one authorization entry whose value is
+		// the Bearer token supplied via extra headers.
+		{
+			name:     "lowercase authorization extra header does not duplicate key",
+			username: str(""),
+			password: str(""),
+			extra:    &map[string]string{"authorization": "Bearer mytoken"},
+			// After canonicalisation the key becomes "Authorization".
+			expected: map[string]string{"Authorization": "Bearer mytoken"},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := defaultHeaders(tt.username, tt.password, tt.jwt, tt.apiToken, tt.extra)
+
 			if len(got) != len(tt.expected) {
 				t.Fatalf("expected %v, got %v", tt.expected, got)
 			}

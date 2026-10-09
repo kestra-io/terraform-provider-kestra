@@ -44,7 +44,7 @@ provider "kestra" {
 - `api_token` (String, Sensitive) The API token (EE)
 - `extra_headers` (Map of String) Extra headers to add to every request
 - `jwt` (String, Sensitive) The JWT token (EE)
-- `keep_original_source` (Boolean) Keep original source code, keeping comment and indentation. Setting to false is now deprecated and will be removed in the future.
+- `keep_original_source` (Boolean) Deprecated, has no effect: flows are always sent with their original source, comments and indentation included.
 - `password` (String, Sensitive) The BasicAuth password
 - `tenant_id` (String) The tenant id (EE)
 - `timeout` (Number) The timeout (in seconds) for http requests

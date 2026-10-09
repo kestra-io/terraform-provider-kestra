@@ -21,7 +21,7 @@ func TestMuxServesWorkerGroupFromFrameworkProvider(t *testing.T) {
 	ctx := context.Background()
 
 	mux, err := tf5muxserver.NewMuxServer(ctx, []func() tfprotov5.ProviderServer{
-		providerserver.NewProtocol5(provider_v2.New("test", provider.NewFlowResource)()),
+		providerserver.NewProtocol5(provider_v2.New("test")()),
 		provider.New("test", nil)().GRPCProvider,
 	}...)
 	if err != nil {
@@ -93,7 +93,7 @@ func TestMuxServesTenantAndNamespaceFromFrameworkProvider(t *testing.T) {
 	}
 
 	mux, err := tf5muxserver.NewMuxServer(ctx, []func() tfprotov5.ProviderServer{
-		providerserver.NewProtocol5(provider_v2.New("test", provider.NewFlowResource)()),
+		providerserver.NewProtocol5(provider_v2.New("test")()),
 		provider.New("test", nil)().GRPCProvider,
 	}...)
 	if err != nil {
@@ -140,5 +140,51 @@ func TestMuxServesTenantAndNamespaceFromFrameworkProvider(t *testing.T) {
 
 	if v := resp.ResourceSchemas["kestra_tenant"].Version; v != 1 {
 		t.Errorf("expected kestra_tenant schema version 1 for the state upgrader, got %d", v)
+	}
+}
+
+// TestMuxServesFlowFromFrameworkProvider pins that only the framework provider serves the
+// kestra_flow resource, while the kestra_flow data source is served by the SDK provider.
+func TestMuxServesFlowFromFrameworkProvider(t *testing.T) {
+	ctx := context.Background()
+
+	sdkProvider := provider.New("test", nil)()
+	if _, ok := sdkProvider.ResourcesMap["kestra_flow"]; ok {
+		t.Error("the SDK provider still registers the kestra_flow resource; the mux refuses a type served by both")
+	}
+	if _, ok := sdkProvider.DataSourcesMap["kestra_flow"]; !ok {
+		t.Error("expected the SDK provider to keep serving the kestra_flow data source")
+	}
+
+	mux, err := tf5muxserver.NewMuxServer(ctx, []func() tfprotov5.ProviderServer{
+		providerserver.NewProtocol5(provider_v2.New("test")()),
+		provider.New("test", nil)().GRPCProvider,
+	}...)
+	if err != nil {
+		t.Fatalf("unexpected mux server error: %v", err)
+	}
+
+	resp, err := mux.ProviderServer().GetProviderSchema(ctx, &tfprotov5.GetProviderSchemaRequest{})
+	if err != nil {
+		t.Fatalf("unexpected provider schema error: %v", err)
+	}
+	for _, d := range resp.Diagnostics {
+		if d.Severity == tfprotov5.DiagnosticSeverityError {
+			t.Fatalf("unexpected provider schema diagnostic: %s: %s", d.Summary, d.Detail)
+		}
+	}
+
+	res, ok := resp.ResourceSchemas["kestra_flow"]
+	if !ok {
+		t.Fatal("expected the mux server to serve the kestra_flow resource")
+	}
+	attributes := make(map[string]bool, len(res.Block.Attributes))
+	for _, attribute := range res.Block.Attributes {
+		attributes[attribute.Name] = true
+	}
+	for _, name := range []string{"disabled", "description", "labels"} {
+		if !attributes[name] {
+			t.Errorf("expected the kestra_flow resource to expose %q, got %v", name, attributes)
+		}
 	}
 }

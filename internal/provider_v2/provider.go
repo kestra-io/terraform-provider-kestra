@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	sdkv2schema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/kestra-io/client-sdk/go-sdk/v2/kestra_api_client"
 	"github.com/kestra-io/terraform-provider-kestra/internal/provider_v2/sdk_client"
 )
@@ -26,8 +25,7 @@ type kestraProvider struct {
 	// version is set to the provider version on release, "dev" when the
 	// provider is built and ran locally, and "test" when running acceptance
 	// testing.
-	version             string
-	flowResourceFactory func() *sdkv2schema.Resource
+	version string
 }
 
 // exampleProviderModel maps provider schema data to a Go type.
@@ -43,11 +41,10 @@ type kestraProviderModel struct {
 	KeepOriginalSource types.Bool   `tfsdk:"keep_original_source"`
 }
 
-func New(version string, flowResourceFactory func() *sdkv2schema.Resource) func() provider.Provider {
+func New(version string) func() provider.Provider {
 	return func() provider.Provider {
 		return &kestraProvider{
-			version:             version,
-			flowResourceFactory: flowResourceFactory,
+			version: version,
 		}
 	}
 }
@@ -100,7 +97,7 @@ func (p *kestraProvider) Schema(ctx context.Context, req provider.SchemaRequest,
 			"keep_original_source": &schema.BoolAttribute{
 				Optional: true,
 				//DeprecationMessage:  "this is not used in new provider version", cannot add this depreciation because bot provider must exactly match
-				MarkdownDescription: "Keep original source code, keeping comment and indentation. Setting to false is now deprecated and will be removed in the future.",
+				MarkdownDescription: "Deprecated, has no effect: flows are always sent with their original source, comments and indentation included.",
 			},
 		},
 	}
@@ -254,6 +251,7 @@ func (p *kestraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 func (p *kestraProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		NewFlowResource,
 		NewTestResource,
 		NewNamespaceResource,
 		NewPolicyResource,
@@ -266,9 +264,7 @@ func (p *kestraProvider) Resources(ctx context.Context) []func() resource.Resour
 
 func (p *kestraProvider) ListResources(ctx context.Context) []func() list.ListResource {
 	return []func() list.ListResource{
-		func() list.ListResource {
-			return NewFlowListResource(p.flowResourceFactory)
-		},
+		NewFlowListResource,
 		NewNamespaceListResource,
 	}
 }

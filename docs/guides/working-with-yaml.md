@@ -9,14 +9,7 @@ Most of Kestra resource need to be described as Yaml like [kestra_flow](../resou
 
 We have chosen to use a full yaml in terraform definition since the structure is recursive and dynamic, so it can't be described using terraform internal schema.
 
-There is 2 ways (for flow) to handle yaml:
-
-* use `keep_original_source = true` method: the default one, the raw yaml will be send and save in Kestra.
-* use `keep_original_source = false` method: the yaml will be encoded in json before behind to the server, so comment and indent will be handle by the server
-
-**Those properties have to be set at the provider level.**
-
-!> Take care with `keep_original_source = false` that this terraform provider is not aware of task & plugins. It can't know default values of properties, and most of conversion logic done by Kestra Server. If you see diff that **is always present** (even just after apply), your flow on terraform must have a minor difference return from the server. In this case, **copy the source from Kestra UI** in your terraform files to avoid these difference.
+A flow is sent to Kestra as written, so its comments and indentation are kept. Changes that only touch formatting or comments do not update the flow. The `keep_original_source` provider setting is deprecated and has no effect.
 
 There is in terraform a lot of function that allow to work properly with this yaml content :
 
@@ -156,3 +149,23 @@ tasks:
   - ${indent(4, file("t1.yml"))}
   - ${indent(4, file("t2.yml"))}
 ```
+
+## Flow metadata as attributes
+
+`description`, `disabled` and `labels` can also be set as attributes of `kestra_flow`, which lets them come from Terraform variables or other resources without templating the yaml:
+
+```terraform
+resource "kestra_flow" "example" {
+  namespace   = "company.team"
+  flow_id     = "my-flow"
+  description = "Loads the daily orders"
+  disabled    = var.environment != "production"
+  labels = {
+    team = "data"
+    env  = var.environment
+  }
+  content = file("my-flow.yml")
+}
+```
+
+The attributes are appended to the yaml sent to Kestra and left out of `content` when the flow is read back. A key is managed either by its attribute or in the yaml, never both: setting an attribute that also appears in `content` is an error at plan time, even when both values are equal. Remove an attribute to hand its key back to the yaml.

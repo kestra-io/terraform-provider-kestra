@@ -10,41 +10,22 @@ import (
 	listschema "github.com/hashicorp/terraform-plugin-framework/list/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	sdkv2schema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/kestra-io/client-sdk/go-sdk/v2/kestra_api_client"
 )
 
 const kestraListPageSize = 1000
 
 var (
-	_ list.ListResource                 = &flowListResource{}
-	_ list.ListResourceWithConfigure    = &flowListResource{}
-	_ list.ListResourceWithRawV5Schemas = &flowListResource{}
+	_ list.ListResource              = &flowListResource{}
+	_ list.ListResourceWithConfigure = &flowListResource{}
 )
 
 type flowListResource struct {
-	providerData        *ProviderData
-	flowResourceFactory func() *sdkv2schema.Resource
+	providerData *ProviderData
 }
 
-type flowListIdentityModel struct {
-	Namespace types.String `tfsdk:"namespace"`
-	FlowID    types.String `tfsdk:"flow_id"`
-}
-
-type flowListResourceModel struct {
-	ID        types.String `tfsdk:"id"`
-	TenantID  types.String `tfsdk:"tenant_id"`
-	Namespace types.String `tfsdk:"namespace"`
-	FlowID    types.String `tfsdk:"flow_id"`
-	Revision  types.Int64  `tfsdk:"revision"`
-	Content   types.String `tfsdk:"content"`
-}
-
-func NewFlowListResource(flowResourceFactory func() *sdkv2schema.Resource) list.ListResource {
-	return &flowListResource{
-		flowResourceFactory: flowResourceFactory,
-	}
+func NewFlowListResource() list.ListResource {
+	return &flowListResource{}
 }
 
 func (r *flowListResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -69,12 +50,6 @@ func (r *flowListResource) Configure(_ context.Context, req resource.ConfigureRe
 	}
 
 	r.providerData = providerData
-}
-
-func (r *flowListResource) RawV5Schemas(ctx context.Context, _ list.RawV5SchemaRequest, resp *list.RawV5SchemaResponse) {
-	flowResource := r.flowResourceFactory()
-	resp.ProtoV5Schema = flowResource.ProtoSchema(ctx)()
-	resp.ProtoV5IdentitySchema = flowResource.ProtoIdentitySchema(ctx)()
 }
 
 func (r *flowListResource) List(ctx context.Context, req list.ListRequest, resp *list.ListResultsStream) {
@@ -116,9 +91,9 @@ func (r *flowListResource) List(ctx context.Context, req list.ListRequest, resp 
 			result := req.NewListResult(ctx)
 			result.DisplayName = fmt.Sprintf("%s/%s", flow.GetNamespace(), flow.GetId())
 
-			result.Diagnostics.Append(result.Identity.Set(ctx, flowListIdentityModel{
+			result.Diagnostics.Append(result.Identity.Set(ctx, flowIdentityModel{
 				Namespace: types.StringValue(flow.GetNamespace()),
-				FlowID:    types.StringValue(flow.GetId()),
+				FlowId:    types.StringValue(flow.GetId()),
 			})...)
 
 			if req.IncludeResource {
@@ -157,13 +132,17 @@ func (r *flowListResource) List(ctx context.Context, req list.ListRequest, resp 
 					revision = types.Int64Value(int64(*fullFlow.Revision))
 				}
 
-				result.Diagnostics.Append(result.Resource.Set(ctx, flowListResourceModel{
-					ID:        types.StringValue(fmt.Sprintf("%s/%s", fullFlow.GetNamespace(), fullFlow.GetId())),
-					TenantID:  types.StringValue(r.providerData.TenantId),
-					Namespace: types.StringValue(fullFlow.GetNamespace()),
-					FlowID:    types.StringValue(fullFlow.GetId()),
-					Revision:  revision,
-					Content:   types.StringValue(*fullFlow.Source),
+				// like an import, a listed flow leaves its metadata to content
+				result.Diagnostics.Append(result.Resource.Set(ctx, flowModel{
+					Id:          types.StringValue(fmt.Sprintf("%s/%s", fullFlow.GetNamespace(), fullFlow.GetId())),
+					TenantId:    types.StringValue(r.providerData.TenantId),
+					Namespace:   types.StringValue(fullFlow.GetNamespace()),
+					FlowId:      types.StringValue(fullFlow.GetId()),
+					Revision:    revision,
+					Content:     types.StringValue(*fullFlow.Source),
+					Disabled:    types.BoolNull(),
+					Description: types.StringNull(),
+					Labels:      types.MapNull(types.StringType),
 				})...)
 			}
 

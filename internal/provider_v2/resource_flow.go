@@ -22,13 +22,14 @@ import (
 )
 
 var (
-	_ resource.Resource                   = &flowResource{}
-	_ resource.ResourceWithConfigure      = &flowResource{}
-	_ resource.ResourceWithIdentity       = &flowResource{}
-	_ resource.ResourceWithImportState    = &flowResource{}
-	_ resource.ResourceWithModifyPlan     = &flowResource{}
-	_ resource.ResourceWithUpgradeState   = &flowResource{}
-	_ resource.ResourceWithValidateConfig = &flowResource{}
+	_ resource.Resource                    = &flowResource{}
+	_ resource.ResourceWithConfigure       = &flowResource{}
+	_ resource.ResourceWithIdentity        = &flowResource{}
+	_ resource.ResourceWithImportState     = &flowResource{}
+	_ resource.ResourceWithModifyPlan      = &flowResource{}
+	_ resource.ResourceWithUpgradeIdentity = &flowResource{}
+	_ resource.ResourceWithUpgradeState    = &flowResource{}
+	_ resource.ResourceWithValidateConfig  = &flowResource{}
 )
 
 func NewFlowResource() resource.Resource {
@@ -65,16 +66,26 @@ func (r *flowResource) Metadata(_ context.Context, req resource.MetadataRequest,
 }
 
 func (r *flowResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
-	// version 0, like kestra_namespace: state written by releases without identity asks for
-	// an upgrade from version 0, which no upgrader can answer since the prior identity is empty
 	resp.IdentitySchema = identityschema.Schema{
-		Version: 0,
+		Version: 1,
 		Attributes: map[string]identityschema.Attribute{
 			"namespace": identityschema.StringAttribute{
 				RequiredForImport: true,
 			},
 			"flow_id": identityschema.StringAttribute{
 				RequiredForImport: true,
+			},
+		},
+	}
+}
+
+// UpgradeIdentity answers state written before v2.2.0, which has no identity: the identity
+// starts out null and the next Read fills it in.
+func (r *flowResource) UpgradeIdentity(_ context.Context) map[int64]resource.IdentityUpgrader {
+	return map[int64]resource.IdentityUpgrader{
+		0: {
+			IdentityUpgrader: func(ctx context.Context, _ resource.UpgradeIdentityRequest, resp *resource.UpgradeIdentityResponse) {
+				resp.Diagnostics.Append(resp.Identity.Set(ctx, flowIdentityModel{Namespace: types.StringNull(), FlowId: types.StringNull()})...)
 			},
 		},
 	}

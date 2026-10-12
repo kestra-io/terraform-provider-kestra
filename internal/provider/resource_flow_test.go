@@ -147,6 +147,7 @@ func TestAccIncohrenceResourceFlow(t *testing.T) {
 					"simple",
 					concat(
 						"id: \"wrong-id\"",
+						"namespace: io.kestra.terraform",
 						"tasks:",
 						"  - id: t2",
 						"    type: io.kestra.plugin.core.log.Log",

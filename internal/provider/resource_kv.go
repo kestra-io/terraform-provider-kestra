@@ -54,15 +54,27 @@ func resourceKv() *schema.Resource {
 				Required:    true,
 			},
 			"description": {
-				Description: "An optional description for the Key-Value pair. Requires Kestra 2.1.0 or later.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:  "An optional description for the Key-Value pair. Single line, up to 4096 bytes. Only applied by Kestra versions that support KV descriptions (2.1.0 or later).",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validateKvDescription,
 			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 	}
+}
+
+func validateKvDescription(v interface{}, k string) (ws []string, errs []error) {
+	s := v.(string)
+	if strings.ContainsAny(s, "\r\n") {
+		errs = append(errs, fmt.Errorf("%q must be a single line, it is sent as an HTTP header", k))
+	}
+	if len(s) > 4096 {
+		errs = append(errs, fmt.Errorf("%q must be at most 4096 bytes, got %d", k, len(s)))
+	}
+	return
 }
 
 func resourceKvSet(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -95,7 +107,10 @@ func resourceKvSet(ctx context.Context, d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	req.Header.Set("description", d.Get("description").(string))
+	// Only send the header when set, or when clearing a previous value, so servers without KV description support never see it.
+	if description := d.Get("description").(string); description != "" || d.HasChange("description") {
+		req.Header.Set("description", description)
+	}
 
 	_, _, reqErr := c.rawResponseRequest(httpMethod, req)
 	if reqErr != nil {

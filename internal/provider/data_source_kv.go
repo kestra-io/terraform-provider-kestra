@@ -42,7 +42,7 @@ func dataSourceKv() *schema.Resource {
 				Computed:    true,
 			},
 			"description": {
-				Description: "The description of the Key-Value pair. Requires Kestra 2.1.0 or later.",
+				Description: "The description of the Key-Value pair. Only returned by Kestra versions that support KV descriptions (2.1.0 or later).",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},

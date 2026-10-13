@@ -41,6 +41,11 @@ func dataSourceKv() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"description": {
+				Description: "The description of the Key-Value pair. Only returned by Kestra versions that support KV descriptions (2.1.0 or later).",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -105,6 +110,13 @@ func dataSourceKvRead(ctx context.Context, d *schema.ResourceData, meta interfac
 		value = fmt.Sprint(kvResponsePtr.Value)
 	}
 	if err := d.Set("value", value); err != nil {
+		return diag.FromErr(err)
+	}
+	description, err := kvDescription(ctx, c, namespace, key)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("description", description); err != nil {
 		return diag.FromErr(err)
 	}
 

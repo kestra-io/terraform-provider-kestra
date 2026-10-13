@@ -148,6 +148,24 @@ func TestAccDataSourceKv(t *testing.T) {
 	})
 }
 
+func TestAccDataSourceKvDescription(t *testing.T) {
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck: func() {
+			testAccPreCheck(t)
+			testAccPreCheckKvDescription(t)
+		},
+		ProviderFactories: providerFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccDataSourceKv("io.kestra.terraform.data", "description"),
+				Check: resource.TestCheckResourceAttr(
+					"data.kestra_kv.new", "description", "A data source description",
+				),
+			},
+		},
+	})
+}
+
 func testAccDataSourceKv(namespace, key any) string {
 	return fmt.Sprintf(
 		`

@@ -91,6 +91,7 @@ jobs:
           - '1.9.8'
           - '1.10.5'
           - '1.12.2'
+          - '1.14.0'
         kestraVersion: ${{ fromJSON(needs.list-versions.outputs.versions) }}
 
     steps:

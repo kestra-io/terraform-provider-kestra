@@ -246,9 +246,26 @@ func (r *tenantResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 
 	_, status, err := sdk_client.RawRequest(ctx, r.providerData.Client, http.MethodDelete, r.tenantPath(state.TenantId.ValueString()), nil)
-	if err != nil && status != http.StatusNotFound {
-		resp.Diagnostics.AddError("Delete tenant failed", err.Error())
+	if err == nil || status == http.StatusNotFound {
+		return
 	}
+	// Kestra EE 1.x answers 500 "tenantId cannot be null" while the tenant is really deleted, because
+	// the cascade delete runs ACL checks without a tenant (#215, fixed server side in 2.0).
+	// A 404 on re-read only proves the tenant itself is gone, not that every child resource was purged.
+	// Remove this branch once 1.x is no longer supported.
+	if status >= http.StatusInternalServerError {
+		_, getStatus, getErr := sdk_client.RawRequest(ctx, r.providerData.Client, http.MethodGet, r.tenantPath(state.TenantId.ValueString()), nil)
+		if getStatus == http.StatusNotFound {
+			return
+		}
+		if getErr != nil {
+			resp.Diagnostics.AddError("Delete tenant failed", fmt.Sprintf("%s (re-read after the failed delete returned %d: %s)", err, getStatus, getErr))
+		} else {
+			resp.Diagnostics.AddError("Delete tenant failed", fmt.Sprintf("%s (re-read after the failed delete returned %d, the tenant still exists)", err, getStatus))
+		}
+		return
+	}
+	resp.Diagnostics.AddError("Delete tenant failed", err.Error())
 }
 
 func (r *tenantResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

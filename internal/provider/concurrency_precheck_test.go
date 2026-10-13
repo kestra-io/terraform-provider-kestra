@@ -97,6 +97,13 @@ func doProbeRequest(client *http.Client, method, url string, body []byte) (*http
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
+	setAccAuth(req)
+	return client.Do(req)
+}
+
+// setAccAuth applies the credentials the acceptance tests were configured with:
+// API token, JWT or basic auth, the same three modes testAccPreCheck accepts.
+func setAccAuth(req *http.Request) {
 	if token := os.Getenv("KESTRA_API_TOKEN"); token != "" {
 		req.Header.Set("Authorization", "Bearer "+token)
 	} else if jwt := os.Getenv("KESTRA_JWT"); jwt != "" {
@@ -104,5 +111,4 @@ func doProbeRequest(client *http.Client, method, url string, body []byte) (*http
 	} else if user := os.Getenv("KESTRA_USERNAME"); user != "" {
 		req.SetBasicAuth(user, os.Getenv("KESTRA_PASSWORD"))
 	}
-	return client.Do(req)
 }

@@ -39,7 +39,7 @@ var muxProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
 	"kestra": func() (tfprotov5.ProviderServer, error) {
 		ctx := context.Background()
 		providers := []func() tfprotov5.ProviderServer{
-			providerserver.NewProtocol5(provider_v2.New("test")()),
+			providerserver.NewProtocol5(provider_v2.New("test", NewFlowResource)()),
 			New("test", nil)().GRPCProvider,
 		}
 		mux, err := tf5muxserver.NewMuxServer(ctx, providers...)

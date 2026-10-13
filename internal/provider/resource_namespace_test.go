@@ -15,7 +15,7 @@ func TestAccResourceNamespace(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccResourceNamespace(
-					"io.kestra.terraform",
+					"io.kestra.terraform.nsresource",
 					"My Kestra Namespace",
 					concat(
 						"k1: 1",
@@ -25,7 +25,7 @@ func TestAccResourceNamespace(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"kestra_namespace.new", "namespace_id", "io.kestra.terraform",
+						"kestra_namespace.new", "namespace_id", "io.kestra.terraform.nsresource",
 					),
 					resource.TestCheckResourceAttr(
 						"kestra_namespace.new", "description", "My Kestra Namespace",
@@ -34,7 +34,7 @@ func TestAccResourceNamespace(t *testing.T) {
 			},
 			{
 				Config: testAccResourceNamespace(
-					"io.kestra.terraform",
+					"io.kestra.terraform.nsresource",
 					"My Kestra Namespace 2",
 					concat(
 						"k2:",
@@ -44,7 +44,7 @@ func TestAccResourceNamespace(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"kestra_namespace.new", "namespace_id", "io.kestra.terraform",
+						"kestra_namespace.new", "namespace_id", "io.kestra.terraform.nsresource",
 					),
 					resource.TestCheckResourceAttr(
 						"kestra_namespace.new", "description", "My Kestra Namespace 2",
@@ -56,7 +56,7 @@ func TestAccResourceNamespace(t *testing.T) {
 			},
 			{
 				Config: testAccResourceNamespaceWorkerSelector(
-					"io.kestra.terraform",
+					"io.kestra.terraform.nsresource",
 					"My Kestra Namespace 3",
 					concat(
 						"k2:",
@@ -67,7 +67,7 @@ func TestAccResourceNamespace(t *testing.T) {
 				),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"kestra_namespace.new", "namespace_id", "io.kestra.terraform",
+						"kestra_namespace.new", "namespace_id", "io.kestra.terraform.nsresource",
 					),
 					resource.TestCheckResourceAttr(
 						"kestra_namespace.new", "description", "My Kestra Namespace 3",

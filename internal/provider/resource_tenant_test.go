@@ -2,9 +2,14 @@ package provider
 
 import (
 	"fmt"
+	"net/http"
+	"os"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
 func TestAccTenant(t *testing.T) {
@@ -121,4 +126,69 @@ func testAccResourceTenantConcurrency(id, behavior string, limit int, quotaDurat
         }`,
 		id, limit, behavior, quotaDuration, quotaLimit, quotaBehavior,
 	)
+}
+
+// TestAccTenantDestroyWithResources pins that destroying a tenant which already
+// holds a flow, a KV and an execution succeeds and really removes the tenant.
+// Tenant deletion answers 500 "tenantId cannot be null" on Kestra EE 1.x (#215) and
+// 204 on 2.0 and above. The provider's 5xx then re-read recovery only runs on a
+// backend that still has the bug: on a 204 backend this test does not touch it, and
+// TestTenantDeleteAfterServerError in provider_v2 is what covers that branch.
+func TestAccTenantDestroyWithResources(t *testing.T) {
+	// unique per run: recreating a deleted tenant id gives 403 on the first calls on some backends
+	tenantId := fmt.Sprintf("destroy-with-resources-%d", time.Now().UnixNano()%1000000)
+
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: muxProviderFactories,
+		CheckDestroy: func(*terraform.State) error {
+			status, err := tenantApi("GET", "/tenants/"+tenantId, "", "")
+			if err != nil {
+				return err
+			}
+			if status != http.StatusNotFound {
+				return fmt.Errorf("tenant %s still exists after destroy, GET returned %d", tenantId, status)
+			}
+			return nil
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: testAccResourceTenant(tenantId, "Destroy with resources"),
+				Check: func(*terraform.State) error {
+					calls := []struct{ method, path, contentType, body string }{
+						{"POST", "/" + tenantId + "/flows", "application/x-yaml", "id: f1\nnamespace: tenant.destroy\ntasks:\n  - id: t\n    type: io.kestra.plugin.core.log.Log\n    message: hi\n"},
+						{"PUT", "/" + tenantId + "/namespaces/tenant.destroy/kv/k1", "text/plain", `"v"`},
+						{"POST", "/" + tenantId + "/executions/tenant.destroy/f1", "", ""},
+					}
+					for _, c := range calls {
+						status, err := tenantApi(c.method, c.path, c.contentType, c.body)
+						if err != nil {
+							return err
+						}
+						if status != http.StatusOK {
+							return fmt.Errorf("%s %s returned %d", c.method, c.path, status)
+						}
+					}
+					return nil
+				},
+			},
+		},
+	})
+}
+
+func tenantApi(method, path, contentType, body string) (int, error) {
+	req, err := http.NewRequest(method, strings.TrimSuffix(os.Getenv("KESTRA_URL"), "/")+"/api/v1"+path, strings.NewReader(body))
+	if err != nil {
+		return 0, err
+	}
+	setAccAuth(req)
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
+	}
+	res, err := (&http.Client{Timeout: 30 * time.Second}).Do(req)
+	if err != nil {
+		return 0, err
+	}
+	defer res.Body.Close()
+	return res.StatusCode, nil
 }

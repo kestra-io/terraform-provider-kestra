@@ -112,12 +112,14 @@ func (r *flowResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Optional: true,
 				Computed: true,
 				MarkdownDescription: "The flow namespace. Defaults to the `namespace` in `content`, which it must match. " +
+					"When `content` leaves `namespace` out, it is added from this attribute. " +
 					"Set it when `content` can be unknown during planning, or an update of the flow plans a replacement.",
 			},
 			"flow_id": schema.StringAttribute{
 				Optional: true,
 				Computed: true,
 				MarkdownDescription: "The flow id. Defaults to the `id` in `content`, which it must match. " +
+					"When `content` leaves `id` out, it is added from this attribute. " +
 					"Set it when `content` can be unknown during planning, or an update of the flow plans a replacement.",
 			},
 			"revision": schema.Int64Attribute{
@@ -204,7 +206,14 @@ func (r *flowResource) ValidateConfig(ctx context.Context, req resource.Validate
 	} {
 		inContent, ok := flowScalar(document, identity.key)
 		if !ok {
-			resp.Diagnostics.AddAttributeError(path.Root("content"), "Invalid flow content", fmt.Sprintf("The flow must define `%s`.", identity.key))
+			// content may leave the key out when the attribute provides it
+			if _, present := values[identity.key]; present || identity.value.IsNull() {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("content"),
+					"Invalid flow content",
+					fmt.Sprintf("The flow must define `%s`, in content or with the `%s` attribute.", identity.key, identity.attribute),
+				)
+			}
 			continue
 		}
 		if !identity.value.IsNull() && !identity.value.IsUnknown() && identity.value.ValueString() != inContent {
@@ -285,7 +294,10 @@ func (r *flowResource) sourceForWrite(ctx context.Context, plan flowModel) (stri
 		}
 		metadata.Labels = &labels
 	}
-	source, err := mergeFlowMetadata(plan.Content.ValueString(), metadata)
+	source, err := addFlowIdentity(plan.Content.ValueString(), plan.FlowId.ValueString(), plan.Namespace.ValueString())
+	if err == nil {
+		source, err = mergeFlowMetadata(source, metadata)
+	}
 	if err != nil {
 		diags.AddAttributeError(path.Root("content"), "Invalid flow content", err.Error())
 		return "", diags
@@ -359,6 +371,16 @@ func populateFlowModel(ctx context.Context, data *flowModel, flow *kestra_api_cl
 		data.Labels, labelDiags = types.MapValueFrom(ctx, types.StringType, labels)
 		diags.Append(labelDiags...)
 		managed = append(managed, "labels")
+	}
+	// an `id` or `namespace` that content leaves out came from the attributes on write
+	if !data.Content.IsNull() {
+		if _, configured, err := parseFlowSource(data.Content.ValueString()); err == nil {
+			for _, key := range []string{"id", "namespace"} {
+				if _, ok := configured[key]; !ok {
+					managed = append(managed, key)
+				}
+			}
+		}
 	}
 
 	if len(managed) > 0 {

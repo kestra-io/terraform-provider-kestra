@@ -161,6 +161,42 @@ func TestAccIncohrenceResourceFlow(t *testing.T) {
 	})
 }
 
+// TestAccResourceFlowIdentityFromAttributes covers content written for keep_original_source =
+// false: id and namespace come from the attributes, and content reads back as configured.
+func TestAccResourceFlowIdentityFromAttributes(t *testing.T) {
+	content := concat(
+		"tasks:",
+		"  - id: log",
+		"    type: io.kestra.plugin.core.log.Log",
+		"    message: hello",
+	)
+	resource.UnitTest(t, resource.TestCase{
+		PreCheck:                 func() { testAccPreCheck(t) },
+		ProtoV5ProviderFactories: muxProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: concat(
+					"resource \"kestra_flow\" \"new\" {",
+					"  namespace = \"io.kestra.terraform\"",
+					"  content = <<EOT",
+					content,
+					"EOT",
+					"}",
+				),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("The flow must define `id`, in content or with the `flow_id`"),
+			},
+			{
+				Config: testAccResourceFlow("io.kestra.terraform", "identity-from-attributes", content),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("kestra_flow.new", "id", "io.kestra.terraform/identity-from-attributes"),
+					resource.TestCheckResourceAttr("kestra_flow.new", "content", content+"\n"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccTenantResourceFlow(t *testing.T) {
 	resource.UnitTest(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },

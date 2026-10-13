@@ -72,9 +72,9 @@ EOT
 
 - `description` (String) The flow description. Leave `description` out of `content` when set.
 - `disabled` (Boolean) Whether the flow is disabled. Leave `disabled` out of `content` when set.
-- `flow_id` (String) The flow id. Defaults to the `id` in `content`, which it must match. Set it when `content` can be unknown during planning, or an update of the flow plans a replacement.
+- `flow_id` (String) The flow id. Defaults to the `id` in `content`, which it must match. When `content` leaves `id` out, it is added from this attribute. Set it when `content` can be unknown during planning, or an update of the flow plans a replacement.
 - `labels` (Map of String) The flow labels. Leave `labels` out of `content` when set.
-- `namespace` (String) The flow namespace. Defaults to the `namespace` in `content`, which it must match. Set it when `content` can be unknown during planning, or an update of the flow plans a replacement.
+- `namespace` (String) The flow namespace. Defaults to the `namespace` in `content`, which it must match. When `content` leaves `namespace` out, it is added from this attribute. Set it when `content` can be unknown during planning, or an update of the flow plans a replacement.
 
 ### Read-Only
 

@@ -103,6 +103,62 @@ func TestMergeFlowMetadataWithoutMetadataKeepsTheSource(t *testing.T) {
 	}
 }
 
+// Content written for keep_original_source = false leaves out id and namespace: they are put
+// first, from the attributes, and the configured text follows unchanged.
+func TestAddFlowIdentityPrependsMissingKeys(t *testing.T) {
+	content := "# no id here\ntasks:\n  - id: log\n    type: io.kestra.plugin.core.log.Log\n    message: hi\n"
+	merged, err := addFlowIdentity(content, "2024", "company.team")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasSuffix(merged, content) {
+		t.Fatalf("the configured source was rewritten:\n%s", merged)
+	}
+	document, _, err := parseFlowSource(merged)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if id, _ := flowScalar(document, "id"); id != "2024" {
+		t.Errorf("id = %q", id)
+	}
+	if namespace, _ := flowScalar(document, "namespace"); namespace != "company.team" {
+		t.Errorf("namespace = %q", namespace)
+	}
+}
+
+func TestAddFlowIdentityKeepsKeysOfContent(t *testing.T) {
+	merged, err := addFlowIdentity(testFlowSource, "other", "other.namespace")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if merged != testFlowSource {
+		t.Errorf("source changed although it defines id and namespace:\n%s", merged)
+	}
+
+	merged, err = addFlowIdentity("namespace: company.team\ntasks: []\n", "hello", "other.namespace")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if merged != "id: hello\nnamespace: company.team\ntasks: []\n" {
+		t.Errorf("only the missing id should be added:\n%s", merged)
+	}
+}
+
+// A document marker cannot follow prepended lines, so the document is re-encoded.
+func TestAddFlowIdentityReencodesADocumentMarker(t *testing.T) {
+	merged, err := addFlowIdentity("---\ntasks: []\n", "hello", "company.team")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, values, err := parseFlowSource(merged)
+	if err != nil {
+		t.Fatalf("invalid merged source %q: %s", merged, err)
+	}
+	if values["id"] != "hello" || values["namespace"] != "company.team" || values["tasks"] == nil {
+		t.Errorf("unexpected merged flow: %v", values)
+	}
+}
+
 func TestFlowScalarReadsIdentityAsText(t *testing.T) {
 	document, _, err := parseFlowSource("id: 2024\nnamespace: company.team\nlabels: {}\n")
 	if err != nil {

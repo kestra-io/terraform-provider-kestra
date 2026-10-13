@@ -56,25 +56,57 @@ func flowScalar(document *yaml.Node, key string) (string, bool) {
 	return "", false
 }
 
-// mergeFlowMetadata adds the attribute-managed keys to the flow source. They are appended as
-// text so the source stored in Kestra keeps the comments and layout of the configuration.
-// A source where appending does not yield the expected flow, such as a flow-style root
-// mapping, is re-encoded instead: same flow, different formatting.
+// flowIdentityKeys holds the `id` and `namespace` that content leaves out, taken from the
+// flow_id and namespace attributes.
+type flowIdentityKeys struct {
+	Id        *string `yaml:"id,omitempty"`
+	Namespace *string `yaml:"namespace,omitempty"`
+}
+
+// mergeFlowMetadata adds the attribute-managed keys to the end of the flow source.
 func mergeFlowMetadata(source string, metadata flowMetadata) (string, error) {
 	if metadata.isEmpty() {
 		return source, nil
 	}
+	return addFlowKeys(source, metadata, false)
+}
+
+// addFlowIdentity puts `id` and `namespace` first in a source that leaves them out, as the
+// flows written by keep_original_source = false did. A key in content is kept as is.
+func addFlowIdentity(source, flowId, namespace string) (string, error) {
+	_, values, err := parseFlowSource(source)
+	if err != nil {
+		return "", err
+	}
+	var keys flowIdentityKeys
+	if _, ok := values["id"]; !ok && flowId != "" {
+		keys.Id = &flowId
+	}
+	if _, ok := values["namespace"]; !ok && namespace != "" {
+		keys.Namespace = &namespace
+	}
+	if keys.Id == nil && keys.Namespace == nil {
+		return source, nil
+	}
+	return addFlowKeys(source, keys, true)
+}
+
+// addFlowKeys adds keys to the flow source as text, before or after it, so the source stored
+// in Kestra keeps the comments and layout of the configuration. A source where this does not
+// yield the expected flow, such as a flow-style root mapping, is re-encoded instead: same
+// flow, different formatting.
+func addFlowKeys(source string, keys interface{}, first bool) (string, error) {
 	document, values, err := parseFlowSource(source)
 	if err != nil {
 		return "", err
 	}
 
-	appended, err := yaml.Marshal(metadata)
+	added, err := yaml.Marshal(keys)
 	if err != nil {
 		return "", err
 	}
 	var expected map[string]interface{}
-	if err := yaml.Unmarshal(appended, &expected); err != nil {
+	if err := yaml.Unmarshal(added, &expected); err != nil {
 		return "", err
 	}
 	// a key already in content would end up twice in the source
@@ -85,17 +117,24 @@ func mergeFlowMetadata(source string, metadata flowMetadata) (string, error) {
 	}
 	maps.Copy(expected, values)
 
-	merged := strings.TrimRight(source, "\n") + "\n" + string(appended)
+	merged := strings.TrimRight(source, "\n") + "\n" + string(added)
+	if first {
+		merged = string(added) + source
+	}
 	if _, mergedValues, err := parseFlowSource(merged); err == nil && reflect.DeepEqual(mergedValues, expected) {
 		return merged, nil
 	}
 
-	var metadataNode yaml.Node
-	if err := metadataNode.Encode(metadata); err != nil {
+	var keysNode yaml.Node
+	if err := keysNode.Encode(keys); err != nil {
 		return "", err
 	}
 	root := document.Content[0]
-	root.Content = append(root.Content, metadataNode.Content...)
+	if first {
+		root.Content = append(keysNode.Content, root.Content...)
+	} else {
+		root.Content = append(root.Content, keysNode.Content...)
+	}
 	return encodeFlowSource(document)
 }
 

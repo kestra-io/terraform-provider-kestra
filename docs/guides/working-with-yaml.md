@@ -9,7 +9,7 @@ Most of Kestra resource need to be described as Yaml like [kestra_flow](../resou
 
 We have chosen to use a full yaml in terraform definition since the structure is recursive and dynamic, so it can't be described using terraform internal schema.
 
-A flow is sent to Kestra as written, so its comments and indentation are kept. Changes that only touch formatting or comments do not update the flow. The `keep_original_source` provider setting is deprecated and has no effect.
+A flow is sent to Kestra as written, so its comments and indentation are kept. Changes that only touch formatting or comments do not update the flow. The `keep_original_source` provider setting is deprecated and has no effect. `content` can leave out `id` and `namespace` when the `flow_id` and `namespace` attributes are set: they are added to the source sent to Kestra.
 
 There is in terraform a lot of function that allow to work properly with this yaml content :
 

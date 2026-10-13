@@ -8,9 +8,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// State written by a release without resource identity must still plan cleanly once the
-// provider declares identity schemas: Terraform asks for an identity upgrade from version 0,
-// which fails for any identity declared above version 0 without an upgrader.
+// State written by earlier releases must plan cleanly with this build: 2.1.0 has no resource
+// identity, so Terraform asks for an identity upgrade from version 0, and 2.2.0 already stores
+// identities, which Terraform refuses to downgrade.
 func TestAccIdentityUpgradeFromRelease(t *testing.T) {
 	config := `
 provider "kestra" {}
@@ -34,30 +34,34 @@ EOT
 }
 `
 
-	resource.UnitTest(t, resource.TestCase{
-		PreCheck: func() { queryTestAccPreCheck(t) },
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.SkipBelow(tfversion.Version1_12_0),
-		},
-		Steps: []resource.TestStep{
-			{
-				ExternalProviders: map[string]resource.ExternalProvider{
-					"kestra": {
-						Source:            "kestra-io/kestra",
-						VersionConstraint: "2.1.0",
+	for _, release := range []string{"2.1.0", "2.2.0"} {
+		t.Run(release, func(t *testing.T) {
+			resource.UnitTest(t, resource.TestCase{
+				PreCheck: func() { queryTestAccPreCheck(t) },
+				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+					tfversion.SkipBelow(tfversion.Version1_12_0),
+				},
+				Steps: []resource.TestStep{
+					{
+						ExternalProviders: map[string]resource.ExternalProvider{
+							"kestra": {
+								Source:            "kestra-io/kestra",
+								VersionConstraint: release,
+							},
+						},
+						Config: config,
+					},
+					{
+						ProtoV5ProviderFactories: queryMuxProviderFactories,
+						Config:                   config,
+						ConfigPlanChecks: resource.ConfigPlanChecks{
+							PreApply: []plancheck.PlanCheck{
+								plancheck.ExpectEmptyPlan(),
+							},
+						},
 					},
 				},
-				Config: config,
-			},
-			{
-				ProtoV5ProviderFactories: queryMuxProviderFactories,
-				Config:                   config,
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
-			},
-		},
-	})
+			})
+		})
+	}
 }

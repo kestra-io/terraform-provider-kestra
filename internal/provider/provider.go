@@ -83,7 +83,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 				"keep_original_source": &schema.Schema{
 					Type:        schema.TypeBool,
 					Optional:    true,
-					Description: "Keep original source code, keeping comment and indentation. Setting to false is now deprecated and will be removed in the future.",
+					Description: "Deprecated, has no effect: flows are always sent with their original source, comments and indentation included.",
 					DefaultFunc: schema.EnvDefaultFunc("KESTRA_KEEP_ORIGINAL_SOURCE", true),
 				},
 			},
@@ -102,7 +102,6 @@ func New(version string, tenant *string) func() *schema.Provider {
 			},
 			ResourcesMap: map[string]*schema.Resource{
 				"kestra_binding":                   resourceBinding(),
-				"kestra_flow":                      resourceFlow(),
 				"kestra_group":                     resourceGroup(),
 				"kestra_namespace_secret":          resourceNamespaceSecret(),
 				"kestra_role":                      resourceRole(),
@@ -130,7 +129,6 @@ func New(version string, tenant *string) func() *schema.Provider {
 			jwt := d.Get("jwt").(string)
 			apiToken := d.Get("api_token").(string)
 			extraHeaders := d.Get("extra_headers")
-			keepOriginalSource := d.Get("keep_original_source").(bool)
 
 			tenantId := ""
 			if tenant != nil {
@@ -141,7 +139,7 @@ func New(version string, tenant *string) func() *schema.Provider {
 
 			var diags diag.Diagnostics
 
-			c, err := NewClient(url, int64(timeout), &username, &password, &jwt, &apiToken, &extraHeaders, &tenantId, &keepOriginalSource)
+			c, err := NewClient(url, int64(timeout), &username, &password, &jwt, &apiToken, &extraHeaders, &tenantId)
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}
@@ -151,15 +149,6 @@ func New(version string, tenant *string) func() *schema.Provider {
 
 		return p
 	}
-}
-
-func stateFn(i interface{}) string {
-	var asInterface interface{}
-	_ = yaml.Unmarshal([]byte(i.(string)), &asInterface)
-
-	newYaml, _ := yaml.Marshal(asInterface)
-
-	return cleanUpYaml(newYaml)
 }
 
 func toYaml(source interface{}) (*string, error) {
@@ -215,15 +204,6 @@ func yamlCompare(oldInterface, newInterface interface{}) bool {
 	result := reflect.DeepEqual(oldInterface, newInterface)
 
 	return result
-}
-
-func cleanUpYaml(ymlBytes []byte) string {
-	ymlStr := string(ymlBytes)
-	return strings.ReplaceAll(ymlStr, "\r\n", "\n")
-}
-
-func stringToPointer(s string) *string {
-	return &s
 }
 
 func pointerToString(s *string) string {

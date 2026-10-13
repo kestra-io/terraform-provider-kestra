@@ -23,15 +23,6 @@ var providerFactories = map[string]func() (*schema.Provider, error){
 	},
 }
 
-// Provider with KeepOriginalSource to false
-var providerFactoriesKOSFalse = map[string]func() (*schema.Provider, error){
-	"kestra": func() (*schema.Provider, error) {
-		provider := New("dev", nil)()
-		provider.Schema["keep_original_source"].Default = false
-		return provider, nil
-	},
-}
-
 // muxProviderFactories wires the SDK v2 provider together with the new
 // framework provider via the same mux server used in main.go, so acceptance
 // tests can reach resources served by either implementation.
@@ -39,7 +30,7 @@ var muxProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
 	"kestra": func() (tfprotov5.ProviderServer, error) {
 		ctx := context.Background()
 		providers := []func() tfprotov5.ProviderServer{
-			providerserver.NewProtocol5(provider_v2.New("test", NewFlowResource)()),
+			providerserver.NewProtocol5(provider_v2.New("test")()),
 			New("test", nil)().GRPCProvider,
 		}
 		mux, err := tf5muxserver.NewMuxServer(ctx, providers...)
@@ -47,12 +38,6 @@ var muxProviderFactories = map[string]func() (tfprotov5.ProviderServer, error){
 			return nil, err
 		}
 		return mux.ProviderServer(), nil
-	},
-}
-
-var providerTenantFactories = map[string]func() (*schema.Provider, error){
-	"kestra": func() (*schema.Provider, error) {
-		return New("dev", stringToPointer("unit_test"))(), nil
 	},
 }
 

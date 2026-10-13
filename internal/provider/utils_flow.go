@@ -3,41 +3,10 @@ package provider
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"gopkg.in/yaml.v2"
 )
-
-func flowConvertId(id string) (string, string) {
-	splits := strings.Split(id, "/")
-
-	return splits[0], strings.Join(splits[1:], "/")
-}
-
-func flowSchemaToApi(d *schema.ResourceData) (map[string]interface{}, error) {
-	body := make(map[string]interface{}, 0)
-	body["id"] = d.Get("flow_id").(string)
-	body["namespace"] = d.Get("namespace").(string)
-
-	content := make(map[string]interface{}, 0)
-	err := yaml.Unmarshal([]byte(d.Get("content").(string)), &content)
-	if err != nil {
-		return nil, err
-	}
-
-	content, err = controlContent(body, content)
-	if err != nil {
-		return nil, err
-	}
-
-	for key, value := range content {
-		body[key] = value
-	}
-
-	return body, nil
-}
 
 func controlContent(body map[string]interface{}, content map[string]interface{}) (map[string]interface{}, error) {
 	if val, ok := content["id"]; ok {
@@ -92,51 +61,4 @@ func flowApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *Client
 	}
 
 	return diags
-}
-
-func flowSourceApiToSchema(r map[string]interface{}, d *schema.ResourceData, c *Client) diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	d.SetId(fmt.Sprintf("%s/%s", r["namespace"].(string), r["id"].(string)))
-	if *c.TenantId != "" {
-		if err := d.Set("tenant_id", c.TenantId); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if err := d.Set("namespace", r["namespace"].(string)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("flow_id", r["id"].(string)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("revision", r["revision"].(json.Number)); err != nil {
-		return diag.FromErr(err)
-	}
-	if err := d.Set("content", r["source"].(string)); err != nil {
-		return diag.FromErr(err)
-	}
-
-	return diags
-}
-
-func extractNamespaceAndIdFromContent(content string) (string, string, error) {
-	m := make(map[string]interface{})
-	if err := yaml.Unmarshal([]byte(content), &m); err != nil {
-		return "", "", err
-	}
-
-	var id, namespace string
-	if v, ok := m["id"]; ok {
-		id = fmt.Sprintf("%v", v)
-	}
-	if v, ok := m["namespace"]; ok {
-		namespace = fmt.Sprintf("%v", v)
-	}
-
-	if id == "" || namespace == "" {
-		return "", "", fmt.Errorf("unable to extract namespace and/or id from content")
-	}
-
-	return namespace, id, nil
 }

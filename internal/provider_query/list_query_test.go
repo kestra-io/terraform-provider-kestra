@@ -148,7 +148,7 @@ var queryMuxProviderFactories = map[string]func() (tfprotov5.ProviderServer, err
 	"kestra": func() (tfprotov5.ProviderServer, error) {
 		ctx := context.Background()
 		providers := []func() tfprotov5.ProviderServer{
-			providerserver.NewProtocol5(provider_v2.New("test", provider.NewFlowResource)()),
+			providerserver.NewProtocol5(provider_v2.New("test")()),
 			provider.New("test", nil)().GRPCProvider,
 		}
 		mux, err := tf5muxserver.NewMuxServer(ctx, providers...)

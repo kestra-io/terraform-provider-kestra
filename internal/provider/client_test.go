@@ -21,7 +21,7 @@ func TestExtraHeadersWork(t *testing.T) {
 	extraHeaders := map[string]string{"X-Test-Header": "test-value"}
 	var headersInterface interface{} = extraHeaders
 
-	client, err := NewClient(server.URL, 10, nil, nil, nil, nil, &headersInterface, nil, nil)
+	client, err := NewClient(server.URL, 10, nil, nil, nil, nil, &headersInterface, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -52,7 +52,7 @@ func TestExtraHeadersWithTerraformType(t *testing.T) {
 	extraHeaders := map[string]interface{}{"X-Terraform-Header": "terraform-value"}
 	var headersInterface interface{} = extraHeaders
 
-	client, err := NewClient(server.URL, 10, nil, nil, nil, nil, &headersInterface, nil, nil)
+	client, err := NewClient(server.URL, 10, nil, nil, nil, nil, &headersInterface, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,7 +88,7 @@ func TestExtraHeadersWithAuth(t *testing.T) {
 	extraHeaders := map[string]string{"X-Auth-Header": "auth-value"}
 	var headersInterface interface{} = extraHeaders
 
-	client, err := NewClient(server.URL, 10, &username, &password, nil, nil, &headersInterface, nil, nil)
+	client, err := NewClient(server.URL, 10, &username, &password, nil, nil, &headersInterface, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

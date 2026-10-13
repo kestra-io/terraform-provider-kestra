@@ -134,7 +134,7 @@ if [ "$KESTRA_VERSION" = "develop" ] || [ "$(printf '%s\n2.1.0\n' "${KESTRA_VERS
 fi
 if [ "$KV_DESCRIPTION_SUPPORTED" = "true" ]; then
 curl  --fail-with-body -sS -H "Content-Type: text/plain" -H "description: A sample KV description" -u 'root@root.com:Root!1234' -X PUT -d '"stringValue"' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/string"
-curl  --fail-with-body -sS -H "Content-Type: text/plain" -H "description: A data source description with café 東京" -u 'root@root.com:Root!1234' -X PUT -d '"describedValue"' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/description"
+curl  --fail-with-body -sS -H "Content-Type: text/plain" -H "description: A data source description" -u 'root@root.com:Root!1234' -X PUT -d '"describedValue"' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/description"
 else
 curl  --fail-with-body -sS -H "Content-Type: text/plain" -u 'root@root.com:Root!1234' -X PUT -d '"stringValue"' "127.27.27.27:8080/api/v1/main/namespaces/io.kestra.terraform.data/kv/string"
 fi

@@ -159,7 +159,7 @@ func TestAccDataSourceKvDescription(t *testing.T) {
 			{
 				Config: testAccDataSourceKv("io.kestra.terraform.data", "description"),
 				Check: resource.TestCheckResourceAttr(
-					"data.kestra_kv.new", "description", "A data source description with café 東京",
+					"data.kestra_kv.new", "description", "A data source description",
 				),
 			},
 		},

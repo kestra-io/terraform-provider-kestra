@@ -7,7 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"net/http"
+	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -54,7 +56,7 @@ func resourceKv() *schema.Resource {
 				Required:    true,
 			},
 			"description": {
-				Description:  "An optional description for the Key-Value pair. Single line, up to 4096 bytes. Only applied by Kestra versions that support KV descriptions (2.1.0 or later).",
+				Description:  "An optional description for the Key-Value pair. Printable ASCII only, single line, up to 4096 bytes. Only applied by Kestra versions that support KV descriptions (2.1.0 or later).",
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validateKvDescription,
@@ -66,15 +68,55 @@ func resourceKv() *schema.Resource {
 	}
 }
 
+// The server decodes the header as ISO-8859-1, so anything but printable ASCII is mangled.
 func validateKvDescription(v interface{}, k string) (ws []string, errs []error) {
 	s := v.(string)
-	if strings.ContainsAny(s, "\r\n") {
-		errs = append(errs, fmt.Errorf("%q must be a single line, it is sent as an HTTP header", k))
+	for _, r := range s {
+		if r < 0x20 || r > 0x7E {
+			errs = append(errs, fmt.Errorf("%q must only contain printable ASCII characters on a single line, it is sent as an HTTP header", k))
+			break
+		}
 	}
 	if len(s) > 4096 {
 		errs = append(errs, fmt.Errorf("%q must be at most 4096 bytes, got %d", k, len(s)))
 	}
 	return
+}
+
+// kvDescription reads the description from the list endpoint, the single key endpoint does not return it.
+func kvDescription(ctx context.Context, c *Client, namespace string, key string) (string, error) {
+	for page := 1; ; page++ {
+		q := url.Values{}
+		q.Set("page", strconv.Itoa(page))
+		q.Set("size", "100")
+		q.Set("filters[namespace][EQUALS]", namespace)
+		req, err := http.NewRequestWithContext(ctx, "GET", c.Url+apiRoot(c.TenantId)+"/kv?"+q.Encode(), nil)
+		if err != nil {
+			return "", err
+		}
+		_, body, reqErr := c.rawResponseRequest("GET", req)
+		if reqErr != nil {
+			return "", reqErr.Err
+		}
+		var list struct {
+			Results []struct {
+				Key         string `json:"key"`
+				Description string `json:"description"`
+			} `json:"results"`
+			Total int `json:"total"`
+		}
+		if err := json.Unmarshal(body, &list); err != nil {
+			return "", err
+		}
+		for _, r := range list.Results {
+			if r.Key == key {
+				return r.Description, nil
+			}
+		}
+		if page*100 >= list.Total {
+			return "", nil
+		}
+	}
 }
 
 func resourceKvSet(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -107,8 +149,8 @@ func resourceKvSet(ctx context.Context, d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	// Only send the header when set, or when clearing a previous value, so servers without KV description support never see it.
-	if description := d.Get("description").(string); description != "" || d.HasChange("description") {
+	// Omitting the header clears the description server-side, so only send it when set.
+	if description := d.Get("description").(string); description != "" {
 		req.Header.Set("description", description)
 	}
 
@@ -141,7 +183,7 @@ func resourceKvRead(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.FromErr(err)
 	}
 
-	_, body, headers, reqErr := c.rawResponseRequestWithHeaders("GET", req)
+	_, body, reqErr := c.rawResponseRequest("GET", req)
 	if reqErr != nil {
 		if reqErr.StatusCode == http.StatusNotFound {
 			d.SetId("")
@@ -188,7 +230,11 @@ func resourceKvRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	if err := d.Set("value", value); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("description", headers.Get("description")); err != nil {
+	description, err := kvDescription(ctx, c, namespace, key)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("description", description); err != nil {
 		return diag.FromErr(err)
 	}
 

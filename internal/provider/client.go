@@ -154,11 +154,6 @@ func (c *Client) rawRequest(method, url string, req *http.Request) (interface{},
 }
 
 func (c *Client) rawResponseRequest(method string, req *http.Request) (int, []byte, *RequestError) {
-	statusCode, body, _, reqErr := c.rawResponseRequestWithHeaders(method, req)
-	return statusCode, body, reqErr
-}
-
-func (c *Client) rawResponseRequestWithHeaders(method string, req *http.Request) (int, []byte, http.Header, *RequestError) {
 	if (c.Username != nil) && (c.Password != nil) {
 		req.SetBasicAuth(
 			*c.Username,
@@ -184,12 +179,12 @@ func (c *Client) rawResponseRequestWithHeaders(method string, req *http.Request)
 
 	res, err := c.HTTPClient.Do(req)
 	if (err != nil) && (res != nil) {
-		return 0, nil, nil, &RequestError{
+		return 0, nil, &RequestError{
 			StatusCode: res.StatusCode,
 			Err:        err,
 		}
 	} else if err != nil {
-		return 0, nil, nil, &RequestError{
+		return 0, nil, &RequestError{
 			StatusCode: 0,
 			Err:        err,
 		}
@@ -198,18 +193,18 @@ func (c *Client) rawResponseRequestWithHeaders(method string, req *http.Request)
 	defer res.Body.Close()
 	bodyResult, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return 0, nil, nil, &RequestError{
+		return 0, nil, &RequestError{
 			StatusCode: res.StatusCode,
 			Err:        err,
 		}
 	}
 
 	if (res.StatusCode != http.StatusOK) && (res.StatusCode != http.StatusCreated) && (res.StatusCode != http.StatusNoContent) {
-		return 0, nil, nil, &RequestError{
+		return 0, nil, &RequestError{
 			StatusCode: res.StatusCode,
 			Err:        fmt.Errorf("status: %d, method: %s, body: %s", res.StatusCode, method, bodyResult),
 		}
 	}
 
-	return res.StatusCode, bodyResult, res.Header, nil
+	return res.StatusCode, bodyResult, nil
 }

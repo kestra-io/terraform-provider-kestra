@@ -65,7 +65,7 @@ func dataSourceKvRead(ctx context.Context, d *schema.ResourceData, meta interfac
 		return diag.FromErr(err)
 	}
 
-	_, body, headers, reqErr := c.rawResponseRequestWithHeaders("GET", req)
+	_, body, reqErr := c.rawResponseRequest("GET", req)
 	if reqErr != nil {
 		if reqErr.StatusCode == http.StatusNotFound {
 			d.SetId("")
@@ -112,7 +112,11 @@ func dataSourceKvRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	if err := d.Set("value", value); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("description", headers.Get("description")); err != nil {
+	description, err := kvDescription(ctx, c, namespace, key)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("description", description); err != nil {
 		return diag.FromErr(err)
 	}
 

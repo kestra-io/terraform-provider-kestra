@@ -33,8 +33,8 @@ func TestAccKv(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"kestra_kv.new", "value", "stringValue",
 					),
-					resource.TestCheckResourceAttr(
-						"kestra_kv.new", "description", "",
+					resource.TestCheckNoResourceAttr(
+						"kestra_kv.new", "description",
 					),
 					resource.TestCheckNoResourceAttr(
 						"kestra_kv.new", "type",
@@ -227,10 +227,10 @@ func TestAccKvDescription(t *testing.T) {
 					"io.kestra.terraform",
 					"description",
 					"value",
-					"A description with café 東京 🚀",
+					"A description with punctuation: !@#$%^&*()",
 				),
 				Check: resource.TestCheckResourceAttr(
-					"kestra_kv.new", "description", "A description with café 東京 🚀",
+					"kestra_kv.new", "description", "A description with punctuation: !@#$%^&*()",
 				),
 			},
 			{
@@ -238,10 +238,10 @@ func TestAccKvDescription(t *testing.T) {
 					"io.kestra.terraform",
 					"description",
 					"value",
-					"Updated description: naïve façade",
+					"Updated description: second value",
 				),
 				Check: resource.TestCheckResourceAttr(
-					"kestra_kv.new", "description", "Updated description: naïve façade",
+					"kestra_kv.new", "description", "Updated description: second value",
 				),
 			},
 			{

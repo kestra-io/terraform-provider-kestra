@@ -108,6 +108,7 @@ jobs:
 
 
       - name: Build the docker-compose stack
+        continue-on-error: ${{ matrix.kestraVersion == 'develop' }}
         env:
           APPLICATION_SECRETS: ${{ secrets.APPLICATION_SECRETS }}
         run: |

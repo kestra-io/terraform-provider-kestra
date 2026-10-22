@@ -15,10 +15,6 @@ kestra:
        tenantAdminAccess: main
   encryption:
     secret-key: LWBErwwlb/BQcxWujsm+/scPeO01cTKzvW44GbAWvII=
-  kafka: 
-    client:
-      properties:
-        bootstrap.servers: kafka:9092
   elasticsearch:
     client:
       http-hosts: http://elasticsearch:9200
@@ -28,8 +24,10 @@ kestra:
     type: local
     local:
       base-path: "/app/storage"
+  # Kafka queues were removed from Kestra EE; the memory queue (embedded H2) is
+  # enough for a single standalone server and is supported by 2.0.x and develop.
   queue:
-    type: kafka
+    type: memory
   # Kestra 2.0 dropped the built-in Vault secret backend: rc2 fails to start with
   # "No secret interface can be found for 'kestra.secret.type=vault'. Supported types
   # are: [elasticsearch,jdbc]". Elasticsearch matches the repository backend already

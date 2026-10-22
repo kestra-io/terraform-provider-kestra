@@ -1,28 +1,4 @@
 services:
-  kafka:
-    image: confluentinc/cp-kafka
-    healthcheck:
-      test: [ "CMD-SHELL", "kafka-cluster cluster-id --bootstrap-server localhost:9092" ]
-      interval: 2s
-      timeout: 10s
-      retries: 30
-      start_period: 5s
-    environment:
-      KAFKA_KRAFT_MODE: "true"  # This enables KRaft mode in Kafka.
-      KAFKA_PROCESS_ROLES: controller,broker  # Kafka acts as both broker and controller.
-      KAFKA_NODE_ID: 1  # A unique ID for this Kafka instance.
-      CLUSTER_ID: 'kafka-terraform-provider-cluster-ci-1'
-      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@localhost:9093"  # Defines the controller voters.
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'
-
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.17.5
     healthcheck:
@@ -67,10 +43,9 @@ services:
       - 127.27.27.27:8080:8080
       - 8088:8080 # allowing to run tests in local
     links:
-      - kafka
       - vault
     depends_on:
-      kafka:
+      elasticsearch:
         condition: service_healthy
       vault:
         condition: service_healthy

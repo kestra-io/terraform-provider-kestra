@@ -59,9 +59,7 @@ jobs:
           PR_URL=$(gh pr create --base main --head "$BRANCH" \
             --title "feat(docs): update terraform docs (${{ github.ref_name }})" \
             --body "Automated docs update triggered by terraform-provider-kestra release ${{ github.ref_name }}.")
-          # Falls back to AJ until the docs team exists with access to kestra-io/docs.
-          gh api "repos/kestra-io/docs/pulls/${PR_URL##*/}/requested_reviewers" -f "team_reviewers[]=docs" --silent \
-            || gh api "repos/kestra-io/docs/pulls/${PR_URL##*/}/requested_reviewers" -f "reviewers[]=aj-emerich" --silent
+          gh api "repos/kestra-io/docs/pulls/${PR_URL##*/}/requested_reviewers" -f "team_reviewers[]=docs" --silent
 
       - name: Slack - Notify CI failure
         if: failure()

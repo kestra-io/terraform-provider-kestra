@@ -56,12 +56,10 @@ jobs:
           git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
             commit -m "feat(docs): update terraform docs"
           git push -u origin "$BRANCH"
-          PR_URL=$(gh pr create --base main --head "$BRANCH" \
+          gh pr create --base main --head "$BRANCH" \
             --title "feat(docs): update terraform docs (${{ github.ref_name }})" \
-            --body "Automated docs update triggered by terraform-provider-kestra release ${{ github.ref_name }}.")
-          # Falls back to AJ until the docs team exists with access to kestra-io/docs.
-          gh api "repos/kestra-io/docs/pulls/${PR_URL##*/}/requested_reviewers" -f "team_reviewers[]=docs" --silent \
-            || gh api "repos/kestra-io/docs/pulls/${PR_URL##*/}/requested_reviewers" -f "reviewers[]=aj-emerich" --silent
+            --reviewer aj-emerich \
+            --body "Automated docs update triggered by terraform-provider-kestra release ${{ github.ref_name }}."
 
       - name: Slack - Notify CI failure
         if: failure()

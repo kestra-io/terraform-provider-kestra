@@ -25,9 +25,6 @@ flowId: simple
 testCases:
   - id: test_case_1
     type: io.kestra.core.tests.flow.UnitTest
-    fixtures:
-      inputs:
-        inputA: "Hi there"
     assertions:
       - value: "{{ outputs.return.value }}"
         equalTo: 'Hi there'

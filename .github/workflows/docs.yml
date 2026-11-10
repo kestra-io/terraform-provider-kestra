@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout provider
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: terraform-provider-kestra
 
@@ -36,7 +36,7 @@ jobs:
 
       - name: Generate docs app token
         id: docs-app-token
-        uses: actions/create-github-app-token@v3
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
           client-id: ${{ secrets.GH_BOT_APP_ID }}
           private-key: ${{ secrets.GH_BOT_PRIVATE_KEY }}
@@ -46,9 +46,10 @@ jobs:
       - name: Open PR with docs change
         env:
           GH_TOKEN: ${{ steps.docs-app-token.outputs.token }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
           cd docs
-          BRANCH="chore/terraform-docs-${{ github.ref_name }}"
+          BRANCH="chore/terraform-docs-${REF_NAME}"
           git add src/contents/docs/13.terraform/
           git rm -r --quiet --ignore-unmatch content/docs/13.terraform
           git diff --cached --quiet && { echo "No docs changes, skipping."; exit 0; }
@@ -57,8 +58,8 @@ jobs:
             commit -m "feat(docs): update terraform docs"
           git push -u origin "$BRANCH"
           PR_URL=$(gh pr create --base main --head "$BRANCH" \
-            --title "feat(docs): update terraform docs (${{ github.ref_name }})" \
-            --body "Automated docs update triggered by terraform-provider-kestra release ${{ github.ref_name }}.")
+            --title "feat(docs): update terraform docs (${REF_NAME})" \
+            --body "Automated docs update triggered by terraform-provider-kestra release ${REF_NAME}.")
           gh api "repos/kestra-io/docs/pulls/${PR_URL##*/}/requested_reviewers" -f "team_reviewers[]=docs" --silent
 
       - name: Slack - Notify CI failure

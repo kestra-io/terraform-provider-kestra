@@ -93,7 +93,7 @@ resource "kestra_binding" "terraform" {
 }
 ```
 
-Adapt the resource types and actions to what you manage. See the [RBAC migration guide](./rbac-migration.md) for the available permissions.
+Adapt the resource types and actions to what you manage. See the [RBAC migration guide](https://kestra.io/docs/terraform/guides/rbac-migration) for the available permissions.
 
 ## 4. Configure the provider with the service account
 

@@ -1,0 +1,55 @@
+name: Next SDK
+
+# Builds against the newest client-sdk next/v* Go SDK, i.e. the next minor before it is tagged,
+# so an API change breaks this job instead of the GA-day bump. go.mod is only changed in the runner.
+on:
+  schedule:
+    - cron: "0 6 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: go.mod
+
+      - name: Use the newest client-sdk next/v* Go SDK
+        id: sdk
+        run: |
+          repo=https://github.com/kestra-io/client-sdk
+          branch=$(git ls-remote --heads "$repo" 'refs/heads/next/v*' | sed 's|.*refs/heads/||' | { grep -E '^next/v[0-9]+\.[0-9]+$' || true; } | sort -V | tail -1)
+          if [ -z "$branch" ]; then
+            echo "::notice::client-sdk has no next/v* branch, nothing to check."
+            echo "branch=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          sha=$(git ls-remote "$repo" "refs/heads/$branch" | cut -f1)
+          go get "github.com/kestra-io/client-sdk/go-sdk/v2@$sha"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "Building against client-sdk $branch ($sha)" >> "$GITHUB_STEP_SUMMARY"
+
+      # Compile only: some tests need a live Kestra (KESTRA_URL), which the Test workflow covers.
+      - name: Build, including test code
+        if: steps.sdk.outputs.branch != ''
+        run: |
+          go build ./...
+          go test -run '^$' ./...
+
+      # In the build job so the message carries this job's status: a separate notify job reports its own success.
+      - name: Slack - Notify CI failure
+        if: failure()
+        uses: kestra-io/actions/composite/slack-status@main
+        with:
+          channel: 'C09FE0QCN2E'
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          users-map: ${{ vars.GITHUB_TO_SLACK_MAP }}
+          extra-text: 'terraform-provider-kestra does not build against the client-sdk next Go SDK. Fix it before the SDK minor is tagged.'

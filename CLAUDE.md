@@ -126,6 +126,7 @@ Running `go generate` (via `terraform-plugin-docs`) creates markdown files in `d
 - `github.com/hashicorp/terraform-plugin-framework` — Modern Terraform plugin framework
 - `github.com/hashicorp/terraform-plugin-sdk/v2` — Legacy SDK (being phased out)
 - `github.com/kestra-io/client-sdk/go-sdk` — Kestra API client
+- `next-sdk.yml` compiles the provider and its tests against client-sdk's newest `next/vX.Y` Go SDK every weekday. A red run means the next SDK minor needs a fix here before it is bumped
 - `gopkg.in/yaml.v2` — YAML parsing (Kestra flows are YAML)
 - `github.com/json-iterator/go` — JSON parsing performance library
 
